@@ -5,6 +5,17 @@
 	═══════════════════════════════════════
 ]]--
 
+-- Prevent double loading
+if _G.CHAINIX_LOADED then
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "CHAINIX";
+		Text = "Already loaded! Unload first (DELETE key)";
+		Duration = 3;
+	})
+	return
+end
+_G.CHAINIX_LOADED = true
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -17,9 +28,17 @@ local humanoid = character:WaitForChild("Humanoid")
 
 local connections = {}
 local flyEnabled, speedEnabled, jumpEnabled, espEnabled, noclipEnabled = false, false, false, false, false
+local jumpPowerEnabled = false
+local gravityEnabled = false
+local showNames = false
+local showDistance = false
+local showMobs = false
+local showHealthBars = false
 local autoFarmEnabled = false
 local bodyVelocity, bodyGyro
 local flySpeed, walkSpeed = 50, 100
+local jumpPower = 50
+local gravityValue = 196.2
 
 -- Keybind system
 local toggleUIKey = Enum.KeyCode.Insert
@@ -149,22 +168,237 @@ if not screenGui.Parent then
 end
 
 -- Cleanup
+-- Health bar creation function
+local function createHealthBar(character, isPlayer)
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	local hum = character:FindFirstChild("Humanoid")
+	if not hrp or not hum then return end
+	
+	-- Remove existing health bar
+	local existingHB = character:FindFirstChild("ESPHealthBar")
+	if existingHB then existingHB:Destroy() end
+	
+	-- Create new health bar
+	local healthBar = Instance.new("BillboardGui")
+	healthBar.Name = "ESPHealthBar"
+	healthBar.Adornee = hrp
+	healthBar.Size = UDim2.new(0, 100, 0, 10)
+	healthBar.StudsOffset = Vector3.new(0, 4.5, 0)
+	healthBar.AlwaysOnTop = true
+	healthBar.Parent = character
+	
+	-- Background
+	local bg = Instance.new("Frame")
+	bg.Size = UDim2.new(1, 0, 1, 0)
+	bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	bg.BackgroundTransparency = 0.5
+	bg.BorderSizePixel = 0
+	bg.Parent = healthBar
+	
+	local bgCorner = Instance.new("UICorner")
+	bgCorner.CornerRadius = UDim.new(0, 3)
+	bgCorner.Parent = bg
+	
+	-- Health fill
+	local fill = Instance.new("Frame")
+	fill.Name = "Fill"
+	fill.Size = UDim2.new(1, 0, 1, 0)
+	fill.BackgroundColor3 = isPlayer and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(255, 50, 50)
+	fill.BorderSizePixel = 0
+	fill.Parent = bg
+	
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 3)
+	fillCorner.Parent = fill
+	
+	-- Update health bar
+	spawn(function()
+		while healthBar and healthBar.Parent and showHealthBars do
+			if hum then
+				local healthPercent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+				fill.Size = UDim2.new(healthPercent, 0, 1, 0)
+				
+				-- Color based on health
+				if healthPercent > 0.6 then
+					fill.BackgroundColor3 = isPlayer and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(50, 200, 100)
+				elseif healthPercent > 0.3 then
+					fill.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+				else
+					fill.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+				end
+			end
+			wait(0.1)
+		end
+	end)
+end
+
 local function cleanup()
-	for _, conn in pairs(connections) do
-		if conn then conn:Disconnect() end
+	print("[CHAINIX] Starting complete cleanup...")
+	
+	-- Disable all features IMMEDIATELY
+	espEnabled = false
+	showMobs = false
+	showHealthBars = false
+	flyEnabled = false
+	speedEnabled = false
+	noclipEnabled = false
+	jumpPowerEnabled = false
+	gravityEnabled = false
+	notificationsEnabled = false
+	soundsEnabled = false
+	
+	print("[CHAINIX] Features disabled, waiting for loops to stop...")
+	wait(1.5) -- Extra time to ensure ALL loops stop
+	
+	-- Disconnect ALL connections
+	print("[CHAINIX] Disconnecting connections...")
+	for i, conn in pairs(connections) do
+		pcall(function()
+			if conn and conn.Connected then
+				conn:Disconnect()
+			end
+		end)
 	end
 	connections = {}
-	if bodyVelocity then bodyVelocity:Destroy() end
-	if bodyGyro then bodyGyro:Destroy() end
+	
+	-- Remove flight objects
+	print("[CHAINIX] Removing flight objects...")
+	if bodyVelocity then 
+		pcall(function() 
+			bodyVelocity:Destroy() 
+		end)
+		bodyVelocity = nil 
+	end
+	
+	if bodyGyro then 
+		pcall(function() 
+			bodyGyro:Destroy() 
+		end)
+		bodyGyro = nil 
+	end
+	
+	-- COMPLETE ESP CLEANUP - Search EVERYTHING
+	print("[CHAINIX] Removing ALL ESP from players...")
 	for _, p in pairs(Players:GetPlayers()) do
 		if p.Character then
-			local h = p.Character:FindFirstChild("ESPHighlight")
-			if h then h:Destroy() end
+			pcall(function()
+				-- Remove ALL ESP-related objects from player characters
+				for _, obj in pairs(p.Character:GetDescendants()) do
+					if obj.Name:find("ESP") or 
+					   obj.Name:find("Highlight") or 
+					   obj.Name:find("Billboard") or 
+					   obj.Name:find("HealthBar") then
+						obj:Destroy()
+					end
+				end
+			end)
 		end
 	end
-	if humanoid then humanoid.WalkSpeed = 16 end
-	if crosshairGui then crosshairGui:Destroy() end
-	if screenGui then screenGui:Destroy() end
+	
+	-- Remove ALL ESP from workspace
+	print("[CHAINIX] Removing ALL ESP from workspace...")
+	for _, obj in pairs(workspace:GetDescendants()) do
+		pcall(function()
+			if obj.Name == "MobESPHighlight" or 
+			   obj.Name == "MobESPBillboard" or 
+			   obj.Name == "ESPHealthBar" or
+			   obj.Name == "ESPBillboard" or
+			   obj.Name == "ESPHighlight" then
+				obj:Destroy()
+			end
+		end)
+	end
+	
+	-- Remove ALL UI elements from PlayerGui
+	print("[CHAINIX] Removing ALL UI from PlayerGui...")
+	pcall(function()
+		local playerGui = player:FindFirstChild("PlayerGui")
+		if playerGui then
+			-- Remove by finding ANY CHAINIX-related GUI
+			for _, gui in pairs(playerGui:GetChildren()) do
+				if gui.Name:find("CHAINIX") or 
+				   gui.Name:find("SpeedIndicator") or
+				   gui.Name:find("FPSCounter") or
+				   gui.Name:find("PingCounter") then
+					gui:Destroy()
+				end
+			end
+		end
+	end)
+	
+	-- Remove from CoreGui (if anything got placed there)
+	print("[CHAINIX] Checking CoreGui...")
+	pcall(function()
+		local coreGui = game:GetService("CoreGui")
+		for _, gui in pairs(coreGui:GetChildren()) do
+			if gui.Name:find("CHAINIX") then
+				gui:Destroy()
+			end
+		end
+	end)
+	
+	-- Restore gravity
+	print("[CHAINIX] Restoring gravity...")
+	workspace.Gravity = 196.2
+	
+	-- Show notification BEFORE respawn
+	print("[CHAINIX] Showing unload notification...")
+	pcall(function()
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "CHAINIX";
+			Text = "Unloaded! Respawning for clean state...";
+			Duration = 3;
+		})
+	end)
+	
+	wait(0.3)
+	
+	-- Destroy script UI references
+	print("[CHAINIX] Destroying UI references...")
+	if crosshairGui then 
+		pcall(function() 
+			crosshairGui:Destroy() 
+		end)
+		crosshairGui = nil 
+	end
+	
+	if screenGui then 
+		pcall(function() 
+			screenGui:Destroy() 
+		end)
+		screenGui = nil 
+	end
+	
+	-- Clear ALL global variables
+	print("[CHAINIX] Clearing globals...")
+	_G.CHAINIX = nil
+	_G.CHAINIX_LOADED = nil
+	
+	-- Nil out ALL script variables
+	print("[CHAINIX] Clearing all script variables...")
+	espEnabled = nil
+	showMobs = nil
+	showHealthBars = nil
+	flyEnabled = nil
+	speedEnabled = nil
+	noclipEnabled = nil
+	jumpPowerEnabled = nil
+	gravityEnabled = nil
+	notificationsEnabled = nil
+	soundsEnabled = nil
+	autoFarmEnabled = nil
+	showNames = nil
+	showDistance = nil
+	
+	print("[CHAINIX] Respawning character for complete reset...")
+	
+	-- RESPAWN CHARACTER PROPERLY - This gives a completely fresh character
+	wait(0.2)
+	pcall(function()
+		player:LoadCharacter() -- Proper respawn method
+	end)
+	
+	print("[CHAINIX] Cleanup complete! Character respawning...")
 end
 
 -- Tween
@@ -294,21 +528,233 @@ tween(border, 0.5, {Transparency = 0.5}):Play()
 
 -- Top info bar
 local infoBar = Instance.new("Frame")
-infoBar.Size = UDim2.new(1, 0, 0, 24)
-infoBar.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+infoBar.Size = UDim2.new(1, 0, 0, 35) -- Taller for premium look
+infoBar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 infoBar.BorderSizePixel = 0
 infoBar.Parent = mainFrame
 
-local infoText = Instance.new("TextLabel")
-infoText.Text = "CHAINIX V1 - Time : " .. os.date("%a %b %d %H:%M:%S %Y") .. " - Welcome to the club."
-infoText.Font = Enum.Font.Code
-infoText.TextSize = 10
-infoText.TextColor3 = Color3.fromRGB(150, 160, 200)
-infoText.BackgroundTransparency = 1
-infoText.Size = UDim2.new(1, -10, 1, 0)
-infoText.Position = UDim2.new(0, 5, 0, 0)
-infoText.TextXAlignment = Enum.TextXAlignment.Left
-infoText.Parent = infoBar
+-- Gradient on top bar
+local infoGradient = Instance.new("UIGradient")
+infoGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 101, 242)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(138, 43, 226)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(88, 101, 242))
+}
+infoGradient.Rotation = 90
+infoGradient.Parent = infoBar
+
+-- Animated gradient (pulses)
+spawn(function()
+	while infoBar and infoBar.Parent do
+		for i = 0, 360, 2 do
+			if not infoBar or not infoBar.Parent then break end
+			infoGradient.Rotation = i
+			wait(0.05)
+		end
+	end
+end)
+
+-- Top bar corner
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 8)
+infoCorner.Parent = infoBar
+
+-- Shine effect on top
+local shine = Instance.new("Frame")
+shine.Size = UDim2.new(1, 0, 0, 1)
+shine.Position = UDim2.new(0, 0, 0, 0)
+shine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+shine.BackgroundTransparency = 0.7
+shine.BorderSizePixel = 0
+shine.Parent = infoBar
+
+-- Title text (moved to left)
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(0, 150, 1, 0)
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "CHAINIX"
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 16
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.TextStrokeTransparency = 0.8
+titleText.Parent = infoBar
+
+-- Version badge
+local versionBadge = Instance.new("TextLabel")
+versionBadge.Size = UDim2.new(0, 45, 0, 16)
+versionBadge.Position = UDim2.new(0, 85, 0, 10)
+versionBadge.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+versionBadge.BorderSizePixel = 0
+versionBadge.Text = "V1.0"
+versionBadge.Font = Enum.Font.GothamBold
+versionBadge.TextSize = 9
+versionBadge.TextColor3 = Color3.fromRGB(88, 101, 242)
+versionBadge.Parent = infoBar
+
+local badgeCorner = Instance.new("UICorner")
+badgeCorner.CornerRadius = UDim.new(0, 4)
+badgeCorner.Parent = versionBadge
+
+-- Discord button (clickable)
+local discordBtn = Instance.new("TextButton")
+discordBtn.Size = UDim2.new(0, 90, 0, 24)
+discordBtn.Position = UDim2.new(1, -230, 0, 5.5)
+discordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+discordBtn.BorderSizePixel = 0
+discordBtn.Text = ""
+discordBtn.Font = Enum.Font.GothamBold
+discordBtn.TextSize = 11
+discordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordBtn.AutoButtonColor = false
+discordBtn.Parent = infoBar
+
+local discordCorner = Instance.new("UICorner")
+discordCorner.CornerRadius = UDim.new(0, 5)
+discordCorner.Parent = discordBtn
+
+-- Discord logo (SVG-style using shapes)
+local discordLogo = Instance.new("Frame")
+discordLogo.Size = UDim2.new(0, 18, 0, 18)
+discordLogo.Position = UDim2.new(0, 6, 0.5, -9)
+discordLogo.BackgroundTransparency = 1
+discordLogo.Parent = discordBtn
+
+-- Discord logo background circle
+local logoCircle = Instance.new("Frame")
+logoCircle.Size = UDim2.new(1, 0, 1, 0)
+logoCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+logoCircle.BorderSizePixel = 0
+logoCircle.Parent = discordLogo
+
+local circleCorner = Instance.new("UICorner")
+circleCorner.CornerRadius = UDim.new(1, 0)
+circleCorner.Parent = logoCircle
+
+-- Discord logo "eyes" and "mouth" to make discord icon
+local leftEye = Instance.new("Frame")
+leftEye.Size = UDim2.new(0, 4, 0, 5)
+leftEye.Position = UDim2.new(0, 3, 0, 5)
+leftEye.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+leftEye.BorderSizePixel = 0
+leftEye.Parent = discordLogo
+
+local leftEyeCorner = Instance.new("UICorner")
+leftEyeCorner.CornerRadius = UDim.new(0, 2)
+leftEyeCorner.Parent = leftEye
+
+local rightEye = Instance.new("Frame")
+rightEye.Size = UDim2.new(0, 4, 0, 5)
+rightEye.Position = UDim2.new(0, 11, 0, 5)
+rightEye.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+rightEye.BorderSizePixel = 0
+rightEye.Parent = discordLogo
+
+local rightEyeCorner = Instance.new("UICorner")
+rightEyeCorner.CornerRadius = UDim.new(0, 2)
+rightEyeCorner.Parent = rightEye
+
+-- Discord text
+local discordText = Instance.new("TextLabel")
+discordText.Size = UDim2.new(1, -30, 1, 0)
+discordText.Position = UDim2.new(0, 28, 0, 0)
+discordText.BackgroundTransparency = 1
+discordText.Text = "Discord"
+discordText.Font = Enum.Font.GothamBold
+discordText.TextSize = 11
+discordText.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordText.TextXAlignment = Enum.TextXAlignment.Left
+discordText.Parent = discordBtn
+
+-- Discord button hover effect
+discordBtn.MouseEnter:Connect(function()
+	tween(discordBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
+end)
+
+discordBtn.MouseLeave:Connect(function()
+	tween(discordBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+end)
+
+-- Discord button click - copy invite to clipboard
+discordBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Success, 0.5, 1.2, 1)
+	setclipboard("https://discord.gg/WXt8VdDZ4j")
+	notify("Discord invite copied to clipboard!")
+end)
+
+-- Status indicator
+local statusDot = Instance.new("Frame")
+statusDot.Size = UDim2.new(0, 8, 0, 8)
+statusDot.Position = UDim2.new(1, -128, 0.5, -4)
+statusDot.BackgroundColor3 = Color3.fromRGB(50, 255, 100)
+statusDot.BorderSizePixel = 0
+statusDot.Parent = infoBar
+
+local dotCorner = Instance.new("UICorner")
+dotCorner.CornerRadius = UDim.new(1, 0)
+dotCorner.Parent = statusDot
+
+-- Pulsing animation for status dot
+spawn(function()
+	while statusDot and statusDot.Parent do
+		for i = 0, 100, 5 do
+			if not statusDot or not statusDot.Parent then break end
+			statusDot.BackgroundTransparency = i / 100
+			wait(0.03)
+		end
+		for i = 100, 0, -5 do
+			if not statusDot or not statusDot.Parent then break end
+			statusDot.BackgroundTransparency = i / 100
+			wait(0.03)
+		end
+	end
+end)
+
+local statusText = Instance.new("TextLabel")
+statusText.Size = UDim2.new(0, 60, 1, 0)
+statusText.Position = UDim2.new(1, -118, 0, 0)
+statusText.BackgroundTransparency = 1
+statusText.Text = "ACTIVE"
+statusText.Font = Enum.Font.GothamBold
+statusText.TextSize = 10
+statusText.TextColor3 = Color3.fromRGB(50, 255, 100)
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+statusText.Parent = infoBar
+
+-- Close button (X)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 2.5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+closeBtn.BorderSizePixel = 0
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
+closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+closeBtn.AutoButtonColor = false
+closeBtn.Parent = infoBar
+
+local closeBtnCorner = Instance.new("UICorner")
+closeBtnCorner.CornerRadius = UDim.new(0, 6)
+closeBtnCorner.Parent = closeBtn
+
+-- Close button hover effect
+closeBtn.MouseEnter:Connect(function()
+	tween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}):Play()
+	tween(closeBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+end)
+
+closeBtn.MouseLeave:Connect(function()
+	tween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 35)}):Play()
+	tween(closeBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+
+-- Close button functionality
+closeBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Error, 0.5, 1, 1)
+	notify("Use DELETE key to unload")
+end)
 
 -- Dragging system (simple and working!)
 local dragging = false
@@ -356,7 +802,7 @@ end))
 -- Tab bar
 local tabBar = Instance.new("Frame")
 tabBar.Size = UDim2.new(1, 0, 0, 32)
-tabBar.Position = UDim2.new(0, 0, 0, 24)
+tabBar.Position = UDim2.new(0, 0, 0, 35) -- Updated for new top bar height
 tabBar.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 tabBar.BorderSizePixel = 0
 tabBar.Parent = mainFrame
@@ -409,8 +855,8 @@ for i, tabName in ipairs(tabs) do
 	
 	-- Page
 	local page = Instance.new("Frame")
-	page.Size = UDim2.new(1, 0, 1, -56)
-	page.Position = UDim2.new(0, 0, 0, 56)
+	page.Size = UDim2.new(1, 0, 1, -67) -- Updated: 35px top bar + 32px tab bar
+	page.Position = UDim2.new(0, 0, 0, 67) -- Updated: starts after top bar + tab bar
 	page.BackgroundTransparency = 1
 	page.Visible = (tabName == currentTab)
 	page.Parent = mainFrame
@@ -849,11 +1295,17 @@ end)
 -- MOVEMENT PAGE
 local movementPage = tabPages["Movement"]
 
-local movLeftCol = Instance.new("Frame")
-movLeftCol.Size = UDim2.new(1, -10, 1, -10)
-movLeftCol.Position = UDim2.new(0, 5, 0, 5)
-movLeftCol.BackgroundTransparency = 1
-movLeftCol.Parent = movementPage
+local movScrollFrame = Instance.new("ScrollingFrame")
+movScrollFrame.Size = UDim2.new(1, -10, 1, -10)
+movScrollFrame.Position = UDim2.new(0, 5, 0, 5)
+movScrollFrame.BackgroundTransparency = 1
+movScrollFrame.BorderSizePixel = 0
+movScrollFrame.ScrollBarThickness = 3
+movScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(88, 101, 242)
+movScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 800)
+movScrollFrame.Parent = movementPage
+
+local movLeftCol = movScrollFrame
 
 local movY = createSection("Movement", movLeftCol, 0)
 
@@ -895,10 +1347,14 @@ movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
 	speedEnabled = enabled
 	updateConfig("speed_enabled", enabled)
 	if enabled then
-		humanoid.WalkSpeed = walkSpeed
-		notify("Speed ON")
+		if humanoid then
+			humanoid.WalkSpeed = walkSpeed
+		end
+		notify("Speed ON - " .. walkSpeed)
 	else
-		humanoid.WalkSpeed = 16
+		if humanoid then
+			humanoid.WalkSpeed = 16
+		end
 		notify("Speed OFF")
 	end
 end)
@@ -907,14 +1363,71 @@ movY = movY + 5
 movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, currentConfig.walk_speed or 100, function(val)
 	walkSpeed = val
 	updateConfig("walk_speed", val)
-	if speedEnabled then humanoid.WalkSpeed = val end
+	-- Apply immediately if speed is enabled
+	if speedEnabled and humanoid then
+		humanoid.WalkSpeed = val
+	end
+end)
+
+movY = movY + 10
+movY = createCheckbox("Speed Indicator", movLeftCol, movY, function(enabled)
+	local speedLabel = screenGui:FindFirstChild("SpeedIndicator")
+	
+	if enabled then
+		if not speedLabel then
+			speedLabel = Instance.new("TextLabel")
+			speedLabel.Name = "SpeedIndicator"
+			speedLabel.Size = UDim2.new(0, 150, 0, 40)
+			speedLabel.Position = UDim2.new(1, -160, 0, 10)
+			speedLabel.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+			speedLabel.BackgroundTransparency = 0.3
+			speedLabel.BorderSizePixel = 0
+			speedLabel.Font = Enum.Font.GothamBold
+			speedLabel.TextSize = 16
+			speedLabel.TextColor3 = Color3.fromRGB(88, 101, 242)
+			speedLabel.Text = "Speed: 0"
+			speedLabel.Parent = screenGui
+			
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 6)
+			corner.Parent = speedLabel
+			
+			-- Update speed continuously
+			spawn(function()
+				while speedLabel and speedLabel.Parent do
+					if humanoidRootPart then
+						local speed = math.floor(humanoidRootPart.AssemblyLinearVelocity.Magnitude)
+						speedLabel.Text = "Speed: " .. speed
+					end
+					wait(0.1)
+				end
+			end)
+		end
+		notify("Speed Indicator ON")
+	else
+		if speedLabel then
+			speedLabel:Destroy()
+		end
+		notify("Speed Indicator OFF")
+	end
 end)
 
 movY = movY + 10
 movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
 	jumpEnabled = enabled
 	updateConfig("jump_enabled", enabled)
-	notify(enabled and "Infinite Jump ON" or "Infinite Jump OFF")
+	
+	if enabled then
+		-- Enable infinite jump
+		table.insert(connections, UserInputService.JumpRequest:Connect(function()
+			if jumpEnabled and humanoid then
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end))
+		notify("Infinite Jump ON")
+	else
+		notify("Infinite Jump OFF")
+	end
 end)
 
 movY = movY + 5
@@ -922,6 +1435,111 @@ movY = createCheckbox("No-Clip", movLeftCol, movY, function(enabled)
 	noclipEnabled = enabled
 	updateConfig("noclip_enabled", enabled)
 	notify(enabled and "No-Clip ON" or "No-Clip OFF")
+end)
+
+-- No-Clip loop
+spawn(function()
+	while true do
+		if noclipEnabled and character then
+			for _, part in pairs(character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end
+		task.wait(0.1)
+	end
+end)
+
+-- Speed maintenance loop
+spawn(function()
+	while true do
+		if speedEnabled and humanoid and humanoid.WalkSpeed ~= walkSpeed then
+			humanoid.WalkSpeed = walkSpeed
+		end
+		task.wait(0.1)
+	end
+end)
+
+-- Jump power maintenance loop
+spawn(function()
+	while true do
+		if jumpPowerEnabled and humanoid then
+			if humanoid.UseJumpPower then
+				if humanoid.JumpPower ~= jumpPower then
+					humanoid.JumpPower = jumpPower
+				end
+			else
+				local targetHeight = jumpPower / 10
+				if humanoid.JumpHeight ~= targetHeight then
+					humanoid.JumpHeight = targetHeight
+				end
+			end
+		end
+		task.wait(0.1)
+	end
+end)
+
+movY = movY + 10
+movY = createCheckbox("Jump Power", movLeftCol, movY, function(enabled)
+	jumpPowerEnabled = enabled
+	updateConfig("jump_power_enabled", enabled)
+	
+	if enabled and humanoid then
+		-- Use JumpHeight (new method) or JumpPower (old method)
+		if humanoid.UseJumpPower then
+			humanoid.JumpPower = jumpPower
+		else
+			humanoid.JumpHeight = jumpPower / 10
+		end
+		notify("Jump Power ON")
+	else
+		if humanoid then
+			if humanoid.UseJumpPower then
+				humanoid.JumpPower = 50
+			else
+				humanoid.JumpHeight = 7.2
+			end
+		end
+		notify("Jump Power OFF")
+	end
+end)
+
+movY = movY + 5
+movY = createSlider("Jump Height", movLeftCol, movY, 50, 500, currentConfig.jump_power or 50, function(val)
+	jumpPower = val
+	updateConfig("jump_power", val)
+	if jumpPowerEnabled and humanoid then
+		-- Apply to both systems for compatibility
+		if humanoid.UseJumpPower then
+			humanoid.JumpPower = val
+		else
+			humanoid.JumpHeight = val / 10
+		end
+	end
+end)
+
+movY = movY + 10
+movY = createCheckbox("Gravity Changer", movLeftCol, movY, function(enabled)
+	gravityEnabled = enabled
+	updateConfig("gravity_enabled", enabled)
+	
+	if enabled then
+		workspace.Gravity = gravityValue
+		notify("Gravity Changed")
+	else
+		workspace.Gravity = 196.2
+		notify("Gravity Normal")
+	end
+end)
+
+movY = movY + 5
+movY = createSlider("Gravity", movLeftCol, movY, 0, 300, currentConfig.gravity or 196.2, function(val)
+	gravityValue = val
+	updateConfig("gravity", val)
+	if gravityEnabled then
+		workspace.Gravity = val
+	end
 end)
 
 -- VISUALS PAGE
@@ -938,10 +1556,14 @@ local visY = createSection("ESP", visLeftCol, 0)
 visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
 	espEnabled = enabled
 	updateConfig("esp_enabled", enabled)
+	
 	for _, p in pairs(Players:GetPlayers()) do
 		if p ~= player and p.Character then
 			local h = p.Character:FindFirstChild("ESPHighlight")
+			local billboard = p.Character:FindFirstChild("ESPBillboard")
+			
 			if enabled and not h then
+				-- Add highlight
 				h = Instance.new("Highlight")
 				h.Name = "ESPHighlight"
 				h.FillColor = Color3.fromRGB(88, 101, 242)
@@ -949,20 +1571,296 @@ visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
 				h.FillTransparency = 0.6
 				h.OutlineTransparency = 0
 				h.Parent = p.Character
-			elseif not enabled and h then
-				h:Destroy()
+				
+				-- Add billboard for name/distance
+				if (showNames or showDistance) and not billboard then
+					local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+					if hrp then
+						billboard = Instance.new("BillboardGui")
+						billboard.Name = "ESPBillboard"
+						billboard.Adornee = hrp
+						billboard.Size = UDim2.new(0, 200, 0, 50)
+						billboard.StudsOffset = Vector3.new(0, 3, 0)
+						billboard.AlwaysOnTop = true
+						billboard.Parent = p.Character
+						
+						local textLabel = Instance.new("TextLabel")
+						textLabel.Size = UDim2.new(1, 0, 1, 0)
+						textLabel.BackgroundTransparency = 1
+						textLabel.Font = Enum.Font.GothamBold
+						textLabel.TextSize = 14
+						textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+						textLabel.TextStrokeTransparency = 0.5
+						textLabel.Text = ""
+						textLabel.Parent = billboard
+					end
+				end
+			elseif not enabled then
+				if h then h:Destroy() end
+				if billboard then billboard:Destroy() end
 			end
 		end
 	end
+	
 	notify(enabled and "ESP ON" or "ESP OFF")
 end)
 
 visY = createCheckbox("Show Names", visLeftCol, visY, function(enabled)
+	showNames = enabled
+	updateConfig("show_names", enabled)
 	notify(enabled and "Names ON" or "Names OFF")
 end)
 
 visY = createCheckbox("Show Distance", visLeftCol, visY, function(enabled)
+	showDistance = enabled
+	updateConfig("show_distance", enabled)
 	notify(enabled and "Distance ON" or "Distance OFF")
+end)
+
+visY = createCheckbox("Show Mobs", visLeftCol, visY, function(enabled)
+	showMobs = enabled
+	updateConfig("show_mobs", enabled)
+	
+	-- Clean up existing mob ESP
+	if not enabled then
+		for _, obj in pairs(workspace:GetDescendants()) do
+			if obj.Name == "MobESPHighlight" or obj.Name == "MobESPBillboard" then
+				obj:Destroy()
+			end
+		end
+	end
+	
+	notify(enabled and "Mob ESP ON" or "Mob ESP OFF")
+end)
+
+visY = createCheckbox("Show Health Bars", visLeftCol, visY, function(enabled)
+	showHealthBars = enabled
+	updateConfig("show_health_bars", enabled)
+	
+	-- Clean up existing health bars
+	if not enabled then
+		for _, obj in pairs(workspace:GetDescendants()) do
+			if obj.Name == "ESPHealthBar" then
+				obj:Destroy()
+			end
+		end
+		for _, p in pairs(Players:GetPlayers()) do
+			if p.Character then
+				local hb = p.Character:FindFirstChild("ESPHealthBar")
+				if hb then hb:Destroy() end
+			end
+		end
+	end
+	
+	notify(enabled and "Health Bars ON" or "Health Bars OFF")
+end)
+
+-- ESP update loop for players (names and distance)
+local lastPlayerUpdate = {}
+
+spawn(function()
+	while true do
+		if espEnabled then
+			local currentTime = tick()
+			
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= player and p.Character then
+					local playerId = p.UserId
+					
+					-- Throttle updates per player (0.3s minimum between updates)
+					if not lastPlayerUpdate[playerId] or (currentTime - lastPlayerUpdate[playerId]) >= 0.3 then
+						lastPlayerUpdate[playerId] = currentTime
+						
+						pcall(function()
+							local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+							if not hrp then return end
+							
+							-- Create health bar once if enabled
+							if showHealthBars and not p.Character:FindFirstChild("ESPHealthBar") then
+								createHealthBar(p.Character, true)
+							end
+							
+							-- Handle billboard for names/distance
+							if (showNames or showDistance) then
+								local billboard = p.Character:FindFirstChild("ESPBillboard")
+								
+								if not billboard then
+									billboard = Instance.new("BillboardGui")
+									billboard.Name = "ESPBillboard"
+									billboard.Adornee = hrp
+									billboard.Size = UDim2.new(0, 200, 0, 50)
+									billboard.StudsOffset = Vector3.new(0, 3, 0)
+									billboard.AlwaysOnTop = true
+									billboard.Parent = p.Character
+									
+									local textLabel = Instance.new("TextLabel")
+									textLabel.Size = UDim2.new(1, 0, 1, 0)
+									textLabel.BackgroundTransparency = 1
+									textLabel.Font = Enum.Font.GothamBold
+									textLabel.TextSize = 14
+									textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+									textLabel.TextStrokeTransparency = 0.5
+									textLabel.Text = ""
+									textLabel.Parent = billboard
+								else
+									-- Update existing billboard
+									local textLabel = billboard:FindFirstChildOfClass("TextLabel")
+									if textLabel then
+										local text = ""
+										
+										if showNames then
+											text = p.Name
+										end
+										
+										if showDistance and humanoidRootPart then
+											local distance = math.floor((hrp.Position - humanoidRootPart.Position).Magnitude)
+											if showNames then
+												text = text .. "\n" .. distance .. "m"
+											else
+												text = distance .. "m"
+											end
+										end
+										
+										textLabel.Text = text
+									end
+								end
+							end
+						end)
+					end
+				end
+			end
+			
+			-- Clean up disconnected players
+			for playerId, _ in pairs(lastPlayerUpdate) do
+				local playerExists = false
+				for _, p in pairs(Players:GetPlayers()) do
+					if p.UserId == playerId then
+						playerExists = true
+						break
+					end
+				end
+				if not playerExists then
+					lastPlayerUpdate[playerId] = nil
+				end
+			end
+		else
+			lastPlayerUpdate = {}
+		end
+		task.wait(0.1) -- Fast loop but throttled per player
+	end
+end)
+
+-- Mob ESP loop (highlights NPCs/monsters) - OPTIMIZED
+local discoveredMobs = {}
+local mobUpdateTime = {}
+
+spawn(function()
+	while true do
+		if showMobs then
+			local currentTime = tick()
+			local mobCount = 0
+			local maxMobs = 30
+			
+			for mob, _ in pairs(discoveredMobs) do
+				if not mob or not mob.Parent then
+					discoveredMobs[mob] = nil
+					mobUpdateTime[mob] = nil
+				end
+			end
+			
+			for _, obj in pairs(workspace:GetDescendants()) do
+				if mobCount >= maxMobs then break end
+				
+				if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("HumanoidRootPart") then
+					local isPlayer = false
+					for _, p in pairs(Players:GetPlayers()) do
+						if p.Character == obj then isPlayer = true break end
+					end
+					
+					if not isPlayer then
+						local hrp = obj:FindFirstChild("HumanoidRootPart")
+						
+						if humanoidRootPart and hrp then
+							local dist = (hrp.Position - humanoidRootPart.Position).Magnitude
+							if dist > 1500 then continue end
+						end
+						
+						mobCount = mobCount + 1
+						local humanoidInMob = obj:FindFirstChild("Humanoid")
+						
+						if not discoveredMobs[obj] then
+							discoveredMobs[obj] = true
+							mobUpdateTime[obj] = 0
+						end
+						
+						if not mobUpdateTime[obj] or (currentTime - mobUpdateTime[obj]) >= 0.5 then
+							mobUpdateTime[obj] = currentTime
+							
+							pcall(function()
+								if showHealthBars and not obj:FindFirstChild("ESPHealthBar") then
+									createHealthBar(obj, false)
+								end
+								
+								if not obj:FindFirstChild("MobESPHighlight") then
+									local h = Instance.new("Highlight")
+									h.Name = "MobESPHighlight"
+									h.FillColor = Color3.fromRGB(255, 100, 100)
+									h.OutlineColor = Color3.fromRGB(255, 255, 255)
+									h.FillTransparency = 0.6
+									h.OutlineTransparency = 0
+									h.Parent = obj
+								end
+								
+								if not obj:FindFirstChild("MobESPBillboard") and hrp then
+									local billboard = Instance.new("BillboardGui")
+									billboard.Name = "MobESPBillboard"
+									billboard.Adornee = hrp
+									billboard.Size = UDim2.new(0, 200, 0, 50)
+									billboard.StudsOffset = Vector3.new(0, 3, 0)
+									billboard.AlwaysOnTop = true
+									billboard.Parent = obj
+									
+									local textLabel = Instance.new("TextLabel")
+									textLabel.Size = UDim2.new(1, 0, 1, 0)
+									textLabel.BackgroundTransparency = 1
+									textLabel.Font = Enum.Font.GothamBold
+									textLabel.TextSize = 14
+									textLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+									textLabel.TextStrokeTransparency = 0.5
+									textLabel.Parent = billboard
+								end
+								
+								local billboard = obj:FindFirstChild("MobESPBillboard")
+								if billboard then
+									local textLabel = billboard:FindFirstChildOfClass("TextLabel")
+									if textLabel and humanoidInMob and hrp then
+										local mobName = obj.Name
+										local health = math.floor(humanoidInMob.Health) .. "/" .. math.floor(humanoidInMob.MaxHealth)
+										local distance = ""
+										if humanoidRootPart then
+											distance = math.floor((hrp.Position - humanoidRootPart.Position).Magnitude) .. "m"
+										end
+										textLabel.Text = mobName .. "\n" .. health .. " | " .. distance
+									end
+								end
+							end)
+						end
+					end
+				end
+			end
+		else
+			discoveredMobs = {}
+			mobUpdateTime = {}
+			for _, obj in pairs(workspace:GetDescendants()) do
+				pcall(function()
+					if obj.Name == "MobESPHighlight" or obj.Name == "MobESPBillboard" then
+						obj:Destroy()
+					end
+				end)
+			end
+		end
+		task.wait(0.8)
+	end
 end)
 
 -- SETTINGS PAGE
@@ -1227,7 +2125,7 @@ table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
 	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
 	saveConfig()
-	notify("Config saved! (Lasts until you close Roblox)")
+	notify("Config saved! (Until Roblox closes)")
 end))
 
 setY = setY + 35
@@ -1664,36 +2562,157 @@ end)
 miscY = miscY + 10
 miscY = createSection("Other", miscLeftCol, miscY)
 
+miscY = createCheckbox("Show FPS", miscLeftCol, miscY, function(enabled)
+	local fpsLabel = screenGui:FindFirstChild("FPSCounter")
+	
+	if enabled then
+		if not fpsLabel then
+			fpsLabel = Instance.new("TextLabel")
+			fpsLabel.Name = "FPSCounter"
+			fpsLabel.Size = UDim2.new(0, 120, 0, 40)
+			fpsLabel.Position = UDim2.new(1, -130, 0, 60) -- Top right, below speed indicator
+			fpsLabel.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+			fpsLabel.BackgroundTransparency = 0.3
+			fpsLabel.BorderSizePixel = 0
+			fpsLabel.Font = Enum.Font.GothamBold
+			fpsLabel.TextSize = 16
+			fpsLabel.TextColor3 = Color3.fromRGB(88, 101, 242)
+			fpsLabel.Text = "FPS: 60"
+			fpsLabel.Parent = screenGui
+			
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 6)
+			corner.Parent = fpsLabel
+			
+			-- FPS calculation
+			local lastTime = tick()
+			local frameCount = 0
+			local fps = 60
+			
+			spawn(function()
+				while fpsLabel and fpsLabel.Parent do
+					frameCount = frameCount + 1
+					local currentTime = tick()
+					
+					if currentTime - lastTime >= 1 then
+						fps = frameCount
+						frameCount = 0
+						lastTime = currentTime
+						
+						-- Color code based on FPS
+						if fps >= 60 then
+							fpsLabel.TextColor3 = Color3.fromRGB(50, 200, 100) -- Green
+						elseif fps >= 30 then
+							fpsLabel.TextColor3 = Color3.fromRGB(255, 200, 50) -- Yellow
+						else
+							fpsLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- Red
+						end
+						
+						fpsLabel.Text = "FPS: " .. fps
+					end
+					
+					game:GetService("RunService").RenderStepped:Wait()
+				end
+			end)
+		end
+		notify("FPS Counter ON")
+	else
+		if fpsLabel then
+			fpsLabel:Destroy()
+		end
+		notify("FPS Counter OFF")
+	end
+end)
+
+miscY = createCheckbox("Show Ping", miscLeftCol, miscY, function(enabled)
+	local pingLabel = screenGui:FindFirstChild("PingCounter")
+	
+	if enabled then
+		if not pingLabel then
+			pingLabel = Instance.new("TextLabel")
+			pingLabel.Name = "PingCounter"
+			pingLabel.Size = UDim2.new(0, 120, 0, 40)
+			pingLabel.Position = UDim2.new(1, -130, 0, 110)
+			pingLabel.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+			pingLabel.BackgroundTransparency = 0.3
+			pingLabel.BorderSizePixel = 0
+			pingLabel.Font = Enum.Font.GothamBold
+			pingLabel.TextSize = 16
+			pingLabel.TextColor3 = Color3.fromRGB(88, 101, 242)
+			pingLabel.Text = "Ping: 0ms"
+			pingLabel.Parent = screenGui
+			
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 6)
+			corner.Parent = pingLabel
+			
+			-- Ping calculation
+			spawn(function()
+				while pingLabel and pingLabel.Parent do
+					pcall(function()
+						local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+						
+						-- Color code based on ping
+						if ping <= 50 then
+							pingLabel.TextColor3 = Color3.fromRGB(50, 200, 100)
+						elseif ping <= 100 then
+							pingLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+						else
+							pingLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+						end
+						
+						pingLabel.Text = "Ping: " .. ping .. "ms"
+					end)
+					wait(1)
+				end
+			end)
+		end
+		notify("Ping Counter ON")
+	else
+		if pingLabel then
+			pingLabel:Destroy()
+		end
+		notify("Ping Counter OFF")
+	end
+end)
+
+local antiAFKEnabled = false
 miscY = createCheckbox("Anti AFK", miscLeftCol, miscY, function(enabled)
+	antiAFKEnabled = enabled
 	notify(enabled and "Anti AFK ON" or "Anti AFK OFF")
 end)
 
+-- Anti-AFK loop
+spawn(function()
+	while true do
+		if antiAFKEnabled then
+			local VirtualUser = game:GetService("VirtualUser")
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton2(Vector2.new())
+		end
+		wait(300) -- Every 5 minutes
+	end
+end)
+
+local autoRespawnEnabled = false
 miscY = createCheckbox("Auto Respawn", miscLeftCol, miscY, function(enabled)
+	autoRespawnEnabled = enabled
 	notify(enabled and "Auto Respawn ON" or "Auto Respawn OFF")
 end)
 
--- CHAINIX Logo (bottom right)
-local logo = Instance.new("TextLabel")
-logo.Text = "⛓"
-logo.Font = Enum.Font.GothamBold
-logo.TextSize = 32
-logo.TextColor3 = Color3.fromRGB(88, 101, 242)
-logo.BackgroundTransparency = 1
-logo.Size = UDim2.new(0, 40, 0, 40)
-logo.Position = UDim2.new(1, -50, 1, -50)
-logo.TextTransparency = 0.3
-logo.Parent = mainFrame
+-- Auto Respawn detection
+table.insert(connections, player.CharacterAdded:Connect(function(newChar)
+	character = newChar
+	humanoid = newChar:WaitForChild("Humanoid")
+	humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
+end))
 
-local logoText = Instance.new("TextLabel")
-logoText.Text = "CHAINIX"
-logoText.Font = Enum.Font.Code
-logoText.TextSize = 8
-logoText.TextColor3 = Color3.fromRGB(150, 160, 200)
-logoText.BackgroundTransparency = 1
-logoText.Size = UDim2.new(0, 60, 0, 15)
-logoText.Position = UDim2.new(1, -65, 1, -20)
-logoText.TextTransparency = 0.5
-logoText.Parent = mainFrame
+table.insert(connections, player.CharacterRemoving:Connect(function()
+	if autoRespawnEnabled then
+		wait(0.5)
+		player:LoadCharacter()
+	end
+end))
 
 -- Feature loops
 table.insert(connections, RunService.Heartbeat:Connect(function()
