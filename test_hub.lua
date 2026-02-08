@@ -1,8 +1,7 @@
 --[[
 	═══════════════════════════════════════
-	      CHAINIX ULTIMATE PREMIUM
-	        Elite Edition v3.0
-	     The Most Advanced Script Hub
+	         CHAINIX V1 - ELITE
+	      Professional Script Hub
 	═══════════════════════════════════════
 ]]--
 
@@ -18,12 +17,18 @@ local humanoid = character:WaitForChild("Humanoid")
 
 local connections = {}
 local flyEnabled, speedEnabled, jumpEnabled, espEnabled, noclipEnabled = false, false, false, false, false
+local autoFarmEnabled = false
 local bodyVelocity, bodyGyro
 local flySpeed, walkSpeed = 50, 100
 
+-- Keybind system
+local toggleUIKey = Enum.KeyCode.Insert
+local unloadKey = Enum.KeyCode.Delete
+local waitingForKeybind = nil
+
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ChainixElite"
+screenGui.Name = "ChainixHub"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.IgnoreGuiInset = true
@@ -50,625 +55,395 @@ local function cleanup()
 		end
 	end
 	if humanoid then humanoid.WalkSpeed = 16 end
+	if crosshairGui then crosshairGui:Destroy() end
 	if screenGui then screenGui:Destroy() end
 end
 
--- Tween utility
-local function tween(obj, time, props, style, dir)
-	return TweenService:Create(obj, TweenInfo.new(time, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out), props)
+-- Tween
+local function tween(obj, time, props)
+	return TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props)
 end
 
 local function notify(msg)
 	game:GetService("StarterGui"):SetCore("SendNotification", {
-		Title = "CHAINIX ELITE";
+		Title = "CHAINIX";
 		Text = msg;
 		Duration = 2;
 	})
 end
 
--- Backdrop with blur effect
-local backdrop = Instance.new("Frame")
-backdrop.Size = UDim2.new(1, 0, 1, 0)
-backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-backdrop.BackgroundTransparency = 0.3
-backdrop.BorderSizePixel = 0
-backdrop.Parent = screenGui
-
--- Blur effect
-local blur = Instance.new("BlurEffect")
-blur.Size = 0
-blur.Parent = game:GetService("Lighting")
-
--- Main container
+-- Main frame
 local mainFrame = Instance.new("Frame")
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Size = UDim2.new(0, 500, 0, 320)
-mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.Size = UDim2.new(0, 540, 0, 420)
+mainFrame.Position = UDim2.new(0.5, -270, 0.5, -210)
 mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
-mainFrame.BackgroundTransparency = 0.15
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = false
-mainFrame.Parent = backdrop
+mainFrame.BorderSizePixel = 1
+mainFrame.BorderColor3 = Color3.fromRGB(88, 101, 242)
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
 
--- Entrance animations
-backdrop.BackgroundTransparency = 1
-blur.Size = 0
-mainFrame.Size = UDim2.new(0, 400, 0, 250)
-mainFrame.BackgroundTransparency = 1
-tween(backdrop, 0.4, {BackgroundTransparency = 0.3}):Play()
-tween(blur, 0.4, {Size = 12}):Play()
-tween(mainFrame, 0.6, {Size = UDim2.new(0, 500, 0, 320), BackgroundTransparency = 0.15}, Enum.EasingStyle.Back):Play()
+-- Chain background decoration (just like loader!)
+local chainBG = Instance.new("ImageLabel")
+chainBG.Size = UDim2.new(1, 0, 1, 0)
+chainBG.Position = UDim2.new(0, 0, 0, 0)
+chainBG.BackgroundTransparency = 1
+chainBG.Image = "rbxassetid://140337915830730"
+chainBG.ImageTransparency = 0.92
+chainBG.ImageColor3 = Color3.fromRGB(88, 101, 242)
+chainBG.ScaleType = Enum.ScaleType.Stretch
+chainBG.ZIndex = 0
+chainBG.Parent = mainFrame
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 16)
-mainCorner.Parent = mainFrame
+-- Entrance
+mainFrame.Position = UDim2.new(0.5, -270, 1.5, 0)
+tween(mainFrame, 0.4, {Position = UDim2.new(0.5, -270, 0.5, -210)}):Play()
 
--- Glass effect overlay
-local glassOverlay = Instance.new("Frame")
-glassOverlay.Size = UDim2.new(1, 0, 1, 0)
-glassOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-glassOverlay.BackgroundTransparency = 0.96
-glassOverlay.BorderSizePixel = 0
-glassOverlay.Parent = mainFrame
+-- Top info bar
+local infoBar = Instance.new("Frame")
+infoBar.Size = UDim2.new(1, 0, 0, 24)
+infoBar.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+infoBar.BorderSizePixel = 0
+infoBar.Parent = mainFrame
 
-local glassCorner = Instance.new("UICorner")
-glassCorner.CornerRadius = UDim.new(0, 16)
-glassCorner.Parent = glassOverlay
+local infoText = Instance.new("TextLabel")
+infoText.Text = "CHAINIX V1 - Time : " .. os.date("%a %b %d %H:%M:%S %Y") .. " - Welcome to the club."
+infoText.Font = Enum.Font.Code
+infoText.TextSize = 10
+infoText.TextColor3 = Color3.fromRGB(150, 160, 200)
+infoText.BackgroundTransparency = 1
+infoText.Size = UDim2.new(1, -10, 1, 0)
+infoText.Position = UDim2.new(0, 5, 0, 0)
+infoText.TextXAlignment = Enum.TextXAlignment.Left
+infoText.Parent = infoBar
 
--- Gradient overlay
-local gradientOverlay = Instance.new("Frame")
-gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
-gradientOverlay.BackgroundTransparency = 1
-gradientOverlay.BorderSizePixel = 0
-gradientOverlay.Parent = mainFrame
+-- Tab bar
+local tabBar = Instance.new("Frame")
+tabBar.Size = UDim2.new(1, 0, 0, 32)
+tabBar.Position = UDim2.new(0, 0, 0, 24)
+tabBar.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+tabBar.BorderSizePixel = 0
+tabBar.Parent = mainFrame
 
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 100, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
-}
-gradient.Rotation = 45
-gradient.Transparency = NumberSequence.new{
-	NumberSequenceKeypoint.new(0, 0.95),
-	NumberSequenceKeypoint.new(0.5, 0.98),
-	NumberSequenceKeypoint.new(1, 0.95)
-}
-gradient.Parent = gradientOverlay
+-- Tabs: Auto Farm first, Settings before Misc
+local tabs = {"Auto Farm", "Combat", "Movement", "Visuals", "Settings", "Misc"}
+local currentTab = "Auto Farm"
+local tabButtons = {}
+local tabPages = {}
 
--- Rotating gradient animation
-spawn(function()
-	while screenGui.Parent do
-		tween(gradient, 4, {Rotation = gradient.Rotation + 180}, Enum.EasingStyle.Linear):Play()
-		wait(4)
+-- Create tabs
+for i, tabName in ipairs(tabs) do
+	local tabBtn = Instance.new("TextButton")
+	tabBtn.Size = UDim2.new(0, 90, 1, 0)
+	tabBtn.Position = UDim2.new(0, (i-1) * 90, 0, 0)
+	tabBtn.BackgroundColor3 = currentTab == tabName and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(18, 18, 24)
+	tabBtn.BorderSizePixel = 0
+	tabBtn.Text = tabName
+	tabBtn.Font = Enum.Font.GothamBold
+	tabBtn.TextSize = 11
+	tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tabBtn.AutoButtonColor = false
+	tabBtn.Parent = tabBar
+	
+	tabButtons[tabName] = tabBtn
+	
+	-- Page
+	local page = Instance.new("Frame")
+	page.Size = UDim2.new(1, 0, 1, -56)
+	page.Position = UDim2.new(0, 0, 0, 56)
+	page.BackgroundTransparency = 1
+	page.Visible = (tabName == currentTab)
+	page.Parent = mainFrame
+	
+	tabPages[tabName] = page
+end
+
+-- Tab switching
+local function switchTab(tabName)
+	currentTab = tabName
+	for name, btn in pairs(tabButtons) do
+		btn.BackgroundColor3 = (name == tabName) and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(18, 18, 24)
 	end
+	for name, page in pairs(tabPages) do
+		page.Visible = (name == tabName)
+	end
+end
+
+for name, btn in pairs(tabButtons) do
+	table.insert(connections, btn.MouseButton1Click:Connect(function()
+		switchTab(name)
+	end))
+end
+
+-- Create section
+local function createSection(name, parent, yPos)
+	local section = Instance.new("Frame")
+	section.Size = UDim2.new(1, 0, 0, 25)
+	section.Position = UDim2.new(0, 0, 0, yPos)
+	section.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+	section.BorderSizePixel = 1
+	section.BorderColor3 = Color3.fromRGB(40, 45, 80)
+	section.Parent = parent
+	
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(240, 242, 245)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -10, 1, 0)
+	label.Position = UDim2.new(0, 5, 0, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = section
+	
+	return yPos + 30
+end
+
+-- Create checkbox
+local function createCheckbox(name, parent, yPos, callback)
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1, 0, 0, 20)
+	container.Position = UDim2.new(0, 0, 0, yPos)
+	container.BackgroundTransparency = 1
+	container.Parent = parent
+	
+	local checkbox = Instance.new("TextButton")
+	checkbox.Size = UDim2.new(0, 12, 0, 12)
+	checkbox.Position = UDim2.new(0, 5, 0, 4)
+	checkbox.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+	checkbox.BorderSizePixel = 1
+	checkbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+	checkbox.Text = ""
+	checkbox.AutoButtonColor = false
+	checkbox.Parent = container
+	
+	local checkmark = Instance.new("TextLabel")
+	checkmark.Size = UDim2.new(1, 0, 1, 0)
+	checkmark.BackgroundTransparency = 1
+	checkmark.Text = ""
+	checkmark.Font = Enum.Font.GothamBold
+	checkmark.TextSize = 10
+	checkmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+	checkmark.Parent = checkbox
+	
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(200, 205, 215)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -25, 1, 0)
+	label.Position = UDim2.new(0, 22, 0, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = container
+	
+	local isChecked = false
+	
+	table.insert(connections, checkbox.MouseButton1Click:Connect(function()
+		isChecked = not isChecked
+		checkmark.Text = isChecked and "✓" or ""
+		checkbox.BackgroundColor3 = isChecked and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(20, 22, 30)
+		callback(isChecked)
+	end))
+	
+	return yPos + 22
+end
+
+-- Create slider
+local function createSlider(name, parent, yPos, min, max, default, callback)
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1, 0, 0, 35)
+	container.Position = UDim2.new(0, 0, 0, yPos)
+	container.BackgroundTransparency = 1
+	container.Parent = parent
+	
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(200, 205, 215)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -50, 0, 15)
+	label.Position = UDim2.new(0, 5, 0, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = container
+	
+	local value = Instance.new("TextLabel")
+	value.Text = tostring(default)
+	value.Font = Enum.Font.GothamBold
+	value.TextSize = 11
+	value.TextColor3 = Color3.fromRGB(88, 101, 242)
+	value.BackgroundTransparency = 1
+	value.Size = UDim2.new(0, 40, 0, 15)
+	value.Position = UDim2.new(1, -45, 0, 0)
+	value.TextXAlignment = Enum.TextXAlignment.Right
+	value.Parent = container
+	
+	local sliderBG = Instance.new("Frame")
+	sliderBG.Size = UDim2.new(1, -10, 0, 3)
+	sliderBG.Position = UDim2.new(0, 5, 0, 20)
+	sliderBG.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+	sliderBG.BorderSizePixel = 0
+	sliderBG.Parent = container
+	
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.Parent = sliderBG
+	
+	local sliderBtn = Instance.new("TextButton")
+	sliderBtn.Size = UDim2.new(0, 10, 0, 10)
+	sliderBtn.Position = UDim2.new((default - min) / (max - min), -5, 0.5, -5)
+	sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	sliderBtn.BorderSizePixel = 1
+	sliderBtn.BorderColor3 = Color3.fromRGB(88, 101, 242)
+	sliderBtn.Text = ""
+	sliderBtn.AutoButtonColor = false
+	sliderBtn.Parent = sliderBG
+	
+	local dragging = false
+	table.insert(connections, sliderBtn.MouseButton1Down:Connect(function() dragging = true end))
+	table.insert(connections, UserInputService.InputEnded:Connect(function(inp)
+		if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+	end))
+	table.insert(connections, sliderBG.InputBegan:Connect(function(inp)
+		if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+	end))
+	table.insert(connections, UserInputService.InputChanged:Connect(function(inp)
+		if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+			local mousePos = UserInputService:GetMouseLocation().X
+			local sliderPos = sliderBG.AbsolutePosition.X
+			local sliderSize = sliderBG.AbsoluteSize.X
+			local percent = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
+			local val = math.floor(min + (max - min) * percent)
+			value.Text = tostring(val)
+			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+			sliderBtn.Position = UDim2.new(percent, -5, 0.5, -5)
+			callback(val)
+		end
+	end))
+	
+	return yPos + 37
+end
+
+-- AUTO FARM PAGE
+local autoFarmPage = tabPages["Auto Farm"]
+
+local farmLeftCol = Instance.new("Frame")
+farmLeftCol.Size = UDim2.new(0.5, -10, 1, -10)
+farmLeftCol.Position = UDim2.new(0, 5, 0, 5)
+farmLeftCol.BackgroundTransparency = 1
+farmLeftCol.Parent = autoFarmPage
+
+local farmRightCol = Instance.new("Frame")
+farmRightCol.Size = UDim2.new(0.5, -10, 1, -10)
+farmRightCol.Position = UDim2.new(0.5, 5, 0, 5)
+farmRightCol.BackgroundTransparency = 1
+farmRightCol.Parent = autoFarmPage
+
+local farmLeftY = createSection("Auto Farm", farmLeftCol, 0)
+farmLeftY = createCheckbox("Enable Auto Farm", farmLeftCol, farmLeftY, function(enabled)
+	autoFarmEnabled = enabled
+	notify(enabled and "Auto Farm ON" or "Auto Farm OFF")
+end)
+farmLeftY = createCheckbox("Auto Collect", farmLeftCol, farmLeftY, function(enabled)
+	notify(enabled and "Auto Collect ON" or "Auto Collect OFF")
+end)
+farmLeftY = createCheckbox("Auto Equip Best Tool", farmLeftCol, farmLeftY, function(enabled)
+	notify(enabled and "Auto Equip ON" or "Auto Equip OFF")
 end)
 
--- Premium border with RGB effect
-local border = Instance.new("UIStroke")
-border.Color = Color3.fromRGB(100, 150, 255)
-border.Thickness = 2
-border.Transparency = 0.3
-border.Parent = mainFrame
-
-local borderGradient = Instance.new("UIGradient")
-borderGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-	ColorSequenceKeypoint.new(0.33, Color3.fromRGB(150, 100, 255)),
-	ColorSequenceKeypoint.new(0.66, Color3.fromRGB(255, 100, 150)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
-}
-borderGradient.Rotation = 0
-borderGradient.Parent = border
-
--- RGB border rotation
-spawn(function()
-	while screenGui.Parent do
-		tween(borderGradient, 3, {Rotation = 360}, Enum.EasingStyle.Linear):Play()
-		wait(3)
-		borderGradient.Rotation = 0
-	end
+farmLeftY = farmLeftY + 5
+farmLeftY = createSlider("Farm Distance", farmLeftCol, farmLeftY, 5, 50, 20, function(val)
+	-- Farm distance
 end)
 
--- Outer glow (premium shadow)
-local outerGlow = Instance.new("ImageLabel")
-outerGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-outerGlow.Size = UDim2.new(1, 100, 1, 100)
-outerGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-outerGlow.BackgroundTransparency = 1
-outerGlow.Image = "rbxassetid://4996891970"
-outerGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-outerGlow.ImageTransparency = 0.5
-outerGlow.ScaleType = Enum.ScaleType.Slice
-outerGlow.SliceCenter = Rect.new(128, 128, 128, 128)
-outerGlow.ZIndex = 0
-outerGlow.Parent = mainFrame
-
--- Glow pulsing animation
-spawn(function()
-	while screenGui.Parent do
-		tween(outerGlow, 2, {ImageTransparency = 0.7}):Play()
-		wait(2)
-		tween(outerGlow, 2, {ImageTransparency = 0.5}):Play()
-		wait(2)
-	end
+local farmRightY = createSection("Settings", farmRightCol, 0)
+farmRightY = createCheckbox("Safe Mode", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Safe Mode ON" or "Safe Mode OFF")
+end)
+farmRightY = createCheckbox("Auto Heal", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Auto Heal ON" or "Auto Heal OFF")
+end)
+farmRightY = createCheckbox("Avoid Players", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Avoid Players ON" or "Avoid Players OFF")
 end)
 
--- Header
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 60)
-header.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-header.BackgroundTransparency = 0.3
-header.BorderSizePixel = 0
-header.Parent = mainFrame
+-- COMBAT PAGE
+local combatPage = tabPages["Combat"]
 
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 16)
-headerCorner.Parent = header
+local leftColumn = Instance.new("Frame")
+leftColumn.Size = UDim2.new(0.5, -10, 1, -10)
+leftColumn.Position = UDim2.new(0, 5, 0, 5)
+leftColumn.BackgroundTransparency = 1
+leftColumn.Parent = combatPage
 
--- Fix header bottom corners
-local headerMask = Instance.new("Frame")
-headerMask.Size = UDim2.new(1, 0, 0, 16)
-headerMask.Position = UDim2.new(0, 0, 1, -16)
-headerMask.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-headerMask.BackgroundTransparency = 0.3
-headerMask.BorderSizePixel = 0
-headerMask.Parent = header
+local rightColumn = Instance.new("Frame")
+rightColumn.Size = UDim2.new(0.5, -10, 1, -10)
+rightColumn.Position = UDim2.new(0.5, 5, 0, 5)
+rightColumn.BackgroundTransparency = 1
+rightColumn.Parent = combatPage
 
--- Premium shine effect on header
-local headerShine = Instance.new("Frame")
-headerShine.Size = UDim2.new(0, 200, 1, 0)
-headerShine.Position = UDim2.new(0, -200, 0, 0)
-headerShine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-headerShine.BackgroundTransparency = 0.9
-headerShine.BorderSizePixel = 0
-headerShine.Rotation = 20
-headerShine.Parent = header
-
--- Animated shine sweep
-spawn(function()
-	wait(0.5)
-	while screenGui.Parent do
-		tween(headerShine, 2, {Position = UDim2.new(1, 0, 0, 0)}, Enum.EasingStyle.Sine):Play()
-		wait(4)
-		headerShine.Position = UDim2.new(0, -200, 0, 0)
-		wait(2)
-	end
+local leftY = createSection("PvP", leftColumn, 0)
+leftY = createCheckbox("Auto Dodge", leftColumn, leftY, function(enabled)
+	notify(enabled and "Auto Dodge ON" or "Auto Dodge OFF")
+end)
+leftY = createCheckbox("Teleport Behind On Hit", leftColumn, leftY, function(enabled)
+	notify(enabled and "Teleport Behind ON" or "Teleport Behind OFF")
+end)
+leftY = createCheckbox("Keep At Range", leftColumn, leftY, function(enabled)
+	notify(enabled and "Keep Range ON" or "Keep Range OFF")
 end)
 
-local headerLine = Instance.new("Frame")
-headerLine.Size = UDim2.new(1, 0, 0, 2)
-headerLine.Position = UDim2.new(0, 0, 1, 0)
-headerLine.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-headerLine.BackgroundTransparency = 0.6
-headerLine.BorderSizePixel = 0
-headerLine.Parent = header
-
-local lineGradient = Instance.new("UIGradient")
-lineGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 100, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
-}
-lineGradient.Parent = headerLine
-
--- Premium logo with glow
-local logoContainer = Instance.new("Frame")
-logoContainer.Size = UDim2.new(0, 40, 0, 40)
-logoContainer.Position = UDim2.new(0, 15, 0, 10)
-logoContainer.BackgroundTransparency = 1
-logoContainer.Parent = header
-
-local logoGlow = Instance.new("ImageLabel")
-logoGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-logoGlow.Size = UDim2.new(1, 30, 1, 30)
-logoGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-logoGlow.BackgroundTransparency = 1
-logoGlow.Image = "rbxassetid://4996891970"
-logoGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-logoGlow.ImageTransparency = 0.6
-logoGlow.ScaleType = Enum.ScaleType.Slice
-logoGlow.SliceCenter = Rect.new(128, 128, 128, 128)
-logoGlow.Parent = logoContainer
-
-local logo = Instance.new("Frame")
-logo.Size = UDim2.new(1, 0, 1, 0)
-logo.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-logo.BorderSizePixel = 0
-logo.Parent = logoContainer
-
-local logoCorner = Instance.new("UICorner")
-logoCorner.CornerRadius = UDim.new(0, 10)
-logoCorner.Parent = logo
-
-local logoGradient = Instance.new("UIGradient")
-logoGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 170, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 130, 235))
-}
-logoGradient.Rotation = 90
-logoGradient.Parent = logo
-
-local logoText = Instance.new("TextLabel")
-logoText.Text = "C"
-logoText.Font = Enum.Font.GothamBold
-logoText.TextSize = 22
-logoText.TextColor3 = Color3.fromRGB(255, 255, 255)
-logoText.BackgroundTransparency = 1
-logoText.Size = UDim2.new(1, 0, 1, 0)
-logoText.Parent = logo
-
--- Pulsing logo
-spawn(function()
-	while screenGui.Parent do
-		tween(logoContainer, 1.5, {Size = UDim2.new(0, 44, 0, 44), Position = UDim2.new(0, 13, 0, 8)}):Play()
-		tween(logoGlow, 1.5, {ImageTransparency = 0.3}):Play()
-		wait(1.5)
-		tween(logoContainer, 1.5, {Size = UDim2.new(0, 40, 0, 40), Position = UDim2.new(0, 15, 0, 10)}):Play()
-		tween(logoGlow, 1.5, {ImageTransparency = 0.6}):Play()
-		wait(1.5)
-	end
+leftY = leftY + 5
+leftY = createSlider("Range", leftColumn, leftY, 5, 20, 10, function(val)
+	-- Range logic
 end)
 
--- Premium title with gradient
-local titleContainer = Instance.new("Frame")
-titleContainer.Size = UDim2.new(0, 200, 0, 40)
-titleContainer.Position = UDim2.new(0, 65, 0, 10)
-titleContainer.BackgroundTransparency = 1
-titleContainer.Parent = header
+leftY = leftY + 10
+leftY = createSection("Rage", leftColumn, leftY)
+leftY = createCheckbox("Anti-Parry", leftColumn, leftY, function(enabled)
+	notify(enabled and "Anti-Parry ON" or "Anti-Parry OFF")
+end)
+leftY = createCheckbox("Fling Nearest Player", leftColumn, leftY, function(enabled)
+	notify(enabled and "Fling ON" or "Fling OFF")
+end)
 
-local title = Instance.new("TextLabel")
-title.Text = "CHAINIX"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.BackgroundTransparency = 1
-title.Size = UDim2.new(1, 0, 0, 24)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleContainer
+leftY = leftY + 5
+leftY = createSlider("Fling Power", leftColumn, leftY, 50, 500, 250, function(val)
+	-- Fling power
+end)
 
-local titleGradient = Instance.new("UIGradient")
-titleGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 200, 255))
-}
-titleGradient.Parent = title
+local rightY = createSection("Parry", rightColumn, 0)
+rightY = createCheckbox("Auto Parry", rightColumn, rightY, function(enabled)
+	notify(enabled and "Auto Parry ON" or "Auto Parry OFF")
+end)
+rightY = createCheckbox("Ignore Friends", rightColumn, rightY, function(enabled)
+	notify(enabled and "Ignore Friends ON" or "Ignore Friends OFF")
+end)
 
-local subtitle = Instance.new("TextLabel")
-subtitle.Text = "ELITE EDITION"
-subtitle.Font = Enum.Font.GothamBold
-subtitle.TextSize = 10
-subtitle.TextColor3 = Color3.fromRGB(100, 150, 255)
-subtitle.BackgroundTransparency = 1
-subtitle.Size = UDim2.new(1, 0, 0, 14)
-subtitle.Position = UDim2.new(0, 0, 0, 24)
-subtitle.TextXAlignment = Enum.TextXAlignment.Left
-subtitle.Parent = titleContainer
+rightY = rightY + 5
+rightY = createSlider("Sword Parry Delay", rightColumn, rightY, 0, 100, 0, function(val)
+	-- Delay
+end)
+rightY = createSlider("Axe Parry Delay", rightColumn, rightY, 0, 100, 0, function(val)
+	-- Delay
+end)
 
--- Premium badge
-local badge = Instance.new("Frame")
-badge.Size = UDim2.new(0, 70, 0, 22)
-badge.Position = UDim2.new(1, -160, 0, 19)
-badge.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-badge.BackgroundTransparency = 0.8
-badge.BorderSizePixel = 0
-badge.Parent = header
+-- MOVEMENT PAGE
+local movementPage = tabPages["Movement"]
 
-local badgeCorner = Instance.new("UICorner")
-badgeCorner.CornerRadius = UDim.new(0, 11)
-badgeCorner.Parent = badge
+local movLeftCol = Instance.new("Frame")
+movLeftCol.Size = UDim2.new(1, -10, 1, -10)
+movLeftCol.Position = UDim2.new(0, 5, 0, 5)
+movLeftCol.BackgroundTransparency = 1
+movLeftCol.Parent = movementPage
 
-local badgeBorder = Instance.new("UIStroke")
-badgeBorder.Color = Color3.fromRGB(100, 150, 255)
-badgeBorder.Thickness = 1
-badgeBorder.Transparency = 0.5
-badgeBorder.Parent = badge
+local movY = createSection("Movement", movLeftCol, 0)
 
-local badgeText = Instance.new("TextLabel")
-badgeText.Text = "PREMIUM"
-badgeText.Font = Enum.Font.GothamBold
-badgeText.TextSize = 9
-badgeText.TextColor3 = Color3.fromRGB(255, 255, 255)
-badgeText.BackgroundTransparency = 1
-badgeText.Size = UDim2.new(1, 0, 1, 0)
-badgeText.Parent = badge
-
--- Close button (premium style)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Text = ""
-closeBtn.Size = UDim2.new(0, 44, 0, 44)
-closeBtn.Position = UDim2.new(1, -56, 0, 8)
-closeBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-closeBtn.BackgroundTransparency = 0.5
-closeBtn.BorderSizePixel = 0
-closeBtn.AutoButtonColor = false
-closeBtn.Parent = header
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 10)
-closeCorner.Parent = closeBtn
-
-local closeBorder = Instance.new("UIStroke")
-closeBorder.Color = Color3.fromRGB(60, 65, 80)
-closeBorder.Thickness = 1
-closeBorder.Transparency = 0.5
-closeBorder.Parent = closeBtn
-
-local closeX = Instance.new("TextLabel")
-closeX.Text = "×"
-closeX.Font = Enum.Font.GothamBold
-closeX.TextSize = 28
-closeX.TextColor3 = Color3.fromRGB(200, 205, 215)
-closeX.BackgroundTransparency = 1
-closeX.Size = UDim2.new(1, 0, 1, 0)
-closeX.Parent = closeBtn
-
-table.insert(connections, closeBtn.MouseEnter:Connect(function()
-	tween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 80, 80), BackgroundTransparency = 0}):Play()
-	tween(closeBorder, 0.2, {Color = Color3.fromRGB(255, 100, 100), Transparency = 0}):Play()
-	tween(closeX, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-end))
-
-table.insert(connections, closeBtn.MouseLeave:Connect(function()
-	tween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 20, 28), BackgroundTransparency = 0.5}):Play()
-	tween(closeBorder, 0.2, {Color = Color3.fromRGB(60, 65, 80), Transparency = 0.5}):Play()
-	tween(closeX, 0.2, {TextColor3 = Color3.fromRGB(200, 205, 215)}):Play()
-end))
-
-table.insert(connections, closeBtn.MouseButton1Click:Connect(function()
-	-- Exit animations
-	tween(mainFrame, 0.5, {Size = UDim2.new(0, 400, 0, 250), BackgroundTransparency = 1}, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
-	tween(backdrop, 0.4, {BackgroundTransparency = 1}):Play()
-	tween(blur, 0.4, {Size = 0}):Play()
-	wait(0.5)
-	blur:Destroy()
-	cleanup()
-end))
-
--- Content area
-local contentScroll = Instance.new("ScrollingFrame")
-contentScroll.Size = UDim2.new(1, -30, 1, -78)
-contentScroll.Position = UDim2.new(0, 15, 0, 68)
-contentScroll.BackgroundTransparency = 1
-contentScroll.BorderSizePixel = 0
-contentScroll.ScrollBarThickness = 3
-contentScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
-contentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-contentScroll.Parent = mainFrame
-
-local featureY = 0
-
--- Flight system with dynamic slider
-local flightContainer = Instance.new("Frame")
-flightContainer.Size = UDim2.new(1, 0, 0, 75)
-flightContainer.Position = UDim2.new(0, 0, 0, 0)
-flightContainer.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-flightContainer.BackgroundTransparency = 0.4
-flightContainer.BorderSizePixel = 0
-flightContainer.ClipsDescendants = true
-flightContainer.Parent = contentScroll
-
-local flightCorner = Instance.new("UICorner")
-flightCorner.CornerRadius = UDim.new(0, 12)
-flightCorner.Parent = flightContainer
-
-local flightBorder = Instance.new("UIStroke")
-flightBorder.Color = Color3.fromRGB(100, 150, 255)
-flightBorder.Thickness = 1
-flightBorder.Transparency = 0.8
-flightBorder.Parent = flightContainer
-
-local flightGlow = Instance.new("Frame")
-flightGlow.Size = UDim2.new(1, 0, 1, 0)
-flightGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-flightGlow.BackgroundTransparency = 0.97
-flightGlow.BorderSizePixel = 0
-flightGlow.Parent = flightContainer
-
-local flightGlowCorner = Instance.new("UICorner")
-flightGlowCorner.CornerRadius = UDim.new(0, 12)
-flightGlowCorner.Parent = flightGlow
-
-table.insert(connections, flightContainer.MouseEnter:Connect(function()
-	tween(flightBorder, 0.2, {Transparency = 0.4}):Play()
-	tween(flightGlow, 0.2, {BackgroundTransparency = 0.94}):Play()
-end))
-
-table.insert(connections, flightContainer.MouseLeave:Connect(function()
-	tween(flightBorder, 0.2, {Transparency = 0.8}):Play()
-	tween(flightGlow, 0.2, {BackgroundTransparency = 0.97}):Play()
-end))
-
-local flightName = Instance.new("TextLabel")
-flightName.Text = "Flight System"
-flightName.Font = Enum.Font.GothamBold
-flightName.TextSize = 15
-flightName.TextColor3 = Color3.fromRGB(255, 255, 255)
-flightName.BackgroundTransparency = 1
-flightName.Size = UDim2.new(1, -140, 0, 22)
-flightName.Position = UDim2.new(0, 18, 0, 14)
-flightName.TextXAlignment = Enum.TextXAlignment.Left
-flightName.Parent = flightContainer
-
-local flightDesc = Instance.new("TextLabel")
-flightDesc.Text = "Advanced 3D movement control"
-flightDesc.Font = Enum.Font.Gotham
-flightDesc.TextSize = 11
-flightDesc.TextColor3 = Color3.fromRGB(160, 170, 190)
-flightDesc.BackgroundTransparency = 1
-flightDesc.Size = UDim2.new(1, -140, 0, 18)
-flightDesc.Position = UDim2.new(0, 18, 0, 36)
-flightDesc.TextXAlignment = Enum.TextXAlignment.Left
-flightDesc.Parent = flightContainer
-
-local flightStatus = Instance.new("TextLabel")
-flightStatus.Text = "Inactive"
-flightStatus.Font = Enum.Font.GothamBold
-flightStatus.TextSize = 10
-flightStatus.TextColor3 = Color3.fromRGB(140, 145, 160)
-flightStatus.BackgroundTransparency = 1
-flightStatus.Size = UDim2.new(0, 70, 0, 16)
-flightStatus.Position = UDim2.new(1, -130, 0, 54)
-flightStatus.TextXAlignment = Enum.TextXAlignment.Right
-flightStatus.Parent = flightContainer
-
--- Premium toggle switch
-local flightToggleBG = Instance.new("Frame")
-flightToggleBG.Size = UDim2.new(0, 56, 0, 30)
-flightToggleBG.Position = UDim2.new(1, -70, 0, 22.5)
-flightToggleBG.BackgroundColor3 = Color3.fromRGB(40, 45, 60)
-flightToggleBG.BorderSizePixel = 0
-flightToggleBG.Parent = flightContainer
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(1, 0)
-toggleCorner.Parent = flightToggleBG
-
-local toggleGlow = Instance.new("Frame")
-toggleGlow.Size = UDim2.new(1, 0, 1, 0)
-toggleGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-toggleGlow.BackgroundTransparency = 1
-toggleGlow.BorderSizePixel = 0
-toggleGlow.Parent = flightToggleBG
-
-local toggleGlowCorner = Instance.new("UICorner")
-toggleGlowCorner.CornerRadius = UDim.new(1, 0)
-toggleGlowCorner.Parent = toggleGlow
-
-local flightToggleBtn = Instance.new("TextButton")
-flightToggleBtn.Text = ""
-flightToggleBtn.Size = UDim2.new(0, 24, 0, 24)
-flightToggleBtn.Position = UDim2.new(0, 3, 0, 3)
-flightToggleBtn.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
-flightToggleBtn.BorderSizePixel = 0
-flightToggleBtn.AutoButtonColor = false
-flightToggleBtn.Parent = flightToggleBG
-
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(1, 0)
-btnCorner.Parent = flightToggleBtn
-
--- Flight speed slider (hidden initially)
-local flightSpeedSlider = Instance.new("Frame")
-flightSpeedSlider.Size = UDim2.new(1, -36, 0, 0)
-flightSpeedSlider.Position = UDim2.new(0, 18, 0, 75)
-flightSpeedSlider.BackgroundTransparency = 1
-flightSpeedSlider.ClipsDescendants = true
-flightSpeedSlider.Parent = flightContainer
-
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Text = "Flight Speed"
-speedLabel.Font = Enum.Font.GothamMedium
-speedLabel.TextSize = 12
-speedLabel.TextColor3 = Color3.fromRGB(200, 210, 230)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Size = UDim2.new(1, -70, 0, 20)
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Parent = flightSpeedSlider
-
-local speedValue = Instance.new("TextLabel")
-speedValue.Text = tostring(flySpeed)
-speedValue.Font = Enum.Font.GothamBold
-speedValue.TextSize = 13
-speedValue.TextColor3 = Color3.fromRGB(100, 150, 255)
-speedValue.BackgroundTransparency = 1
-speedValue.Size = UDim2.new(0, 60, 0, 20)
-speedValue.Position = UDim2.new(1, -60, 0, 0)
-speedValue.TextXAlignment = Enum.TextXAlignment.Right
-speedValue.Parent = flightSpeedSlider
-
-local sliderBG = Instance.new("Frame")
-sliderBG.Size = UDim2.new(1, 0, 0, 5)
-sliderBG.Position = UDim2.new(0, 0, 0, 28)
-sliderBG.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-sliderBG.BorderSizePixel = 0
-sliderBG.Parent = flightSpeedSlider
-
-local sliderCorner = Instance.new("UICorner")
-sliderCorner.CornerRadius = UDim.new(1, 0)
-sliderCorner.Parent = sliderBG
-
-local sliderFill = Instance.new("Frame")
-sliderFill.Size = UDim2.new((flySpeed - 20) / 180, 0, 1, 0)
-sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-sliderFill.BorderSizePixel = 0
-sliderFill.Parent = sliderBG
-
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(1, 0)
-fillCorner.Parent = sliderFill
-
-local fillGlow = Instance.new("Frame")
-fillGlow.Size = UDim2.new(1, 0, 1, 0)
-fillGlow.BackgroundColor3 = Color3.fromRGB(150, 200, 255)
-fillGlow.BackgroundTransparency = 0.5
-fillGlow.BorderSizePixel = 0
-fillGlow.Parent = sliderFill
-
-local fillGlowCorner = Instance.new("UICorner")
-fillGlowCorner.CornerRadius = UDim.new(1, 0)
-fillGlowCorner.Parent = fillGlow
-
-local sliderBtn = Instance.new("TextButton")
-sliderBtn.Text = ""
-sliderBtn.Size = UDim2.new(0, 16, 0, 16)
-sliderBtn.Position = UDim2.new((flySpeed - 20) / 180, -8, 0.5, -8)
-sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-sliderBtn.BorderSizePixel = 0
-sliderBtn.AutoButtonColor = false
-sliderBtn.Parent = sliderBG
-
-local sliderBtnCorner = Instance.new("UICorner")
-sliderBtnCorner.CornerRadius = UDim.new(1, 0)
-sliderBtnCorner.Parent = sliderBtn
-
-local sliderBtnGlow = Instance.new("ImageLabel")
-sliderBtnGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-sliderBtnGlow.Size = UDim2.new(1, 20, 1, 20)
-sliderBtnGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-sliderBtnGlow.BackgroundTransparency = 1
-sliderBtnGlow.Image = "rbxassetid://4996891970"
-sliderBtnGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-sliderBtnGlow.ImageTransparency = 0.7
-sliderBtnGlow.ScaleType = Enum.ScaleType.Slice
-sliderBtnGlow.SliceCenter = Rect.new(128, 128, 128, 128)
-sliderBtnGlow.Parent = sliderBtn
-
--- Slider logic
-local dragging = false
-table.insert(connections, sliderBtn.MouseButton1Down:Connect(function() dragging = true end))
-table.insert(connections, UserInputService.InputEnded:Connect(function(inp)
-	if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-end))
-table.insert(connections, sliderBG.InputBegan:Connect(function(inp)
-	if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
-end))
-table.insert(connections, UserInputService.InputChanged:Connect(function(inp)
-	if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
-		local mousePos = UserInputService:GetMouseLocation().X
-		local sliderPos = sliderBG.AbsolutePosition.X
-		local sliderSize = sliderBG.AbsoluteSize.X
-		local percent = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
-		local value = math.floor(20 + 180 * percent)
-		flySpeed = value
-		speedValue.Text = tostring(value)
-		tween(sliderFill, 0.1, {Size = UDim2.new(percent, 0, 1, 0)}):Play()
-		tween(sliderBtn, 0.1, {Position = UDim2.new(percent, -8, 0.5, -8)}):Play()
-	end
-end))
-
--- Flight toggle logic
-table.insert(connections, flightToggleBtn.MouseButton1Click:Connect(function()
-	flyEnabled = not flyEnabled
-	if flyEnabled then
-		tween(flightToggleBG, 0.3, {BackgroundColor3 = Color3.fromRGB(100, 150, 255)}):Play()
-		tween(toggleGlow, 0.3, {BackgroundTransparency = 0.7}):Play()
-		tween(flightToggleBtn, 0.3, {Position = UDim2.new(1, -27, 0, 3)}):Play()
-		flightStatus.Text = "Active"
-		flightStatus.TextColor3 = Color3.fromRGB(100, 255, 150)
-		tween(flightContainer, 0.4, {Size = UDim2.new(1, 0, 0, 130)}, Enum.EasingStyle.Back):Play()
-		tween(flightSpeedSlider, 0.4, {Size = UDim2.new(1, -36, 0, 45)}, Enum.EasingStyle.Back):Play()
-		
+movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
+	flyEnabled = enabled
+	if enabled then
 		bodyVelocity = Instance.new("BodyVelocity")
 		bodyVelocity.Velocity = Vector3.new(0, 0, 0)
 		bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
@@ -678,175 +453,61 @@ table.insert(connections, flightToggleBtn.MouseButton1Click:Connect(function()
 		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
 		bodyGyro.CFrame = humanoidRootPart.CFrame
 		bodyGyro.Parent = humanoidRootPart
-		
-		notify("Flight system activated")
+		notify("Flight ON")
 	else
-		tween(flightToggleBG, 0.3, {BackgroundColor3 = Color3.fromRGB(40, 45, 60)}):Play()
-		tween(toggleGlow, 0.3, {BackgroundTransparency = 1}):Play()
-		tween(flightToggleBtn, 0.3, {Position = UDim2.new(0, 3, 0, 3)}):Play()
-		flightStatus.Text = "Inactive"
-		flightStatus.TextColor3 = Color3.fromRGB(140, 145, 160)
-		tween(flightSpeedSlider, 0.3, {Size = UDim2.new(1, -36, 0, 0)}):Play()
-		tween(flightContainer, 0.3, {Size = UDim2.new(1, 0, 0, 75)}):Play()
-		
 		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
 		if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
-		notify("Flight system deactivated")
+		notify("Flight OFF")
 	end
-end))
+end)
 
-featureY = featureY + 80
+movY = movY + 5
+movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, 50, function(val)
+	flySpeed = val
+end)
 
--- Premium feature creator
-local function createFeature(name, desc, callback)
-	local container = Instance.new("Frame")
-	container.Size = UDim2.new(1, 0, 0, 75)
-	container.Position = UDim2.new(0, 0, 0, featureY)
-	container.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-	container.BackgroundTransparency = 0.4
-	container.BorderSizePixel = 0
-	container.Parent = contentScroll
-	
-	featureY = featureY + 80
-	contentScroll.CanvasSize = UDim2.new(0, 0, 0, featureY)
-	
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
-	corner.Parent = container
-	
-	local containerBorder = Instance.new("UIStroke")
-	containerBorder.Color = Color3.fromRGB(100, 150, 255)
-	containerBorder.Thickness = 1
-	containerBorder.Transparency = 0.8
-	containerBorder.Parent = container
-	
-	local containerGlow = Instance.new("Frame")
-	containerGlow.Size = UDim2.new(1, 0, 1, 0)
-	containerGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-	containerGlow.BackgroundTransparency = 0.97
-	containerGlow.BorderSizePixel = 0
-	containerGlow.Parent = container
-	
-	local glowCorner = Instance.new("UICorner")
-	glowCorner.CornerRadius = UDim.new(0, 12)
-	glowCorner.Parent = containerGlow
-	
-	table.insert(connections, container.MouseEnter:Connect(function()
-		tween(containerBorder, 0.2, {Transparency = 0.4}):Play()
-		tween(containerGlow, 0.2, {BackgroundTransparency = 0.94}):Play()
-	end))
-	
-	table.insert(connections, container.MouseLeave:Connect(function()
-		tween(containerBorder, 0.2, {Transparency = 0.8}):Play()
-		tween(containerGlow, 0.2, {BackgroundTransparency = 0.97}):Play()
-	end))
-	
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Text = name
-	nameLabel.Font = Enum.Font.GothamBold
-	nameLabel.TextSize = 15
-	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Size = UDim2.new(1, -140, 0, 22)
-	nameLabel.Position = UDim2.new(0, 18, 0, 14)
-	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-	nameLabel.Parent = container
-	
-	local descLabel = Instance.new("TextLabel")
-	descLabel.Text = desc
-	descLabel.Font = Enum.Font.Gotham
-	descLabel.TextSize = 11
-	descLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
-	descLabel.BackgroundTransparency = 1
-	descLabel.Size = UDim2.new(1, -140, 0, 18)
-	descLabel.Position = UDim2.new(0, 18, 0, 36)
-	descLabel.TextXAlignment = Enum.TextXAlignment.Left
-	descLabel.Parent = container
-	
-	local statusLabel = Instance.new("TextLabel")
-	statusLabel.Text = "Inactive"
-	statusLabel.Font = Enum.Font.GothamBold
-	statusLabel.TextSize = 10
-	statusLabel.TextColor3 = Color3.fromRGB(140, 145, 160)
-	statusLabel.BackgroundTransparency = 1
-	statusLabel.Size = UDim2.new(0, 70, 0, 16)
-	statusLabel.Position = UDim2.new(1, -130, 0, 54)
-	statusLabel.TextXAlignment = Enum.TextXAlignment.Right
-	statusLabel.Parent = container
-	
-	local toggleBG = Instance.new("Frame")
-	toggleBG.Size = UDim2.new(0, 56, 0, 30)
-	toggleBG.Position = UDim2.new(1, -70, 0, 22.5)
-	toggleBG.BackgroundColor3 = Color3.fromRGB(40, 45, 60)
-	toggleBG.BorderSizePixel = 0
-	toggleBG.Parent = container
-	
-	local tCorner = Instance.new("UICorner")
-	tCorner.CornerRadius = UDim.new(1, 0)
-	tCorner.Parent = toggleBG
-	
-	local tGlow = Instance.new("Frame")
-	tGlow.Size = UDim2.new(1, 0, 1, 0)
-	tGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-	tGlow.BackgroundTransparency = 1
-	tGlow.BorderSizePixel = 0
-	tGlow.Parent = toggleBG
-	
-	local tGlowCorner = Instance.new("UICorner")
-	tGlowCorner.CornerRadius = UDim.new(1, 0)
-	tGlowCorner.Parent = tGlow
-	
-	local toggleBtn = Instance.new("TextButton")
-	toggleBtn.Text = ""
-	toggleBtn.Size = UDim2.new(0, 24, 0, 24)
-	toggleBtn.Position = UDim2.new(0, 3, 0, 3)
-	toggleBtn.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
-	toggleBtn.BorderSizePixel = 0
-	toggleBtn.AutoButtonColor = false
-	toggleBtn.Parent = toggleBG
-	
-	local tBtnCorner = Instance.new("UICorner")
-	tBtnCorner.CornerRadius = UDim.new(1, 0)
-	tBtnCorner.Parent = toggleBtn
-	
-	local isOn = false
-	
-	table.insert(connections, toggleBtn.MouseButton1Click:Connect(function()
-		isOn = not isOn
-		if isOn then
-			tween(toggleBG, 0.3, {BackgroundColor3 = Color3.fromRGB(100, 150, 255)}):Play()
-			tween(tGlow, 0.3, {BackgroundTransparency = 0.7}):Play()
-			tween(toggleBtn, 0.3, {Position = UDim2.new(1, -27, 0, 3)}):Play()
-			statusLabel.Text = "Active"
-			statusLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
-		else
-			tween(toggleBG, 0.3, {BackgroundColor3 = Color3.fromRGB(40, 45, 60)}):Play()
-			tween(tGlow, 0.3, {BackgroundTransparency = 1}):Play()
-			tween(toggleBtn, 0.3, {Position = UDim2.new(0, 3, 0, 3)}):Play()
-			statusLabel.Text = "Inactive"
-			statusLabel.TextColor3 = Color3.fromRGB(140, 145, 160)
-		end
-		callback(isOn)
-	end))
-end
-
-createFeature("Speed Enhancement", "Customizable movement velocity", function(enabled)
+movY = movY + 10
+movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
 	speedEnabled = enabled
 	if enabled then
 		humanoid.WalkSpeed = walkSpeed
-		notify("Speed enhancement activated")
+		notify("Speed ON")
 	else
 		humanoid.WalkSpeed = 16
-		notify("Speed enhancement deactivated")
+		notify("Speed OFF")
 	end
 end)
 
-createFeature("Infinite Jump", "Unlimited vertical movement", function(enabled)
-	jumpEnabled = enabled
-	notify(enabled and "Infinite jump activated" or "Infinite jump deactivated")
+movY = movY + 5
+movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, 100, function(val)
+	walkSpeed = val
+	if speedEnabled then humanoid.WalkSpeed = val end
 end)
 
-createFeature("Player ESP", "Visual awareness system", function(enabled)
+movY = movY + 10
+movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
+	jumpEnabled = enabled
+	notify(enabled and "Infinite Jump ON" or "Infinite Jump OFF")
+end)
+
+movY = movY + 5
+movY = createCheckbox("No-Clip", movLeftCol, movY, function(enabled)
+	noclipEnabled = enabled
+	notify(enabled and "No-Clip ON" or "No-Clip OFF")
+end)
+
+-- VISUALS PAGE
+local visualsPage = tabPages["Visuals"]
+
+local visLeftCol = Instance.new("Frame")
+visLeftCol.Size = UDim2.new(1, -10, 1, -10)
+visLeftCol.Position = UDim2.new(0, 5, 0, 5)
+visLeftCol.BackgroundTransparency = 1
+visLeftCol.Parent = visualsPage
+
+local visY = createSection("ESP", visLeftCol, 0)
+
+visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
 	espEnabled = enabled
 	for _, p in pairs(Players:GetPlayers()) do
 		if p ~= player and p.Character then
@@ -854,7 +515,7 @@ createFeature("Player ESP", "Visual awareness system", function(enabled)
 			if enabled and not h then
 				h = Instance.new("Highlight")
 				h.Name = "ESPHighlight"
-				h.FillColor = Color3.fromRGB(100, 150, 255)
+				h.FillColor = Color3.fromRGB(88, 101, 242)
 				h.OutlineColor = Color3.fromRGB(255, 255, 255)
 				h.FillTransparency = 0.6
 				h.OutlineTransparency = 0
@@ -864,13 +525,314 @@ createFeature("Player ESP", "Visual awareness system", function(enabled)
 			end
 		end
 	end
-	notify(enabled and "Player ESP activated" or "Player ESP deactivated")
+	notify(enabled and "ESP ON" or "ESP OFF")
 end)
 
-createFeature("No-Clip", "Phase through solid objects", function(enabled)
-	noclipEnabled = enabled
-	notify(enabled and "No-clip activated" or "No-clip deactivated")
+visY = createCheckbox("Show Names", visLeftCol, visY, function(enabled)
+	notify(enabled and "Names ON" or "Names OFF")
 end)
+
+visY = createCheckbox("Show Distance", visLeftCol, visY, function(enabled)
+	notify(enabled and "Distance ON" or "Distance OFF")
+end)
+
+-- SETTINGS PAGE
+local settingsPage = tabPages["Settings"]
+
+local setLeftCol = Instance.new("Frame")
+setLeftCol.Size = UDim2.new(1, -10, 1, -10)
+setLeftCol.Position = UDim2.new(0, 5, 0, 5)
+setLeftCol.BackgroundTransparency = 1
+setLeftCol.Parent = settingsPage
+
+local setY = createSection("UI Settings", setLeftCol, 0)
+
+setY = createCheckbox("Show Notifications", setLeftCol, setY, function(enabled)
+	notify(enabled and "Notifications ON" or "Notifications OFF")
+end)
+
+setY = createCheckbox("Save Config On Exit", setLeftCol, setY, function(enabled)
+	notify(enabled and "Auto Save ON" or "Auto Save OFF")
+end)
+
+-- Custom Crosshair
+local crosshairEnabled = false
+local crosshairGui = nil
+
+setY = setY + 5
+setY = createCheckbox("Custom Crosshair", setLeftCol, setY, function(enabled)
+	crosshairEnabled = enabled
+	if enabled then
+		-- Create crosshair
+		crosshairGui = Instance.new("ScreenGui")
+		crosshairGui.Name = "ChainixCrosshair"
+		crosshairGui.ResetOnSpawn = false
+		crosshairGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		crosshairGui.IgnoreGuiInset = true
+		
+		pcall(function()
+			crosshairGui.Parent = game:GetService("CoreGui")
+		end)
+		if not crosshairGui.Parent then
+			crosshairGui.Parent = player:WaitForChild("PlayerGui")
+		end
+		
+		-- Center container
+		local centerFrame = Instance.new("Frame")
+		centerFrame.Size = UDim2.new(0, 40, 0, 40)
+		centerFrame.Position = UDim2.new(0.5, -20, 0.5, -20)
+		centerFrame.BackgroundTransparency = 1
+		centerFrame.Parent = crosshairGui
+		
+		-- Horizontal line
+		local hLine = Instance.new("Frame")
+		hLine.Size = UDim2.new(0, 14, 0, 2)
+		hLine.Position = UDim2.new(0.5, -7, 0.5, -1)
+		hLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		hLine.BorderSizePixel = 0
+		hLine.Parent = centerFrame
+		
+		-- Vertical line
+		local vLine = Instance.new("Frame")
+		vLine.Size = UDim2.new(0, 2, 0, 14)
+		vLine.Position = UDim2.new(0.5, -1, 0.5, -7)
+		vLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		vLine.BorderSizePixel = 0
+		vLine.Parent = centerFrame
+		
+		-- Center dot
+		local dot = Instance.new("Frame")
+		dot.Size = UDim2.new(0, 3, 0, 3)
+		dot.Position = UDim2.new(0.5, -1.5, 0.5, -1.5)
+		dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		dot.BorderSizePixel = 0
+		dot.Parent = centerFrame
+		
+		local dotCorner = Instance.new("UICorner")
+		dotCorner.CornerRadius = UDim.new(1, 0)
+		dotCorner.Parent = dot
+		
+		notify("Custom Crosshair ON")
+	else
+		if crosshairGui then
+			crosshairGui:Destroy()
+			crosshairGui = nil
+		end
+		notify("Custom Crosshair OFF")
+	end
+end)
+
+setY = setY + 10
+setY = createSection("Keybinds", setLeftCol, setY)
+
+-- Function to get key name
+local function getKeyName(keyCode)
+	local name = tostring(keyCode):gsub("Enum.KeyCode.", "")
+	return name
+end
+
+-- Toggle UI Keybind
+local toggleUIContainer = Instance.new("Frame")
+toggleUIContainer.Size = UDim2.new(1, 0, 0, 30)
+toggleUIContainer.Position = UDim2.new(0, 0, 0, setY)
+toggleUIContainer.BackgroundTransparency = 1
+toggleUIContainer.Parent = setLeftCol
+
+local toggleUILabel = Instance.new("TextLabel")
+toggleUILabel.Text = "Toggle UI"
+toggleUILabel.Font = Enum.Font.Gotham
+toggleUILabel.TextSize = 11
+toggleUILabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+toggleUILabel.BackgroundTransparency = 1
+toggleUILabel.Size = UDim2.new(0.5, -10, 1, 0)
+toggleUILabel.Position = UDim2.new(0, 5, 0, 0)
+toggleUILabel.TextXAlignment = Enum.TextXAlignment.Left
+toggleUILabel.Parent = toggleUIContainer
+
+local toggleUIBtn = Instance.new("TextButton")
+toggleUIBtn.Size = UDim2.new(0.5, -10, 0, 24)
+toggleUIBtn.Position = UDim2.new(0.5, 5, 0, 3)
+toggleUIBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+toggleUIBtn.BorderSizePixel = 1
+toggleUIBtn.BorderColor3 = Color3.fromRGB(60, 65, 100)
+toggleUIBtn.Text = getKeyName(toggleUIKey)
+toggleUIBtn.Font = Enum.Font.GothamBold
+toggleUIBtn.TextSize = 10
+toggleUIBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+toggleUIBtn.AutoButtonColor = false
+toggleUIBtn.Parent = toggleUIContainer
+
+local toggleUICorner = Instance.new("UICorner")
+toggleUICorner.CornerRadius = UDim.new(0, 4)
+toggleUICorner.Parent = toggleUIBtn
+
+table.insert(connections, toggleUIBtn.MouseButton1Click:Connect(function()
+	toggleUIBtn.Text = "Press any key..."
+	toggleUIBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
+	waitingForKeybind = "toggleUI"
+end))
+
+setY = setY + 33
+
+-- Unload Keybind
+local unloadContainer = Instance.new("Frame")
+unloadContainer.Size = UDim2.new(1, 0, 0, 30)
+unloadContainer.Position = UDim2.new(0, 0, 0, setY)
+unloadContainer.BackgroundTransparency = 1
+unloadContainer.Parent = setLeftCol
+
+local unloadLabel = Instance.new("TextLabel")
+unloadLabel.Text = "Unload Script"
+unloadLabel.Font = Enum.Font.Gotham
+unloadLabel.TextSize = 11
+unloadLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+unloadLabel.BackgroundTransparency = 1
+unloadLabel.Size = UDim2.new(0.5, -10, 1, 0)
+unloadLabel.Position = UDim2.new(0, 5, 0, 0)
+unloadLabel.TextXAlignment = Enum.TextXAlignment.Left
+unloadLabel.Parent = unloadContainer
+
+local unloadBtn = Instance.new("TextButton")
+unloadBtn.Size = UDim2.new(0.5, -10, 0, 24)
+unloadBtn.Position = UDim2.new(0.5, 5, 0, 3)
+unloadBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+unloadBtn.BorderSizePixel = 1
+unloadBtn.BorderColor3 = Color3.fromRGB(60, 65, 100)
+unloadBtn.Text = getKeyName(unloadKey)
+unloadBtn.Font = Enum.Font.GothamBold
+unloadBtn.TextSize = 10
+unloadBtn.TextColor3 = Color3.fromRGB(220, 50, 50)
+unloadBtn.AutoButtonColor = false
+unloadBtn.Parent = unloadContainer
+
+local unloadBtnCorner = Instance.new("UICorner")
+unloadBtnCorner.CornerRadius = UDim.new(0, 4)
+unloadBtnCorner.Parent = unloadBtn
+
+table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	unloadBtn.Text = "Press any key..."
+	unloadBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
+	waitingForKeybind = "unload"
+end))
+
+setY = setY + 40
+
+setY = createSection("UI Controls", setLeftCol, setY)
+
+-- Hide button
+local hideBtn = Instance.new("TextButton")
+hideBtn.Size = UDim2.new(1, -10, 0, 30)
+hideBtn.Position = UDim2.new(0, 5, 0, setY)
+hideBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+hideBtn.BorderSizePixel = 1
+hideBtn.BorderColor3 = Color3.fromRGB(120, 130, 255)
+hideBtn.Text = "Hide UI"
+hideBtn.Font = Enum.Font.GothamBold
+hideBtn.TextSize = 11
+hideBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hideBtn.AutoButtonColor = false
+hideBtn.Parent = setLeftCol
+
+local hideBtnCorner = Instance.new("UICorner")
+hideBtnCorner.CornerRadius = UDim.new(0, 4)
+hideBtnCorner.Parent = hideBtn
+
+table.insert(connections, hideBtn.MouseEnter:Connect(function()
+	hideBtn.BackgroundColor3 = Color3.fromRGB(100, 115, 255)
+end))
+
+table.insert(connections, hideBtn.MouseLeave:Connect(function()
+	hideBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+end))
+
+table.insert(connections, hideBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = false
+	notify("UI Hidden - Press " .. getKeyName(toggleUIKey) .. " to show")
+end))
+
+setY = setY + 35
+
+-- Unload button
+local unloadBtn = Instance.new("TextButton")
+unloadBtn.Size = UDim2.new(1, -10, 0, 30)
+unloadBtn.Position = UDim2.new(0, 5, 0, setY)
+unloadBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+unloadBtn.BorderSizePixel = 1
+unloadBtn.BorderColor3 = Color3.fromRGB(255, 80, 80)
+unloadBtn.Text = "Unload CHAINIX"
+unloadBtn.Font = Enum.Font.GothamBold
+unloadBtn.TextSize = 11
+unloadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+unloadBtn.AutoButtonColor = false
+unloadBtn.Parent = setLeftCol
+
+local unloadBtnCorner = Instance.new("UICorner")
+unloadBtnCorner.CornerRadius = UDim.new(0, 4)
+unloadBtnCorner.Parent = unloadBtn
+
+table.insert(connections, unloadBtn.MouseEnter:Connect(function()
+	unloadBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+end))
+
+table.insert(connections, unloadBtn.MouseLeave:Connect(function()
+	unloadBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+end))
+
+table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	notify("Unloading CHAINIX...")
+	wait(0.5)
+	cleanup()
+end))
+
+setY = setY + 40
+
+setY = createSection("Performance", setLeftCol, setY)
+
+setY = createCheckbox("Low Graphics Mode", setLeftCol, setY, function(enabled)
+	notify(enabled and "Low Graphics ON" or "Low Graphics OFF")
+end)
+
+-- MISC PAGE
+local miscPage = tabPages["Misc"]
+
+local miscLeftCol = Instance.new("Frame")
+miscLeftCol.Size = UDim2.new(1, -10, 1, -10)
+miscLeftCol.Position = UDim2.new(0, 5, 0, 5)
+miscLeftCol.BackgroundTransparency = 1
+miscLeftCol.Parent = miscPage
+
+local miscY = createSection("Misc", miscLeftCol, 0)
+
+miscY = createCheckbox("Anti AFK", miscLeftCol, miscY, function(enabled)
+	notify(enabled and "Anti AFK ON" or "Anti AFK OFF")
+end)
+
+miscY = createCheckbox("Auto Respawn", miscLeftCol, miscY, function(enabled)
+	notify(enabled and "Auto Respawn ON" or "Auto Respawn OFF")
+end)
+
+-- CHAINIX Logo (bottom right)
+local logo = Instance.new("TextLabel")
+logo.Text = "⛓"
+logo.Font = Enum.Font.GothamBold
+logo.TextSize = 32
+logo.TextColor3 = Color3.fromRGB(88, 101, 242)
+logo.BackgroundTransparency = 1
+logo.Size = UDim2.new(0, 40, 0, 40)
+logo.Position = UDim2.new(1, -50, 1, -50)
+logo.TextTransparency = 0.3
+logo.Parent = mainFrame
+
+local logoText = Instance.new("TextLabel")
+logoText.Text = "CHAINIX"
+logoText.Font = Enum.Font.Code
+logoText.TextSize = 8
+logoText.TextColor3 = Color3.fromRGB(150, 160, 200)
+logoText.BackgroundTransparency = 1
+logoText.Size = UDim2.new(0, 60, 0, 15)
+logoText.Position = UDim2.new(1, -65, 1, -20)
+logoText.TextTransparency = 0.5
+logoText.Parent = mainFrame
 
 -- Feature loops
 table.insert(connections, RunService.Heartbeat:Connect(function()
@@ -889,17 +851,13 @@ table.insert(connections, RunService.Heartbeat:Connect(function()
 end))
 
 table.insert(connections, UserInputService.JumpRequest:Connect(function()
-	if jumpEnabled then
-		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-	end
+	if jumpEnabled then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
 end))
 
 table.insert(connections, RunService.Stepped:Connect(function()
 	if noclipEnabled and character then
 		for _, part in pairs(character:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.CanCollide = false
-			end
+			if part:IsA("BasePart") then part.CanCollide = false end
 		end
 	end
 end))
@@ -915,5 +873,46 @@ table.insert(connections, player.CharacterAdded:Connect(function(newChar)
 	end
 end))
 
-notify("CHAINIX ELITE loaded")
-print("CHAINIX ELITE v3.0: Premium Edition Initialized")
+-- Keybind detection system
+table.insert(connections, UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	
+	-- Check if waiting for keybind
+	if waitingForKeybind then
+		if input.KeyCode ~= Enum.KeyCode.Unknown then
+			if waitingForKeybind == "toggleUI" then
+				toggleUIKey = input.KeyCode
+				toggleUIBtn.Text = getKeyName(toggleUIKey)
+				toggleUIBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+				notify("Toggle UI key set to: " .. getKeyName(toggleUIKey))
+			elseif waitingForKeybind == "unload" then
+				unloadKey = input.KeyCode
+				unloadBtn.Text = getKeyName(unloadKey)
+				unloadBtn.TextColor3 = Color3.fromRGB(220, 50, 50)
+				notify("Unload key set to: " .. getKeyName(unloadKey))
+			end
+			waitingForKeybind = nil
+		end
+		return
+	end
+	
+	-- Toggle UI keybind
+	if input.KeyCode == toggleUIKey then
+		mainFrame.Visible = not mainFrame.Visible
+		if mainFrame.Visible then
+			notify("UI Shown")
+		else
+			notify("UI Hidden - Press " .. getKeyName(toggleUIKey) .. " to show")
+		end
+	end
+	
+	-- Unload keybind
+	if input.KeyCode == unloadKey then
+		notify("Unloading CHAINIX...")
+		wait(0.5)
+		cleanup()
+	end
+end))
+
+notify("CHAINIX V1 loaded")
+print("CHAINIX V1: Initialized")
