@@ -31,9 +31,9 @@ local notificationsEnabled = true
 local soundsEnabled = true
 local autoSaveEnabled = true
 
--- Config system
-local HttpService = game:GetService("HttpService")
-local configFileName = "CHAINIX_Config.json"
+-- Config system using _G global storage (works on ALL executors!)
+_G.CHAINIX = _G.CHAINIX or {}
+_G.CHAINIX.Config = _G.CHAINIX.Config or {}
 
 local defaultConfig = {
 	-- Features
@@ -62,106 +62,46 @@ local defaultConfig = {
 
 local currentConfig = {}
 
--- Check if file functions are available
-local hasFileSystem = pcall(function() return writefile and readfile and isfile end)
-
--- Alternative: Use game:GetService("HttpService") with saved data in player's character
-local function getConfigFromStorage()
-	-- Try to get from player's character (persists in studio/some executors)
-	local success, data = pcall(function()
-		if player.Character then
-			local configValue = player.Character:FindFirstChild("CHAINIX_ConfigData")
-			if configValue and configValue:IsA("StringValue") then
-				return HttpService:JSONDecode(configValue.Value)
-			end
-		end
-		return nil
-	end)
-	return success and data or nil
-end
-
-local function saveConfigToStorage()
-	pcall(function()
-		if player.Character then
-			local configValue = player.Character:FindFirstChild("CHAINIX_ConfigData")
-			if not configValue then
-				configValue = Instance.new("StringValue")
-				configValue.Name = "CHAINIX_ConfigData"
-				configValue.Parent = player.Character
-			end
-			configValue.Value = HttpService:JSONEncode(currentConfig)
-		end
-	end)
-end
-
--- Config functions
+-- Config functions using _G
 local function saveConfig()
 	if not autoSaveEnabled then return end
 	
-	if hasFileSystem then
-		-- Save to file (Synapse, Script-Ware, etc.)
-		pcall(function()
-			local configData = HttpService:JSONEncode(currentConfig)
-			writefile(configFileName, configData)
-		end)
-	else
-		-- Save to character storage (Volt, etc.)
-		saveConfigToStorage()
+	-- Save to _G (persists across script reloads in same session!)
+	for k, v in pairs(currentConfig) do
+		_G.CHAINIX.Config[k] = v
 	end
 end
 
 local function loadConfig()
-	local loaded = false
-	
-	if hasFileSystem then
-		-- Try loading from file first
-		local success, result = pcall(function()
-			if isfile(configFileName) then
-				local configData = readfile(configFileName)
-				return HttpService:JSONDecode(configData)
-			end
-			return nil
-		end)
-		
-		if success and result then
-			currentConfig = result
-			loaded = true
+	-- Check if we have saved config in _G
+	if _G.CHAINIX.Config and next(_G.CHAINIX.Config) ~= nil then
+		-- Load from _G
+		for k, v in pairs(defaultConfig) do
+			currentConfig[k] = _G.CHAINIX.Config[k] or v
 		end
-	end
-	
-	if not loaded then
-		-- Try loading from character storage
-		local storageConfig = getConfigFromStorage()
-		if storageConfig then
-			currentConfig = storageConfig
-			loaded = true
-		end
-	end
-	
-	if not loaded then
+		return true
+	else
 		-- Use default config
 		currentConfig = {}
 		for k, v in pairs(defaultConfig) do
 			currentConfig[k] = v
 		end
+		return false
 	end
-	
-	return loaded
 end
 
 local function resetConfig()
+	-- Clear _G
+	_G.CHAINIX.Config = {}
+	
+	-- Reset to defaults
 	currentConfig = {}
 	for k, v in pairs(defaultConfig) do
 		currentConfig[k] = v
 	end
-	if hasFileSystem then
-		pcall(function()
-			local configData = HttpService:JSONEncode(currentConfig)
-			writefile(configFileName, configData)
-		end)
-	else
-		saveConfigToStorage()
-	end
+	
+	-- Save defaults
+	saveConfig()
 end
 
 local function updateConfig(key, value)
@@ -932,8 +872,14 @@ movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
 		bodyGyro.Parent = humanoidRootPart
 		notify("Flight ON")
 	else
-		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
-		if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+		if bodyVelocity then 
+			bodyVelocity:Destroy() 
+			bodyVelocity = nil 
+		end
+		if bodyGyro then 
+			bodyGyro:Destroy() 
+			bodyGyro = nil 
+		end
 		notify("Flight OFF")
 	end
 end)
@@ -1280,26 +1226,8 @@ table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
 	saveConfigBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	local success = false
-	
-	if hasFileSystem then
-		-- Save to file
-		success = pcall(function()
-			local configData = HttpService:JSONEncode(currentConfig)
-			writefile(configFileName, configData)
-		end)
-	else
-		-- Save to character storage (for Volt and similar)
-		success = pcall(function()
-			saveConfigToStorage()
-		end)
-	end
-	
-	if success then
-		notify("Config saved!" .. (hasFileSystem and "" or " (Session only)"))
-	else
-		notify("Failed to save config!")
-	end
+	saveConfig()
+	notify("Config saved! (Lasts until you close Roblox)")
 end))
 
 setY = setY + 35
@@ -1684,14 +1612,6 @@ table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
 	cleanup()
 end))
 
-setY = setY + 40
-
-setY = createSection("Performance", setLeftCol, setY)
-
-setY = createCheckbox("Low Graphics Mode", setLeftCol, setY, function(enabled)
-	notify(enabled and "Low Graphics ON" or "Low Graphics OFF")
-end)
-
 -- Update canvas size so all sections are reachable!
 setScrollFrame.CanvasSize = UDim2.new(0, 0, 0, setY + 20)
 
@@ -1704,7 +1624,45 @@ miscLeftCol.Position = UDim2.new(0, 5, 0, 5)
 miscLeftCol.BackgroundTransparency = 1
 miscLeftCol.Parent = miscPage
 
-local miscY = createSection("Misc", miscLeftCol, 0)
+local miscY = createSection("Performance", miscLeftCol, 0)
+
+miscY = createCheckbox("Performance Mode", miscLeftCol, miscY, function(enabled)
+	if enabled then
+		-- Disable shadows
+		local Lighting = game:GetService("Lighting")
+		Lighting.GlobalShadows = false
+		Lighting.FogEnd = 9e9
+		
+		-- Reduce quality
+		settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+		
+		notify("Performance Mode ON - FPS Boost!")
+	else
+		-- Re-enable shadows
+		local Lighting = game:GetService("Lighting")
+		Lighting.GlobalShadows = true
+		Lighting.FogEnd = 100000
+		
+		-- Normal quality
+		settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+		
+		notify("Performance Mode OFF")
+	end
+end)
+
+miscY = createCheckbox("Remove Textures", miscLeftCol, miscY, function(enabled)
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("Part") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+			if enabled then
+				obj.Material = Enum.Material.SmoothPlastic
+			end
+		end
+	end
+	notify(enabled and "Textures Removed - FPS Boost!" or "Textures Restored")
+end)
+
+miscY = miscY + 10
+miscY = createSection("Other", miscLeftCol, miscY)
 
 miscY = createCheckbox("Anti AFK", miscLeftCol, miscY, function(enabled)
 	notify(enabled and "Anti AFK ON" or "Anti AFK OFF")
