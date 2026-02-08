@@ -1,8 +1,7 @@
 --[[
-	╔═══════════════════════════════════════╗
-	║     CHAINIX TEST HUB - PREMIUM        ║
-	║         Made with CHAINIX             ║
-	╚═══════════════════════════════════════╝
+	CHAINIX SCRIPT HUB
+	Professional Edition
+	Version 2.0
 ]]--
 
 local Players = game:GetService("Players")
@@ -27,7 +26,7 @@ local walkSpeed = 100
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ChainixPremiumHub"
+screenGui.Name = "ChainixPro"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.IgnoreGuiInset = true
@@ -40,8 +39,10 @@ if not success then
 end
 
 -- Utility functions
-local function createTween(object, time, properties)
-	return TweenService:Create(object, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
+local function createTween(object, time, properties, style, direction)
+	style = style or Enum.EasingStyle.Quad
+	direction = direction or Enum.EasingDirection.Out
+	return TweenService:Create(object, TweenInfo.new(time, style, direction), properties)
 end
 
 local function notify(msg, duration)
@@ -52,193 +53,192 @@ local function notify(msg, duration)
 	})
 end
 
--- Main Frame (Glassmorphism)
+-- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 550, 0, 600)
-mainFrame.Position = UDim2.new(0.5, -275, 0.5, -300)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-mainFrame.BackgroundTransparency = 0.1
+mainFrame.Size = UDim2.new(0, 600, 0, 550)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -275)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Slide in animation
-mainFrame.Position = UDim2.new(0.5, -275, 1.5, 0)
-createTween(mainFrame, 0.5, {Position = UDim2.new(0.5, -275, 0.5, -300)}):Play()
+-- Entrance animation
+mainFrame.Position = UDim2.new(0.5, -300, 1.2, 0)
+createTween(mainFrame, 0.6, {Position = UDim2.new(0.5, -300, 0.5, -275)}, Enum.EasingStyle.Back):Play()
 
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
--- Glow border
-local glowBorder = Instance.new("UIStroke")
-glowBorder.Color = Color3.fromRGB(100, 200, 255)
-glowBorder.Thickness = 3
-glowBorder.Transparency = 0.5
-glowBorder.Parent = mainFrame
+-- Subtle border
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(45, 45, 52)
+border.Thickness = 1
+border.Parent = mainFrame
 
--- Animated gradient
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 200, 255)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 100, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 200, 255))
-}
-gradient.Rotation = 45
-gradient.Parent = glowBorder
-
--- Rotate gradient animation
-spawn(function()
-	while screenGui.Parent do
-		createTween(gradient, 3, {Rotation = gradient.Rotation + 180}):Play()
-		wait(3)
-	end
-end)
-
--- Blur effect background
-local blurFrame = Instance.new("Frame")
-blurFrame.Size = UDim2.new(1, 0, 1, 0)
-blurFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-blurFrame.BackgroundTransparency = 0.3
-blurFrame.BorderSizePixel = 0
-blurFrame.ZIndex = 0
-blurFrame.Parent = mainFrame
-
-local blurCorner = Instance.new("UICorner")
-blurCorner.CornerRadius = UDim.new(0, 16)
-blurCorner.Parent = blurFrame
+-- Accent line (top)
+local accentLine = Instance.new("Frame")
+accentLine.Size = UDim2.new(1, 0, 0, 2)
+accentLine.Position = UDim2.new(0, 0, 0, 0)
+accentLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+accentLine.BorderSizePixel = 0
+accentLine.Parent = mainFrame
 
 -- Header
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 80)
-header.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-header.BackgroundTransparency = 0.3
+header.Size = UDim2.new(1, 0, 0, 70)
+header.BackgroundColor3 = Color3.fromRGB(22, 22, 27)
 header.BorderSizePixel = 0
 header.Parent = mainFrame
 
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 16)
-headerCorner.Parent = header
+local headerLine = Instance.new("Frame")
+headerLine.Size = UDim2.new(1, 0, 0, 1)
+headerLine.Position = UDim2.new(0, 0, 1, -1)
+headerLine.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+headerLine.BorderSizePixel = 0
+headerLine.Parent = header
 
--- Logo
-local logo = Instance.new("TextLabel")
-logo.Text = "⚡"
-logo.Font = Enum.Font.GothamBold
-logo.TextSize = 40
-logo.TextColor3 = Color3.fromRGB(100, 200, 255)
-logo.BackgroundTransparency = 1
-logo.Size = UDim2.new(0, 60, 0, 60)
-logo.Position = UDim2.new(0, 15, 0, 10)
-logo.Parent = header
+-- Logo container
+local logoContainer = Instance.new("Frame")
+logoContainer.Size = UDim2.new(0, 36, 0, 36)
+logoContainer.Position = UDim2.new(0, 20, 0, 17)
+logoContainer.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+logoContainer.BorderSizePixel = 0
+logoContainer.Parent = header
 
--- Pulse animation for logo
-spawn(function()
-	while screenGui.Parent do
-		createTween(logo, 1, {TextSize = 45}):Play()
-		wait(1)
-		createTween(logo, 1, {TextSize = 40}):Play()
-		wait(1)
-	end
-end)
+local logoCorner = Instance.new("UICorner")
+logoCorner.CornerRadius = UDim.new(0, 6)
+logoCorner.Parent = logoContainer
+
+local logoText = Instance.new("TextLabel")
+logoText.Text = "C"
+logoText.Font = Enum.Font.GothamBold
+logoText.TextSize = 20
+logoText.TextColor3 = Color3.fromRGB(255, 255, 255)
+logoText.BackgroundTransparency = 1
+logoText.Size = UDim2.new(1, 0, 1, 0)
+logoText.Parent = logoContainer
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Text = "CHAINIX PREMIUM"
+title.Text = "CHAINIX"
 title.Font = Enum.Font.GothamBold
-title.TextColor3 = Color3.fromRGB(240, 245, 250)
-title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 18
 title.BackgroundTransparency = 1
-title.Size = UDim2.new(1, -160, 0, 30)
-title.Position = UDim2.new(0, 80, 0, 15)
+title.Size = UDim2.new(0, 200, 0, 20)
+title.Position = UDim2.new(0, 65, 0, 18)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = header
 
 -- Subtitle
 local subtitle = Instance.new("TextLabel")
-subtitle.Text = "Universal Script Hub • v2.0"
+subtitle.Text = "Script Hub • Professional Edition"
 subtitle.Font = Enum.Font.Gotham
-subtitle.TextColor3 = Color3.fromRGB(160, 170, 180)
-subtitle.TextSize = 12
+subtitle.TextColor3 = Color3.fromRGB(130, 135, 145)
+subtitle.TextSize = 11
 subtitle.BackgroundTransparency = 1
-subtitle.Size = UDim2.new(1, -160, 0, 20)
-subtitle.Position = UDim2.new(0, 80, 0, 45)
+subtitle.Size = UDim2.new(0, 300, 0, 16)
+subtitle.Position = UDim2.new(0, 65, 0, 38)
 subtitle.TextXAlignment = Enum.TextXAlignment.Left
 subtitle.Parent = header
 
+-- Version badge
+local versionBadge = Instance.new("Frame")
+versionBadge.Size = UDim2.new(0, 50, 0, 22)
+versionBadge.Position = UDim2.new(1, -180, 0, 24)
+versionBadge.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+versionBadge.BorderSizePixel = 0
+versionBadge.Parent = header
+
+local versionCorner = Instance.new("UICorner")
+versionCorner.CornerRadius = UDim.new(0, 4)
+versionCorner.Parent = versionBadge
+
+local versionText = Instance.new("TextLabel")
+versionText.Text = "v2.0"
+versionText.Font = Enum.Font.GothamMedium
+versionText.TextColor3 = Color3.fromRGB(160, 165, 175)
+versionText.TextSize = 10
+versionText.BackgroundTransparency = 1
+versionText.Size = UDim2.new(1, 0, 1, 0)
+versionText.Parent = versionBadge
+
 -- Status indicator
+local statusContainer = Instance.new("Frame")
+statusContainer.Size = UDim2.new(0, 70, 0, 22)
+statusContainer.Position = UDim2.new(1, -120, 0, 24)
+statusContainer.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+statusContainer.BorderSizePixel = 0
+statusContainer.Parent = header
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 4)
+statusCorner.Parent = statusContainer
+
 local statusDot = Instance.new("Frame")
-statusDot.Size = UDim2.new(0, 10, 0, 10)
-statusDot.Position = UDim2.new(1, -70, 0, 25)
-statusDot.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+statusDot.Size = UDim2.new(0, 6, 0, 6)
+statusDot.Position = UDim2.new(0, 8, 0.5, -3)
+statusDot.BackgroundColor3 = Color3.fromRGB(67, 181, 129)
 statusDot.BorderSizePixel = 0
-statusDot.Parent = header
+statusDot.Parent = statusContainer
 
 local dotCorner = Instance.new("UICorner")
 dotCorner.CornerRadius = UDim.new(1, 0)
 dotCorner.Parent = statusDot
 
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Text = "ONLINE"
-statusLabel.Font = Enum.Font.GothamBold
-statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-statusLabel.TextSize = 11
-statusLabel.BackgroundTransparency = 1
-statusLabel.Size = UDim2.new(0, 50, 0, 20)
-statusLabel.Position = UDim2.new(1, -55, 0, 20)
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.Parent = header
-
--- Pulse status dot
-spawn(function()
-	while screenGui.Parent do
-		createTween(statusDot, 0.5, {BackgroundTransparency = 0.5}):Play()
-		wait(0.5)
-		createTween(statusDot, 0.5, {BackgroundTransparency = 0}):Play()
-		wait(0.5)
-	end
-end)
+local statusText = Instance.new("TextLabel")
+statusText.Text = "Active"
+statusText.Font = Enum.Font.GothamMedium
+statusText.TextColor3 = Color3.fromRGB(67, 181, 129)
+statusText.TextSize = 10
+statusText.BackgroundTransparency = 1
+statusText.Size = UDim2.new(1, -18, 1, 0)
+statusText.Position = UDim2.new(0, 18, 0, 0)
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+statusText.Parent = statusContainer
 
 -- Close Button
 local closeBtn = Instance.new("TextButton")
-closeBtn.Text = "✕"
+closeBtn.Text = "×"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-closeBtn.TextSize = 20
-closeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-closeBtn.BackgroundTransparency = 0.3
-closeBtn.Size = UDim2.new(0, 40, 0, 40)
-closeBtn.Position = UDim2.new(1, -55, 0, 20)
+closeBtn.TextColor3 = Color3.fromRGB(180, 185, 195)
+closeBtn.TextSize = 24
+closeBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+closeBtn.Size = UDim2.new(0, 36, 0, 36)
+closeBtn.Position = UDim2.new(1, -56, 0, 17)
 closeBtn.AutoButtonColor = false
 closeBtn.Parent = header
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 10)
+closeCorner.CornerRadius = UDim.new(0, 6)
 closeCorner.Parent = closeBtn
 
 closeBtn.MouseEnter:Connect(function()
-	createTween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 50, 50), BackgroundTransparency = 0}):Play()
+	createTween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(239, 83, 80), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 end)
 
 closeBtn.MouseLeave:Connect(function()
-	createTween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(30, 30, 40), BackgroundTransparency = 0.3}):Play()
+	createTween(closeBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(28, 28, 34), TextColor3 = Color3.fromRGB(180, 185, 195)}):Play()
 end)
 
 closeBtn.MouseButton1Click:Connect(function()
-	createTween(mainFrame, 0.3, {Position = UDim2.new(0.5, -275, 1.5, 0)}):Play()
-	wait(0.3)
+	createTween(mainFrame, 0.4, {Position = UDim2.new(0.5, -300, 1.2, 0)}, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+	wait(0.4)
 	screenGui:Destroy()
 end)
 
 -- Tab System
 local tabContainer = Instance.new("Frame")
-tabContainer.Size = UDim2.new(1, -30, 0, 45)
-tabContainer.Position = UDim2.new(0, 15, 0, 90)
+tabContainer.Size = UDim2.new(1, -40, 0, 42)
+tabContainer.Position = UDim2.new(0, 20, 0, 85)
 tabContainer.BackgroundTransparency = 1
 tabContainer.Parent = mainFrame
 
 local currentTab = "Features"
-local tabs = {"Features", "Settings", "Info"}
+local tabs = {"Features", "Settings", "About"}
 local tabButtons = {}
 local tabContents = {}
 
@@ -247,31 +247,41 @@ for i, tabName in ipairs(tabs) do
 	local tabBtn = Instance.new("TextButton")
 	tabBtn.Name = tabName
 	tabBtn.Text = tabName
-	tabBtn.Font = Enum.Font.GothamBold
-	tabBtn.TextSize = 13
-	tabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-	tabBtn.BackgroundTransparency = currentTab == tabName and 0 or 0.5
-	tabBtn.TextColor3 = currentTab == tabName and Color3.fromRGB(100, 200, 255) or Color3.fromRGB(160, 170, 180)
+	tabBtn.Font = Enum.Font.GothamMedium
+	tabBtn.TextSize = 12
+	tabBtn.BackgroundColor3 = currentTab == tabName and Color3.fromRGB(28, 28, 34) or Color3.fromRGB(22, 22, 27)
+	tabBtn.TextColor3 = currentTab == tabName and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(130, 135, 145)
 	tabBtn.Size = UDim2.new(0.33, -7, 1, 0)
 	tabBtn.Position = UDim2.new((i-1) * 0.33, (i-1) * 3.5, 0, 0)
 	tabBtn.AutoButtonColor = false
+	tabBtn.BorderSizePixel = 0
 	tabBtn.Parent = tabContainer
 	
 	local tabCorner = Instance.new("UICorner")
-	tabCorner.CornerRadius = UDim.new(0, 8)
+	tabCorner.CornerRadius = UDim.new(0, 6)
 	tabCorner.Parent = tabBtn
+	
+	if currentTab == tabName then
+		local activeIndicator = Instance.new("Frame")
+		activeIndicator.Name = "ActiveIndicator"
+		activeIndicator.Size = UDim2.new(1, 0, 0, 2)
+		activeIndicator.Position = UDim2.new(0, 0, 1, -2)
+		activeIndicator.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		activeIndicator.BorderSizePixel = 0
+		activeIndicator.Parent = tabBtn
+	end
 	
 	tabButtons[tabName] = tabBtn
 	
 	-- Tab content frame
 	local contentFrame = Instance.new("ScrollingFrame")
 	contentFrame.Name = tabName .. "Content"
-	contentFrame.Size = UDim2.new(1, -30, 1, -165)
-	contentFrame.Position = UDim2.new(0, 15, 0, 145)
+	contentFrame.Size = UDim2.new(1, -40, 1, -155)
+	contentFrame.Position = UDim2.new(0, 20, 0, 137)
 	contentFrame.BackgroundTransparency = 1
 	contentFrame.BorderSizePixel = 0
-	contentFrame.ScrollBarThickness = 4
-	contentFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 200, 255)
+	contentFrame.ScrollBarThickness = 3
+	contentFrame.ScrollBarImageColor3 = Color3.fromRGB(88, 101, 242)
 	contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 	contentFrame.Visible = (tabName == currentTab)
 	contentFrame.Parent = mainFrame
@@ -279,15 +289,32 @@ for i, tabName in ipairs(tabs) do
 	tabContents[tabName] = contentFrame
 end
 
--- Tab switching function
+-- Tab switching
 local function switchTab(tabName)
 	currentTab = tabName
 	for name, btn in pairs(tabButtons) do
 		local isActive = (name == tabName)
+		
 		createTween(btn, 0.2, {
-			BackgroundTransparency = isActive and 0 or 0.5,
-			TextColor3 = isActive and Color3.fromRGB(100, 200, 255) or Color3.fromRGB(160, 170, 180)
+			BackgroundColor3 = isActive and Color3.fromRGB(28, 28, 34) or Color3.fromRGB(22, 22, 27),
+			TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(130, 135, 145)
 		}):Play()
+		
+		local indicator = btn:FindFirstChild("ActiveIndicator")
+		if isActive and not indicator then
+			indicator = Instance.new("Frame")
+			indicator.Name = "ActiveIndicator"
+			indicator.Size = UDim2.new(1, 0, 0, 2)
+			indicator.Position = UDim2.new(0, 0, 1, -2)
+			indicator.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+			indicator.BorderSizePixel = 0
+			indicator.BackgroundTransparency = 1
+			indicator.Parent = btn
+			createTween(indicator, 0.2, {BackgroundTransparency = 0}):Play()
+		elseif not isActive and indicator then
+			createTween(indicator, 0.2, {BackgroundTransparency = 1}):Play()
+			task.delay(0.2, function() if indicator then indicator:Destroy() end end)
+		end
 	end
 	
 	for name, content in pairs(tabContents) do
@@ -295,7 +322,6 @@ local function switchTab(tabName)
 	end
 end
 
--- Connect tab buttons
 for name, btn in pairs(tabButtons) do
 	btn.MouseButton1Click:Connect(function()
 		switchTab(name)
@@ -303,110 +329,101 @@ for name, btn in pairs(tabButtons) do
 	
 	btn.MouseEnter:Connect(function()
 		if currentTab ~= name then
-			createTween(btn, 0.2, {BackgroundTransparency = 0.3}):Play()
+			createTween(btn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 31)}):Play()
 		end
 	end)
 	
 	btn.MouseLeave:Connect(function()
 		if currentTab ~= name then
-			createTween(btn, 0.2, {BackgroundTransparency = 0.5}):Play()
+			createTween(btn, 0.2, {BackgroundColor3 = Color3.fromRGB(22, 22, 27)}):Play()
 		end
 	end)
 end
 
--- FEATURES TAB CONTENT
+-- FEATURES TAB
 local featuresContent = tabContents["Features"]
+local yPos = 0
 
--- Create toggle with status
-local yPos = 10
-local function createFeatureToggle(name, icon, desc, callback)
+local function createFeature(name, desc, callback)
 	local container = Instance.new("Frame")
-	container.Size = UDim2.new(1, 0, 0, 75)
+	container.Size = UDim2.new(1, 0, 0, 70)
 	container.Position = UDim2.new(0, 0, 0, yPos)
-	container.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-	container.BackgroundTransparency = 0.3
+	container.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
 	container.BorderSizePixel = 0
 	container.Parent = featuresContent
 	
-	yPos = yPos + 80
-	featuresContent.CanvasSize = UDim2.new(0, 0, 0, yPos)
+	yPos = yPos + 75
+	featuresContent.CanvasSize = UDim2.new(0, 0, 0, yPos - 5)
 	
 	local containerCorner = Instance.new("UICorner")
-	containerCorner.CornerRadius = UDim.new(0, 12)
+	containerCorner.CornerRadius = UDim.new(0, 8)
 	containerCorner.Parent = container
 	
-	-- Hover effect
 	container.MouseEnter:Connect(function()
-		createTween(container, 0.2, {BackgroundTransparency = 0.1}):Play()
-	end)
-	container.MouseLeave:Connect(function()
-		createTween(container, 0.2, {BackgroundTransparency = 0.3}):Play()
+		createTween(container, 0.15, {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}):Play()
 	end)
 	
-	local iconLabel = Instance.new("TextLabel")
-	iconLabel.Text = icon
-	iconLabel.Font = Enum.Font.GothamBold
-	iconLabel.TextSize = 28
-	iconLabel.BackgroundTransparency = 1
-	iconLabel.Size = UDim2.new(0, 50, 0, 50)
-	iconLabel.Position = UDim2.new(0, 12, 0, 12)
-	iconLabel.Parent = container
+	container.MouseLeave:Connect(function()
+		createTween(container, 0.15, {BackgroundColor3 = Color3.fromRGB(24, 24, 30)}):Play()
+	end)
 	
 	local nameLabel = Instance.new("TextLabel")
 	nameLabel.Text = name
 	nameLabel.Font = Enum.Font.GothamBold
-	nameLabel.TextColor3 = Color3.fromRGB(240, 245, 250)
-	nameLabel.TextSize = 15
+	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextSize = 14
 	nameLabel.BackgroundTransparency = 1
-	nameLabel.Size = UDim2.new(1, -180, 0, 22)
-	nameLabel.Position = UDim2.new(0, 70, 0, 12)
+	nameLabel.Size = UDim2.new(1, -140, 0, 20)
+	nameLabel.Position = UDim2.new(0, 16, 0, 14)
 	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	nameLabel.Parent = container
 	
 	local descLabel = Instance.new("TextLabel")
 	descLabel.Text = desc
 	descLabel.Font = Enum.Font.Gotham
-	descLabel.TextColor3 = Color3.fromRGB(140, 150, 160)
+	descLabel.TextColor3 = Color3.fromRGB(130, 135, 145)
 	descLabel.TextSize = 11
 	descLabel.BackgroundTransparency = 1
-	descLabel.Size = UDim2.new(1, -180, 0, 18)
-	descLabel.Position = UDim2.new(0, 70, 0, 36)
+	descLabel.Size = UDim2.new(1, -140, 0, 18)
+	descLabel.Position = UDim2.new(0, 16, 0, 36)
 	descLabel.TextXAlignment = Enum.TextXAlignment.Left
 	descLabel.Parent = container
 	
-	-- Status indicator
-	local statusText = Instance.new("TextLabel")
-	statusText.Text = "OFF"
-	statusText.Font = Enum.Font.GothamBold
-	statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
-	statusText.TextSize = 10
-	statusText.BackgroundTransparency = 1
-	statusText.Size = UDim2.new(0, 40, 0, 15)
-	statusText.Position = UDim2.new(1, -115, 0, 55)
-	statusText.Parent = container
+	local statusLabel = Instance.new("TextLabel")
+	statusLabel.Text = "Inactive"
+	statusLabel.Font = Enum.Font.GothamMedium
+	statusLabel.TextColor3 = Color3.fromRGB(130, 135, 145)
+	statusLabel.TextSize = 10
+	statusLabel.BackgroundTransparency = 1
+	statusLabel.Size = UDim2.new(0, 60, 0, 14)
+	statusLabel.Position = UDim2.new(1, -110, 0, 53)
+	statusLabel.TextXAlignment = Enum.TextXAlignment.Right
+	statusLabel.Parent = container
+	
+	-- Modern toggle switch
+	local toggleTrack = Instance.new("Frame")
+	toggleTrack.Size = UDim2.new(0, 50, 0, 26)
+	toggleTrack.Position = UDim2.new(1, -66, 0, 22)
+	toggleTrack.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+	toggleTrack.BorderSizePixel = 0
+	toggleTrack.Parent = container
+	
+	local trackCorner = Instance.new("UICorner")
+	trackCorner.CornerRadius = UDim.new(1, 0)
+	trackCorner.Parent = toggleTrack
 	
 	local toggleBtn = Instance.new("TextButton")
 	toggleBtn.Text = ""
-	toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-	toggleBtn.Size = UDim2.new(0, 90, 0, 38)
-	toggleBtn.Position = UDim2.new(1, -105, 0, 18)
+	toggleBtn.Size = UDim2.new(0, 22, 0, 22)
+	toggleBtn.Position = UDim2.new(0, 2, 0, 2)
+	toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	toggleBtn.BorderSizePixel = 0
 	toggleBtn.AutoButtonColor = false
-	toggleBtn.Parent = container
+	toggleBtn.Parent = toggleTrack
 	
-	local toggleCorner = Instance.new("UICorner")
-	toggleCorner.CornerRadius = UDim.new(0, 19)
-	toggleCorner.Parent = toggleBtn
-	
-	local toggleCircle = Instance.new("Frame")
-	toggleCircle.Size = UDim2.new(0, 32, 0, 32)
-	toggleCircle.Position = UDim2.new(0, 3, 0, 3)
-	toggleCircle.BackgroundColor3 = Color3.fromRGB(200, 200, 210)
-	toggleCircle.BorderSizePixel = 0
-	toggleCircle.Parent = toggleBtn
-	
-	local circleCorner = Instance.new("UICorner")
-	circleCorner.CornerRadius = UDim.new(1, 0)
-	circleCorner.Parent = toggleCircle
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(1, 0)
+	btnCorner.Parent = toggleBtn
 	
 	local isOn = false
 	
@@ -414,25 +431,22 @@ local function createFeatureToggle(name, icon, desc, callback)
 		isOn = not isOn
 		
 		if isOn then
-			createTween(toggleBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(100, 200, 255)}):Play()
-			createTween(toggleCircle, 0.2, {Position = UDim2.new(1, -35, 0, 3)}):Play()
-			statusText.Text = "ON"
-			statusText.TextColor3 = Color3.fromRGB(100, 255, 100)
+			createTween(toggleTrack, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+			createTween(toggleBtn, 0.2, {Position = UDim2.new(1, -24, 0, 2)}):Play()
+			statusLabel.Text = "Active"
+			statusLabel.TextColor3 = Color3.fromRGB(67, 181, 129)
 		else
-			createTween(toggleBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(60, 60, 70)}):Play()
-			createTween(toggleCircle, 0.2, {Position = UDim2.new(0, 3, 0, 3)}):Play()
-			statusText.Text = "OFF"
-			statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
+			createTween(toggleTrack, 0.2, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
+			createTween(toggleBtn, 0.2, {Position = UDim2.new(0, 2, 0, 2)}):Play()
+			statusLabel.Text = "Inactive"
+			statusLabel.TextColor3 = Color3.fromRGB(130, 135, 145)
 		end
 		
 		callback(isOn)
 	end)
-	
-	return {toggle = toggleBtn, status = statusText, icon = iconLabel}
 end
 
--- Add features
-createFeatureToggle("Fly", "🚀", "Fly around freely • WASD to move", function(enabled)
+createFeature("Flight System", "Navigate freely in all directions", function(enabled)
 	flyEnabled = enabled
 	if enabled then
 		bodyVelocity = Instance.new("BodyVelocity")
@@ -445,35 +459,31 @@ createFeatureToggle("Fly", "🚀", "Fly around freely • WASD to move", functio
 		bodyGyro.CFrame = humanoidRootPart.CFrame
 		bodyGyro.Parent = humanoidRootPart
 		
-		notify("Fly enabled! ✅", 2)
+		notify("Flight system activated", 2)
 	else
 		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
 		if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
-		notify("Fly disabled! ❌", 2)
+		notify("Flight system deactivated", 2)
 	end
 end)
 
-createFeatureToggle("Speed Hack", "⚡", "Increase your walk speed", function(enabled)
+createFeature("Speed Enhancement", "Increase movement velocity", function(enabled)
 	speedEnabled = enabled
 	if enabled then
 		humanoid.WalkSpeed = walkSpeed
-		notify("Speed enabled! ✅", 2)
+		notify("Speed enhancement activated", 2)
 	else
 		humanoid.WalkSpeed = 16
-		notify("Speed disabled! ❌", 2)
+		notify("Speed enhancement deactivated", 2)
 	end
 end)
 
-createFeatureToggle("Infinite Jump", "🦘", "Jump unlimited times", function(enabled)
+createFeature("Infinite Jump", "Unlimited jump capability", function(enabled)
 	jumpEnabled = enabled
-	if enabled then
-		notify("Infinite Jump enabled! ✅", 2)
-	else
-		notify("Infinite Jump disabled! ❌", 2)
-	end
+	notify(enabled and "Infinite jump activated" or "Infinite jump deactivated", 2)
 end)
 
-createFeatureToggle("ESP", "👁️", "See players through walls", function(enabled)
+createFeature("Player ESP", "Visualize players through obstacles", function(enabled)
 	espEnabled = enabled
 	for _, otherPlayer in pairs(Players:GetPlayers()) do
 		if otherPlayer ~= player and otherPlayer.Character then
@@ -481,9 +491,9 @@ createFeatureToggle("ESP", "👁️", "See players through walls", function(enab
 			if enabled and not highlight then
 				highlight = Instance.new("Highlight")
 				highlight.Name = "ESPHighlight"
-				highlight.FillColor = Color3.fromRGB(100, 200, 255)
+				highlight.FillColor = Color3.fromRGB(88, 101, 242)
 				highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-				highlight.FillTransparency = 0.5
+				highlight.FillTransparency = 0.6
 				highlight.OutlineTransparency = 0
 				highlight.Parent = otherPlayer.Character
 			elseif not enabled and highlight then
@@ -491,67 +501,70 @@ createFeatureToggle("ESP", "👁️", "See players through walls", function(enab
 			end
 		end
 	end
-	if enabled then
-		notify("ESP enabled! ✅", 2)
-	else
-		notify("ESP disabled! ❌", 2)
-	end
+	notify(enabled and "Player ESP activated" or "Player ESP deactivated", 2)
 end)
 
-createFeatureToggle("No-Clip", "👻", "Walk through walls", function(enabled)
+createFeature("No-Clip", "Phase through solid objects", function(enabled)
 	noclipEnabled = enabled
-	if enabled then
-		notify("No-Clip enabled! ✅", 2)
-	else
-		notify("No-Clip disabled! ❌", 2)
-	end
+	notify(enabled and "No-clip activated" or "No-clip deactivated", 2)
 end)
 
--- SETTINGS TAB CONTENT
+-- SETTINGS TAB
 local settingsContent = tabContents["Settings"]
+local settingsY = 0
 
--- Create slider
-local function createSlider(name, min, max, default, callback)
+local function createSlider(name, desc, min, max, default, callback)
 	local container = Instance.new("Frame")
-	container.Size = UDim2.new(1, 0, 0, 70)
-	container.Position = UDim2.new(0, 0, 0, settingsContent.CanvasSize.Y.Offset)
-	container.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-	container.BackgroundTransparency = 0.3
+	container.Size = UDim2.new(1, 0, 0, 80)
+	container.Position = UDim2.new(0, 0, 0, settingsY)
+	container.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
 	container.BorderSizePixel = 0
 	container.Parent = settingsContent
 	
-	settingsContent.CanvasSize = UDim2.new(0, 0, 0, settingsContent.CanvasSize.Y.Offset + 80)
+	settingsY = settingsY + 85
+	settingsContent.CanvasSize = UDim2.new(0, 0, 0, settingsY - 5)
 	
 	local containerCorner = Instance.new("UICorner")
-	containerCorner.CornerRadius = UDim.new(0, 12)
+	containerCorner.CornerRadius = UDim.new(0, 8)
 	containerCorner.Parent = container
 	
 	local nameLabel = Instance.new("TextLabel")
 	nameLabel.Text = name
 	nameLabel.Font = Enum.Font.GothamBold
-	nameLabel.TextColor3 = Color3.fromRGB(240, 245, 250)
-	nameLabel.TextSize = 14
+	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextSize = 13
 	nameLabel.BackgroundTransparency = 1
-	nameLabel.Size = UDim2.new(1, -20, 0, 20)
-	nameLabel.Position = UDim2.new(0, 12, 0, 10)
+	nameLabel.Size = UDim2.new(1, -100, 0, 18)
+	nameLabel.Position = UDim2.new(0, 16, 0, 12)
 	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	nameLabel.Parent = container
 	
 	local valueLabel = Instance.new("TextLabel")
 	valueLabel.Text = tostring(default)
 	valueLabel.Font = Enum.Font.GothamBold
-	valueLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+	valueLabel.TextColor3 = Color3.fromRGB(88, 101, 242)
 	valueLabel.TextSize = 13
 	valueLabel.BackgroundTransparency = 1
-	valueLabel.Size = UDim2.new(0, 60, 0, 20)
-	valueLabel.Position = UDim2.new(1, -70, 0, 10)
+	valueLabel.Size = UDim2.new(0, 70, 0, 18)
+	valueLabel.Position = UDim2.new(1, -86, 0, 12)
 	valueLabel.TextXAlignment = Enum.TextXAlignment.Right
 	valueLabel.Parent = container
 	
+	local descLabel = Instance.new("TextLabel")
+	descLabel.Text = desc
+	descLabel.Font = Enum.Font.Gotham
+	descLabel.TextColor3 = Color3.fromRGB(130, 135, 145)
+	descLabel.TextSize = 10
+	descLabel.BackgroundTransparency = 1
+	descLabel.Size = UDim2.new(1, -32, 0, 16)
+	descLabel.Position = UDim2.new(0, 16, 0, 30)
+	descLabel.TextXAlignment = Enum.TextXAlignment.Left
+	descLabel.Parent = container
+	
 	local sliderBG = Instance.new("Frame")
-	sliderBG.Size = UDim2.new(1, -24, 0, 6)
-	sliderBG.Position = UDim2.new(0, 12, 0, 45)
-	sliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	sliderBG.Size = UDim2.new(1, -32, 0, 4)
+	sliderBG.Position = UDim2.new(0, 16, 0, 58)
+	sliderBG.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 	sliderBG.BorderSizePixel = 0
 	sliderBG.Parent = container
 	
@@ -561,7 +574,7 @@ local function createSlider(name, min, max, default, callback)
 	
 	local sliderFill = Instance.new("Frame")
 	sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
 	sliderFill.BorderSizePixel = 0
 	sliderFill.Parent = sliderBG
 	
@@ -571,8 +584,8 @@ local function createSlider(name, min, max, default, callback)
 	
 	local sliderBtn = Instance.new("TextButton")
 	sliderBtn.Text = ""
-	sliderBtn.Size = UDim2.new(0, 18, 0, 18)
-	sliderBtn.Position = UDim2.new((default - min) / (max - min), -9, 0.5, -9)
+	sliderBtn.Size = UDim2.new(0, 16, 0, 16)
+	sliderBtn.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
 	sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	sliderBtn.BorderSizePixel = 0
 	sliderBtn.AutoButtonColor = false
@@ -611,62 +624,122 @@ local function createSlider(name, min, max, default, callback)
 			
 			valueLabel.Text = tostring(value)
 			createTween(sliderFill, 0.1, {Size = UDim2.new(percent, 0, 1, 0)}):Play()
-			createTween(sliderBtn, 0.1, {Position = UDim2.new(percent, -9, 0.5, -9)}):Play()
+			createTween(sliderBtn, 0.1, {Position = UDim2.new(percent, -8, 0.5, -8)}):Play()
 			
 			callback(value)
 		end
 	end)
 end
 
-createSlider("Fly Speed", 20, 200, 50, function(value)
+createSlider("Flight Speed", "Adjust flight movement velocity", 20, 200, 50, function(value)
 	flySpeed = value
 end)
 
-createSlider("Walk Speed", 16, 200, 100, function(value)
+createSlider("Walk Speed", "Modify ground movement speed", 16, 200, 100, function(value)
 	walkSpeed = value
 	if speedEnabled then
 		humanoid.WalkSpeed = value
 	end
 end)
 
--- INFO TAB CONTENT
-local infoContent = tabContents["Info"]
+-- ABOUT TAB
+local aboutContent = tabContents["About"]
 
-local infoText = Instance.new("TextLabel")
-infoText.Text = [[
-╔═══════════════════════════════╗
-        CHAINIX PREMIUM
-╚═══════════════════════════════╝
+local aboutContainer = Instance.new("Frame")
+aboutContainer.Size = UDim2.new(1, 0, 0, 320)
+aboutContainer.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+aboutContainer.BorderSizePixel = 0
+aboutContainer.Parent = aboutContent
 
-Version: 2.0
-Made with: CHAINIX Loader
+local aboutCorner = Instance.new("UICorner")
+aboutCorner.CornerRadius = UDim.new(0, 8)
+aboutCorner.Parent = aboutContainer
 
-Features:
-• Fly - Explore freely
-• Speed Hack - Move faster
-• Infinite Jump - Reach new heights
-• ESP - See through walls
-• No-Clip - Phase through objects
+local infoTitle = Instance.new("TextLabel")
+infoTitle.Text = "CHAINIX Professional"
+infoTitle.Font = Enum.Font.GothamBold
+infoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoTitle.TextSize = 16
+infoTitle.BackgroundTransparency = 1
+infoTitle.Size = UDim2.new(1, -32, 0, 24)
+infoTitle.Position = UDim2.new(0, 16, 0, 16)
+infoTitle.TextXAlignment = Enum.TextXAlignment.Left
+infoTitle.Parent = aboutContainer
 
-Controls:
-• Fly: WASD + Space/Shift
-• All features: Toggle ON/OFF
+local infoVersion = Instance.new("TextLabel")
+infoVersion.Text = "Version 2.0 • Professional Edition"
+infoVersion.Font = Enum.Font.Gotham
+infoVersion.TextColor3 = Color3.fromRGB(130, 135, 145)
+infoVersion.TextSize = 11
+infoVersion.BackgroundTransparency = 1
+infoVersion.Size = UDim2.new(1, -32, 0, 18)
+infoVersion.Position = UDim2.new(0, 16, 0, 40)
+infoVersion.TextXAlignment = Enum.TextXAlignment.Left
+infoVersion.Parent = aboutContainer
 
-Credits:
-Made by ChainixScripts
-GitHub.com/ChainixScripts
+local divider1 = Instance.new("Frame")
+divider1.Size = UDim2.new(1, -32, 0, 1)
+divider1.Position = UDim2.new(0, 16, 0, 72)
+divider1.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+divider1.BorderSizePixel = 0
+divider1.Parent = aboutContainer
 
-Enjoy! ⚡
-]]
-infoText.Font = Enum.Font.Code
-infoText.TextColor3 = Color3.fromRGB(180, 190, 200)
-infoText.TextSize = 12
-infoText.BackgroundTransparency = 1
-infoText.Size = UDim2.new(1, -20, 1, 0)
-infoText.Position = UDim2.new(0, 10, 0, 10)
-infoText.TextXAlignment = Enum.TextXAlignment.Left
-infoText.TextYAlignment = Enum.TextYAlignment.Top
-infoText.Parent = infoContent
+local featuresTitle = Instance.new("TextLabel")
+featuresTitle.Text = "FEATURES"
+featuresTitle.Font = Enum.Font.GothamBold
+featuresTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+featuresTitle.TextSize = 12
+featuresTitle.BackgroundTransparency = 1
+featuresTitle.Size = UDim2.new(1, -32, 0, 18)
+featuresTitle.Position = UDim2.new(0, 16, 0, 88)
+featuresTitle.TextXAlignment = Enum.TextXAlignment.Left
+featuresTitle.Parent = aboutContainer
+
+local featuresList = Instance.new("TextLabel")
+featuresList.Text = [[Flight System - Advanced movement control
+Speed Enhancement - Customizable velocity
+Infinite Jump - Unlimited vertical movement
+Player ESP - Visual awareness system
+No-Clip - Collision bypass]]
+featuresList.Font = Enum.Font.Gotham
+featuresList.TextColor3 = Color3.fromRGB(160, 165, 175)
+featuresList.TextSize = 11
+featuresList.BackgroundTransparency = 1
+featuresList.Size = UDim2.new(1, -32, 0, 100)
+featuresList.Position = UDim2.new(0, 16, 0, 110)
+featuresList.TextXAlignment = Enum.TextXAlignment.Left
+featuresList.TextYAlignment = Enum.TextYAlignment.Top
+featuresList.Parent = aboutContainer
+
+local divider2 = Instance.new("Frame")
+divider2.Size = UDim2.new(1, -32, 0, 1)
+divider2.Position = UDim2.new(0, 16, 0, 220)
+divider2.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+divider2.BorderSizePixel = 0
+divider2.Parent = aboutContainer
+
+local creditsTitle = Instance.new("TextLabel")
+creditsTitle.Text = "DEVELOPER"
+creditsTitle.Font = Enum.Font.GothamBold
+creditsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+creditsTitle.TextSize = 12
+creditsTitle.BackgroundTransparency = 1
+creditsTitle.Size = UDim2.new(1, -32, 0, 18)
+creditsTitle.Position = UDim2.new(0, 16, 0, 236)
+creditsTitle.TextXAlignment = Enum.TextXAlignment.Left
+creditsTitle.Parent = aboutContainer
+
+local creditsText = Instance.new("TextLabel")
+creditsText.Text = "ChainixScripts\nGitHub.com/ChainixScripts"
+creditsText.Font = Enum.Font.Gotham
+creditsText.TextColor3 = Color3.fromRGB(160, 165, 175)
+creditsText.TextSize = 11
+creditsText.BackgroundTransparency = 1
+creditsText.Size = UDim2.new(1, -32, 0, 40)
+creditsText.Position = UDim2.new(0, 16, 0, 258)
+creditsText.TextXAlignment = Enum.TextXAlignment.Left
+creditsText.TextYAlignment = Enum.TextYAlignment.Top
+creditsText.Parent = aboutContainer
 
 -- Feature loops
 RunService.Heartbeat:Connect(function()
@@ -714,5 +787,5 @@ player.CharacterAdded:Connect(function(newChar)
 	end
 end)
 
-notify("CHAINIX Premium loaded! ⚡", 3)
-print("CHAINIX PREMIUM: Loaded successfully!")
+notify("CHAINIX loaded successfully", 2)
+print("CHAINIX Professional: Initialized")
