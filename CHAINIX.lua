@@ -1,2627 +1,1752 @@
 --[[
-	CHAINIX ULTIMATE EDITION v5.0
-	EVERY FEATURE IMAGINABLE!
-	Premium Dark Theme | All Visual Effects | Complete Feature Set
+	═══════════════════════════════════════
+	         CHAINIX V1 - ELITE
+	      Professional Script Hub
+	═══════════════════════════════════════
 ]]--
 
--- ========================================
--- SERVICES
--- ========================================
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Debris = game:GetService("Debris")
 
--- ========================================
--- SAVED DATA (Favorites, Recent, Settings)
--- ========================================
-local SavedData = {
-	Favorites = {},
-	RecentlyUsed = {},
-	Settings = {
-		Volume = 100,
-		AnimationsEnabled = true,
-		Theme = "Default",
-		ToggleKey = Enum.KeyCode.Insert,
-		NotificationsEnabled = true
-	},
-	CurrentVersion = "5.0"
-}
-
--- ========================================
--- THEMES
--- ========================================
-local Themes = {
-	Black = {
-		Name = "Pure Black",
-		BackgroundDark = Color3.fromRGB(0, 0, 0),
-		BackgroundMain = Color3.fromRGB(0, 0, 0),
-		AccentPrimary = Color3.fromRGB(240, 245, 250),
-		AccentSecondary = Color3.fromRGB(160, 170, 180),
-		AccentDim = Color3.fromRGB(80, 90, 100),
-		BorderLight = Color3.fromRGB(200, 210, 220),
-		ButtonNormal = Color3.fromRGB(200, 210, 220),
-		ButtonHover = Color3.fromRGB(255, 255, 255),
-		StatusColor = Color3.fromRGB(50, 200, 100)
-	},
-	Default = {
-		Name = "Default Dark",
-		BackgroundDark = Color3.fromRGB(10, 10, 12),
-		BackgroundMain = Color3.fromRGB(16, 16, 20),
-		AccentPrimary = Color3.fromRGB(240, 245, 250),
-		AccentSecondary = Color3.fromRGB(160, 170, 180),
-		AccentDim = Color3.fromRGB(80, 90, 100),
-		BorderLight = Color3.fromRGB(200, 210, 220),
-		ButtonNormal = Color3.fromRGB(200, 210, 220),
-		ButtonHover = Color3.fromRGB(255, 255, 255),
-		StatusColor = Color3.fromRGB(50, 200, 100)
-	},
-	Ocean = {
-		Name = "Ocean Blue",
-		BackgroundDark = Color3.fromRGB(10, 15, 25),
-		BackgroundMain = Color3.fromRGB(15, 25, 40),
-		AccentPrimary = Color3.fromRGB(100, 200, 255),
-		AccentSecondary = Color3.fromRGB(80, 150, 200),
-		AccentDim = Color3.fromRGB(50, 100, 150),
-		BorderLight = Color3.fromRGB(120, 180, 230),
-		ButtonNormal = Color3.fromRGB(80, 160, 220),
-		ButtonHover = Color3.fromRGB(100, 200, 255),
-		StatusColor = Color3.fromRGB(50, 200, 255)
-	},
-	Purple = {
-		Name = "Royal Purple",
-		BackgroundDark = Color3.fromRGB(15, 10, 20),
-		BackgroundMain = Color3.fromRGB(25, 15, 35),
-		AccentPrimary = Color3.fromRGB(200, 150, 255),
-		AccentSecondary = Color3.fromRGB(150, 100, 200),
-		AccentDim = Color3.fromRGB(100, 60, 150),
-		BorderLight = Color3.fromRGB(180, 130, 230),
-		ButtonNormal = Color3.fromRGB(160, 100, 220),
-		ButtonHover = Color3.fromRGB(200, 150, 255),
-		StatusColor = Color3.fromRGB(180, 100, 255)
-	},
-	Matrix = {
-		Name = "Matrix Green",
-		BackgroundDark = Color3.fromRGB(5, 10, 5),
-		BackgroundMain = Color3.fromRGB(10, 20, 10),
-		AccentPrimary = Color3.fromRGB(50, 255, 50),
-		AccentSecondary = Color3.fromRGB(40, 200, 40),
-		AccentDim = Color3.fromRGB(30, 150, 30),
-		BorderLight = Color3.fromRGB(60, 220, 60),
-		ButtonNormal = Color3.fromRGB(40, 180, 40),
-		ButtonHover = Color3.fromRGB(50, 255, 50),
-		StatusColor = Color3.fromRGB(50, 255, 50)
-	},
-	Ruby = {
-		Name = "Ruby Red",
-		BackgroundDark = Color3.fromRGB(20, 5, 5),
-		BackgroundMain = Color3.fromRGB(30, 10, 10),
-		AccentPrimary = Color3.fromRGB(255, 100, 100),
-		AccentSecondary = Color3.fromRGB(200, 80, 80),
-		AccentDim = Color3.fromRGB(150, 50, 50),
-		BorderLight = Color3.fromRGB(230, 100, 100),
-		ButtonNormal = Color3.fromRGB(200, 80, 80),
-		ButtonHover = Color3.fromRGB(255, 100, 100),
-		StatusColor = Color3.fromRGB(255, 50, 50)
-	},
-	Gold = {
-		Name = "Gold",
-		BackgroundDark = Color3.fromRGB(20, 15, 5),
-		BackgroundMain = Color3.fromRGB(30, 25, 10),
-		AccentPrimary = Color3.fromRGB(255, 215, 100),
-		AccentSecondary = Color3.fromRGB(200, 170, 80),
-		AccentDim = Color3.fromRGB(150, 120, 50),
-		BorderLight = Color3.fromRGB(230, 190, 100),
-		ButtonNormal = Color3.fromRGB(200, 160, 80),
-		ButtonHover = Color3.fromRGB(255, 215, 100),
-		StatusColor = Color3.fromRGB(255, 200, 50)
-	},
-	Pink = {
-		Name = "Hot Pink",
-		BackgroundDark = Color3.fromRGB(20, 5, 15),
-		BackgroundMain = Color3.fromRGB(30, 10, 20),
-		AccentPrimary = Color3.fromRGB(255, 105, 180),
-		AccentSecondary = Color3.fromRGB(255, 182, 193),
-		AccentDim = Color3.fromRGB(199, 21, 133),
-		BorderLight = Color3.fromRGB(255, 192, 203),
-		ButtonNormal = Color3.fromRGB(255, 105, 180),
-		ButtonHover = Color3.fromRGB(255, 20, 147),
-		StatusColor = Color3.fromRGB(255, 105, 180)
-	},
-	Custom = {
-		Name = "Create Custom",
-		BackgroundDark = Color3.fromRGB(10, 10, 12),
-		BackgroundMain = Color3.fromRGB(16, 16, 20),
-		AccentPrimary = Color3.fromRGB(100, 200, 255),
-		AccentSecondary = Color3.fromRGB(160, 170, 180),
-		AccentDim = Color3.fromRGB(80, 90, 100),
-		BorderLight = Color3.fromRGB(200, 210, 220),
-		ButtonNormal = Color3.fromRGB(200, 210, 220),
-		ButtonHover = Color3.fromRGB(255, 255, 255),
-		StatusColor = Color3.fromRGB(50, 200, 100)
-	}
-}
-
-local Config = Themes.Black
-
--- ========================================
--- OTHER CONFIGURATION
--- ========================================
-Config.FrameSize = UDim2.new(0, 500, 0, 320)
-Config.FramePosition = UDim2.new(0.5, -250, 0.5, -160)
-
-Config.Sounds = {
-	Boot = "rbxassetid://138081500",
-	Scrape = "rbxassetid://184432003",
-	Activate = "rbxassetid://9123742171",
-	ChainBreak = "rbxassetid://71798054966140",
-	Hover = "rbxassetid://156286438",
-	Click = "rbxassetid://156286438",
-	GameClick = "rbxassetid://108829144248244"
-}
-
-Config.ChainFrames = {
-	"rbxassetid://140337915830730",
-	"rbxassetid://81996960442467",
-	"rbxassetid://131276524233250",
-	"rbxassetid://118029488236360",
-	"rbxassetid://137991765165431"
-}
-
-Config.GridColumns = 4
-Config.ButtonWidth = 105
-Config.ButtonHeight = 45
-Config.ButtonSpacingX = 12
-Config.ButtonSpacingY = 12
-
--- ========================================
--- GAME LIST
--- ========================================
-local GameList = {
-	{
-		name = "PREMIUM HUB", 
-		url = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/main/test_hub.lua",
-		icon = "⚡",
-		available = true,
-		description = "Premium hub with 5 features",
-		lastUpdated = "2026-02-08"
-	},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
-	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"}
-}
-
--- ========================================
--- UTILITY FUNCTIONS
--- ========================================
-local Utils = {}
-
-function Utils.CreateSound(soundId, volume, playbackSpeed)
-	local sound = Instance.new("Sound", SoundService)
-	sound.SoundId = soundId
-	sound.Volume = (volume or 1) * (SavedData.Settings.Volume / 100)
-	sound.PlaybackSpeed = playbackSpeed or 1
-	return sound
-end
-
-function Utils.PlaySound(soundId, volume, playbackSpeed, destroyAfter)
-	local sound = Utils.CreateSound(soundId, volume, playbackSpeed)
-	sound:Play()
-	Debris:AddItem(sound, destroyAfter or 2)
-end
-
-function Utils.CreateTween(instance, duration, properties, easingStyle)
-	if not SavedData.Settings.AnimationsEnabled then
-		for prop, value in pairs(properties) do
-			instance[prop] = value
-		end
-		return {Play = function() end, Completed = Instance.new("BindableEvent").Event}
-	end
-	local tweenInfo = TweenInfo.new(duration, easingStyle or Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	return TweenService:Create(instance, tweenInfo, properties)
-end
-
-function Utils.ShowNotification(message, duration)
-	if not SavedData.Settings.NotificationsEnabled then return end
-	-- Will implement notification system
-	print(">> NOTIFICATION: " .. message)
-end
-
--- ========================================
--- MAIN INITIALIZATION
--- ========================================
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 
--- Create ScreenGui
-local gui = Instance.new("ScreenGui")
-gui.Name = "CHAINIX_ULTIMATE"
-gui.ResetOnSpawn = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = playerGui
+local connections = {}
+local flyEnabled, speedEnabled, jumpEnabled, espEnabled, noclipEnabled = false, false, false, false, false
+local autoFarmEnabled = false
+local bodyVelocity, bodyGyro
+local flySpeed, walkSpeed = 50, 100
 
-local UI = {}
-local gameButtons = {}
-local settingsPanelOpen = false
-local loaderVisible = true
+-- Keybind system
+local toggleUIKey = Enum.KeyCode.Insert
+local unloadKey = Enum.KeyCode.Delete
+local waitingForKeybind = nil
+local toggleUIBtn = nil
+local unloadBtn = nil
+local notificationsEnabled = true
+local soundsEnabled = true
+local autoSaveEnabled = true
 
-print(">> CHAINIX ULTIMATE: Initializing v5.0...")
-print(">> Loading with ALL features enabled!")
-print(">> This is going to be INSANE! 🔥")
+-- Config system
+local HttpService = game:GetService("HttpService")
+local configFileName = "CHAINIX_Config.json"
 
--- I'll continue with the massive UI creation in the next part...
--- This file is getting huge with ALL features!
-
--- ========================================
--- UI CREATION - SHADOWS
--- ========================================
-local shadowFrame1 = Instance.new("Frame")
-shadowFrame1.Size = UDim2.new(0, 520, 0, 340)
-shadowFrame1.Position = UDim2.new(0.5, -260, 0.5, -170)
-shadowFrame1.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadowFrame1.BackgroundTransparency = 0.92
-shadowFrame1.BorderSizePixel = 0
-shadowFrame1.ZIndex = 0
-shadowFrame1.Parent = gui
-
-local shadowCorner1 = Instance.new("UICorner")
-shadowCorner1.CornerRadius = UDim.new(0, 16)
-shadowCorner1.Parent = shadowFrame1
-
-local shadowFrame2 = Instance.new("Frame")
-shadowFrame2.Size = UDim2.new(0, 510, 0, 330)
-shadowFrame2.Position = UDim2.new(0.5, -255, 0.5, -165)
-shadowFrame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadowFrame2.BackgroundTransparency = 0.88
-shadowFrame2.BorderSizePixel = 0
-shadowFrame2.ZIndex = 0
-shadowFrame2.Parent = gui
-
-local shadowCorner2 = Instance.new("UICorner")
-shadowCorner2.CornerRadius = UDim.new(0, 14)
-shadowCorner2.Parent = shadowFrame2
-
--- ========================================
--- MAIN FRAME
--- ========================================
-UI.Frame = Instance.new("Frame")
-UI.Frame.Size = Config.FrameSize
-UI.Frame.Position = Config.FramePosition
-UI.Frame.BackgroundColor3 = Config.BackgroundMain
-UI.Frame.BorderSizePixel = 0
-UI.Frame.BackgroundTransparency = 1
-UI.Frame.ClipsDescendants = true
-UI.Frame.ZIndex = 1
-UI.Frame.Parent = gui
-
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
-frameCorner.Parent = UI.Frame
-
--- Animated Background
-local animatedBG = Instance.new("Frame")
-animatedBG.Size = UDim2.new(1, 0, 1, 0)
-animatedBG.BackgroundColor3 = Config.BackgroundMain
-animatedBG.BorderSizePixel = 0
-animatedBG.ZIndex = 0
-animatedBG.Parent = UI.Frame
-
-local animatedCorner = Instance.new("UICorner")
-animatedCorner.CornerRadius = UDim.new(0, 12)
-animatedCorner.Parent = animatedBG
-
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Config.BackgroundMain),
-	ColorSequenceKeypoint.new(0.5, Config.BackgroundDark),
-	ColorSequenceKeypoint.new(1, Config.BackgroundMain)
-}
-gradient.Rotation = 45
-gradient.Parent = animatedBG
-
--- Border
-UI.OuterBorder = Instance.new("UIStroke")
-UI.OuterBorder.Thickness = 1.5
-UI.OuterBorder.Color = Config.BorderLight
-UI.OuterBorder.Transparency = 0.85
-UI.OuterBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UI.OuterBorder.Parent = UI.Frame
-
--- Accent Line
-local accentLine = Instance.new("Frame")
-accentLine.Size = UDim2.new(0.4, 0, 0, 2)
-accentLine.Position = UDim2.new(0.3, 0, 0, 0)
-accentLine.BackgroundColor3 = Config.AccentPrimary
-accentLine.BorderSizePixel = 0
-accentLine.BackgroundTransparency = 0.7
-accentLine.ZIndex = 5
-accentLine.Parent = UI.Frame
-
-local accentGradient = Instance.new("UIGradient")
-accentGradient.Transparency = NumberSequence.new{
-	NumberSequenceKeypoint.new(0, 1),
-	NumberSequenceKeypoint.new(0.5, 0),
-	NumberSequenceKeypoint.new(1, 1)
-}
-accentGradient.Parent = accentLine
-
--- ========================================
--- FLOATING PARTICLES
--- ========================================
-local particlesContainer = Instance.new("Frame")
-particlesContainer.Size = UDim2.new(1, 0, 1, 0)
-particlesContainer.BackgroundTransparency = 1
-particlesContainer.ClipsDescendants = true
-particlesContainer.ZIndex = 1
-particlesContainer.Parent = UI.Frame
-
-local function createParticle()
-	local particle = Instance.new("Frame")
-	particle.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
-	particle.Position = UDim2.new(math.random(), 0, 1.2, 0)
-	particle.BackgroundColor3 = Config.AccentPrimary
-	particle.BackgroundTransparency = math.random(70, 90) / 100
-	particle.BorderSizePixel = 0
-	particle.ZIndex = 2
-	particle.Parent = particlesContainer
+local defaultConfig = {
+	-- Features
+	flight_enabled = false,
+	flight_speed = 50,
+	speed_enabled = false,
+	walk_speed = 100,
+	jump_enabled = false,
+	esp_enabled = false,
+	noclip_enabled = false,
 	
-	local particleCorner = Instance.new("UICorner")
-	particleCorner.CornerRadius = UDim.new(1, 0)
-	particleCorner.Parent = particle
+	-- Settings
+	notifications_enabled = true,
+	sounds_enabled = true,
+	auto_save_enabled = true,
+	crosshair_enabled = false,
 	
-	local duration = math.random(8, 15)
-	task.spawn(function()
-		Utils.CreateTween(particle, duration, {Position = UDim2.new(math.random(), 0, -0.2, 0)}, Enum.EasingStyle.Linear):Play()
-		task.wait(duration)
-		particle:Destroy()
+	-- Keybinds
+	toggle_key = "Insert",
+	unload_key = "Delete",
+	
+	-- Window position
+	window_x = -270,
+	window_y = -210
+}
+
+local currentConfig = {}
+
+-- Config functions
+local function saveConfig()
+	if not autoSaveEnabled then return end
+	
+	local success, err = pcall(function()
+		local configData = HttpService:JSONEncode(currentConfig)
+		writefile(configFileName, configData)
+		notify("Config saved!")
+	end)
+	
+	if not success then
+		warn("Failed to save config: " .. tostring(err))
+	end
+end
+
+local function loadConfig()
+	local success, result = pcall(function()
+		if isfile and isfile(configFileName) then
+			local configData = readfile(configFileName)
+			return HttpService:JSONDecode(configData)
+		end
+		return nil
+	end)
+	
+	if success and result then
+		currentConfig = result
+		notify("Config loaded!")
+		return true
+	else
+		-- Use default config
+		currentConfig = {}
+		for k, v in pairs(defaultConfig) do
+			currentConfig[k] = v
+		end
+		return false
+	end
+end
+
+local function resetConfig()
+	currentConfig = {}
+	for k, v in pairs(defaultConfig) do
+		currentConfig[k] = v
+	end
+	saveConfig()
+	notify("Config reset to defaults!")
+end
+
+local function updateConfig(key, value)
+	currentConfig[key] = value
+	if autoSaveEnabled then
+		saveConfig()
+	end
+end
+
+-- Sound effects (from CHAINIX loader)
+local Sounds = {
+	Click = "rbxassetid://6895079853",
+	Hover = "rbxassetid://6895079853", 
+	Success = "rbxassetid://6026984224",
+	Error = "rbxassetid://1254672090"
+}
+
+-- Play sound function
+local function playSound(soundId, volume, pitch, duration)
+	if not soundsEnabled then return end
+	
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundId
+	sound.Volume = volume or 0.5
+	sound.PlaybackSpeed = pitch or 1
+	sound.Parent = game:GetService("SoundService")
+	
+	sound:Play()
+	
+	game:GetService("Debris"):AddItem(sound, duration or 2)
+end
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ChainixHub"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.IgnoreGuiInset = true
+
+pcall(function()
+	screenGui.Parent = game:GetService("CoreGui")
+end)
+if not screenGui.Parent then
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+end
+
+-- Cleanup
+local function cleanup()
+	for _, conn in pairs(connections) do
+		if conn then conn:Disconnect() end
+	end
+	connections = {}
+	if bodyVelocity then bodyVelocity:Destroy() end
+	if bodyGyro then bodyGyro:Destroy() end
+	for _, p in pairs(Players:GetPlayers()) do
+		if p.Character then
+			local h = p.Character:FindFirstChild("ESPHighlight")
+			if h then h:Destroy() end
+		end
+	end
+	if humanoid then humanoid.WalkSpeed = 16 end
+	if crosshairGui then crosshairGui:Destroy() end
+	if screenGui then screenGui:Destroy() end
+end
+
+-- Tween
+local function tween(obj, time, props)
+	return TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props)
+end
+
+local function notify(msg)
+	if notificationsEnabled then
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "CHAINIX";
+			Text = msg;
+			Duration = 2;
+		})
+	end
+end
+
+-- Function to get key name (defined early for keybind system)
+local function getKeyName(keyCode)
+	local name = tostring(keyCode):gsub("Enum.KeyCode.", "")
+	return name
+end
+
+-- Load config on startup
+loadConfig()
+
+-- Apply saved keybinds
+if currentConfig.toggle_key then
+	local success = pcall(function()
+		toggleUIKey = Enum.KeyCode[currentConfig.toggle_key]
+	end)
+end
+if currentConfig.unload_key then
+	local success = pcall(function()
+		unloadKey = Enum.KeyCode[currentConfig.unload_key]
 	end)
 end
 
--- ========================================
--- LOGO & TITLE
--- ========================================
-UI.LogoBG = Instance.new("Frame")
-UI.LogoBG.Size = UDim2.new(1, 0, 1, 0)
-UI.LogoBG.BackgroundTransparency = 1
-UI.LogoBG.ClipsDescendants = true
-UI.LogoBG.ZIndex = 2
-UI.LogoBG.Parent = UI.Frame
+-- Apply saved settings
+notificationsEnabled = currentConfig.notifications_enabled
+soundsEnabled = currentConfig.sounds_enabled
+autoSaveEnabled = currentConfig.auto_save_enabled
 
-UI.Logo = Instance.new("ImageLabel")
-UI.Logo.Size = UDim2.new(1, 0, 1, 0)
-UI.Logo.BackgroundTransparency = 1
-UI.Logo.Image = Config.ChainFrames[1]
-UI.Logo.ImageTransparency = 0.15
-UI.Logo.ImageColor3 = Config.AccentPrimary
-UI.Logo.ScaleType = Enum.ScaleType.Stretch
-UI.Logo.ZIndex = 2
-UI.Logo.Parent = UI.LogoBG
+-- Main frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 540, 0, 420)
+mainFrame.Position = UDim2.new(0.5, currentConfig.window_x or -270, 0.5, currentConfig.window_y or -210)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
 
-local titleContainer = Instance.new("Frame")
-titleContainer.Size = UDim2.new(1, 0, 0, 100)
-titleContainer.Position = UDim2.new(0, 0, 0.32, 0)
-titleContainer.BackgroundTransparency = 1
-titleContainer.ZIndex = 3
-titleContainer.Parent = UI.Frame
+-- Outer shadow/glow (premium effect!)
+local outerShadow = Instance.new("ImageLabel")
+outerShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+outerShadow.Size = UDim2.new(1, 60, 1, 60)
+outerShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+outerShadow.BackgroundTransparency = 1
+outerShadow.Image = "rbxassetid://4996891970"
+outerShadow.ImageColor3 = Color3.fromRGB(88, 101, 242)
+outerShadow.ImageTransparency = 0.6
+outerShadow.ScaleType = Enum.ScaleType.Slice
+outerShadow.SliceCenter = Rect.new(128, 128, 128, 128)
+outerShadow.ZIndex = 0
+outerShadow.Parent = mainFrame
 
-UI.Title = Instance.new("TextLabel")
-UI.Title.Text = "CHAINIX"
-UI.Title.Font = Enum.Font.GothamBold
-UI.Title.TextColor3 = Config.AccentPrimary
-UI.Title.TextSize = 48
-UI.Title.BackgroundTransparency = 1
-UI.Title.Size = UDim2.new(1, 0, 0, 55)
-UI.Title.ZIndex = 4
-UI.Title.Parent = titleContainer
+-- Animated glow pulse
+spawn(function()
+	while mainFrame and mainFrame.Parent do
+		tween(outerShadow, 2, {ImageTransparency = 0.8}):Play()
+		wait(2)
+		if mainFrame and mainFrame.Parent then
+			tween(outerShadow, 2, {ImageTransparency = 0.6}):Play()
+			wait(2)
+		end
+	end
+end)
 
-UI.Subtitle = Instance.new("TextLabel")
-UI.Subtitle.Text = "Ultimate Script Loader"
-UI.Subtitle.Font = Enum.Font.GothamMedium
-UI.Subtitle.TextColor3 = Config.AccentSecondary
-UI.Subtitle.TextSize = 13
-UI.Subtitle.BackgroundTransparency = 1
-UI.Subtitle.Size = UDim2.new(1, 0, 0, 20)
-UI.Subtitle.Position = UDim2.new(0, 0, 0, 50)
-UI.Subtitle.TextTransparency = 0.3
-UI.Subtitle.ZIndex = 4
-UI.Subtitle.Parent = titleContainer
+-- Premium border with gradient
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(88, 101, 242)
+border.Thickness = 2
+border.Transparency = 0.5
+border.Parent = mainFrame
 
--- ========================================
--- VERSION & STATUS & DISCORD
--- ========================================
-UI.Version = Instance.new("TextLabel")
-UI.Version.Text = "v5.0 ULTIMATE"
-UI.Version.Font = Enum.Font.GothamMedium
-UI.Version.TextColor3 = Config.AccentSecondary
-UI.Version.TextSize = 10
-UI.Version.BackgroundTransparency = 0.1
-UI.Version.BackgroundColor3 = Config.BackgroundDark
-UI.Version.Size = UDim2.new(0, 85, 0, 22)
-UI.Version.Position = UDim2.new(0, 12, 0, 12)
-UI.Version.ZIndex = 6
-UI.Version.Parent = UI.Frame
-
-local versionCorner = Instance.new("UICorner")
-versionCorner.CornerRadius = UDim.new(0, 6)
-versionCorner.Parent = UI.Version
-
-local versionBorder = Instance.new("UIStroke")
-versionBorder.Color = Config.AccentDim
-versionBorder.Thickness = 1
-versionBorder.Transparency = 0.7
-versionBorder.Parent = UI.Version
-
-UI.DiscordButton = Instance.new("TextButton")
-UI.DiscordButton.Text = "Discord"
-UI.DiscordButton.Font = Enum.Font.GothamBold
-UI.DiscordButton.TextColor3 = Color3.fromRGB(88, 101, 242)
-UI.DiscordButton.TextSize = 11
-UI.DiscordButton.BackgroundTransparency = 0.1
-UI.DiscordButton.BackgroundColor3 = Config.BackgroundDark
-UI.DiscordButton.Size = UDim2.new(0, 70, 0, 22)
-UI.DiscordButton.Position = UDim2.new(0, 105, 0, 12)
-UI.DiscordButton.AutoButtonColor = false
-UI.DiscordButton.ZIndex = 6
-UI.DiscordButton.Parent = UI.Frame
-
-local discordCorner = Instance.new("UICorner")
-discordCorner.CornerRadius = UDim.new(0, 6)
-discordCorner.Parent = UI.DiscordButton
-
-local discordBorder = Instance.new("UIStroke")
-discordBorder.Color = Color3.fromRGB(88, 101, 242)
-discordBorder.Thickness = 1
-discordBorder.Transparency = 0.7
-discordBorder.Parent = UI.DiscordButton
-
--- Status Badge
-UI.StatusBadge = Instance.new("Frame")
-UI.StatusBadge.Size = UDim2.new(0, 80, 0, 22)
-UI.StatusBadge.Position = UDim2.new(1, -88, 1, -34)
-UI.StatusBadge.BackgroundColor3 = Config.BackgroundDark
-UI.StatusBadge.BackgroundTransparency = 0.1
-UI.StatusBadge.BorderSizePixel = 0
-UI.StatusBadge.ZIndex = 6
-UI.StatusBadge.Parent = UI.Frame
-
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 6)
-statusCorner.Parent = UI.StatusBadge
-
-local statusBorder = Instance.new("UIStroke")
-statusBorder.Color = Config.StatusColor
-statusBorder.Thickness = 1
-statusBorder.Transparency = 0.7
-statusBorder.Parent = UI.StatusBadge
-
-local statusDot = Instance.new("Frame")
-statusDot.Size = UDim2.new(0, 8, 0, 8)
-statusDot.Position = UDim2.new(0, 8, 0.5, -4)
-statusDot.BackgroundColor3 = Config.StatusColor
-statusDot.BorderSizePixel = 0
-statusDot.ZIndex = 7
-statusDot.Parent = UI.StatusBadge
-
-local dotCorner = Instance.new("UICorner")
-dotCorner.CornerRadius = UDim.new(1, 0)
-dotCorner.Parent = statusDot
-
-local statusText = Instance.new("TextLabel")
-statusText.Text = "ONLINE"
-statusText.Font = Enum.Font.GothamBold
-statusText.TextColor3 = Config.StatusColor
-statusText.TextSize = 11
-statusText.BackgroundTransparency = 1
-statusText.Size = UDim2.new(1, -20, 1, 0)
-statusText.Position = UDim2.new(0, 20, 0, 0)
-statusText.TextXAlignment = Enum.TextXAlignment.Left
-statusText.ZIndex = 7
-statusText.Parent = UI.StatusBadge
-
--- Toggle Key Hint (Bottom Left)
-local toggleHint = Instance.new("TextLabel")
-toggleHint.Text = "Press INSERT to hide"
-toggleHint.Font = Enum.Font.GothamMedium
-toggleHint.TextColor3 = Config.AccentSecondary
-toggleHint.TextSize = 9
-toggleHint.BackgroundTransparency = 1
-toggleHint.Size = UDim2.new(0, 120, 0, 15)
-toggleHint.Position = UDim2.new(0, 12, 1, -20)
-toggleHint.TextTransparency = 0.5
-toggleHint.TextXAlignment = Enum.TextXAlignment.Left
-toggleHint.ZIndex = 6
-toggleHint.Parent = UI.Frame
-
--- ========================================
--- ========================================
--- BUTTONS (Close, Back, Settings, Theme)
--- ========================================
-UI.CloseButton = Instance.new("TextButton")
-UI.CloseButton.Text = "X"
-UI.CloseButton.Font = Enum.Font.GothamBold
-UI.CloseButton.TextColor3 = Config.AccentSecondary
-UI.CloseButton.TextSize = 18
-UI.CloseButton.BackgroundColor3 = Config.BackgroundDark
-UI.CloseButton.BackgroundTransparency = 0.3
-UI.CloseButton.Size = UDim2.new(0, 36, 0, 36)
-UI.CloseButton.Position = UDim2.new(1, -48, 0, 12)
-UI.CloseButton.AutoButtonColor = false
-UI.CloseButton.ZIndex = 6
-UI.CloseButton.Parent = UI.Frame
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = UI.CloseButton
-
-local closeBorder = Instance.new("UIStroke")
-closeBorder.Color = Config.AccentDim
-closeBorder.Thickness = 1.5
-closeBorder.Transparency = 0.6
-closeBorder.Parent = UI.CloseButton
-
-UI.BackButton = Instance.new("TextButton")
-UI.BackButton.Text = "←"
-UI.BackButton.Font = Enum.Font.GothamBold
-UI.BackButton.TextColor3 = Config.AccentSecondary
-UI.BackButton.TextSize = 22
-UI.BackButton.BackgroundColor3 = Config.BackgroundDark
-UI.BackButton.BackgroundTransparency = 0.3
-UI.BackButton.Size = UDim2.new(0, 36, 0, 36)
-UI.BackButton.Position = UDim2.new(0, 12, 0, 12)
-UI.BackButton.Visible = false
-UI.BackButton.AutoButtonColor = false
-UI.BackButton.ZIndex = 6
-UI.BackButton.Parent = UI.Frame
-
-local backCorner = Instance.new("UICorner")
-backCorner.CornerRadius = UDim.new(0, 8)
-backCorner.Parent = UI.BackButton
-
-local backBorder = Instance.new("UIStroke")
-backBorder.Color = Config.AccentDim
-backBorder.Thickness = 1.5
-backBorder.Transparency = 0.6
-backBorder.Parent = UI.BackButton
-
--- Settings Button
-UI.SettingsButton = Instance.new("TextButton")
-UI.SettingsButton.Text = "⚙"
-UI.SettingsButton.Font = Enum.Font.GothamBold
-UI.SettingsButton.TextColor3 = Config.AccentSecondary
-UI.SettingsButton.TextSize = 20
-UI.SettingsButton.BackgroundColor3 = Config.BackgroundDark
-UI.SettingsButton.BackgroundTransparency = 0.3
-UI.SettingsButton.Size = UDim2.new(0, 36, 0, 36)
-UI.SettingsButton.Position = UDim2.new(1, -92, 0, 12)
-UI.SettingsButton.AutoButtonColor = false
-UI.SettingsButton.ZIndex = 6
-UI.SettingsButton.Parent = UI.Frame
-
-local settingsCorner = Instance.new("UICorner")
-settingsCorner.CornerRadius = UDim.new(0, 8)
-settingsCorner.Parent = UI.SettingsButton
-
-local settingsBorder = Instance.new("UIStroke")
-settingsBorder.Color = Config.AccentDim
-settingsBorder.Thickness = 1.5
-settingsBorder.Transparency = 0.6
-settingsBorder.Parent = UI.SettingsButton
-
--- Theme Button
--- ========================================
--- ACTIVATE BUTTON
--- ========================================
-UI.ActivateButton = Instance.new("TextButton")
-UI.ActivateButton.Text = ""
-UI.ActivateButton.BackgroundColor3 = Config.ButtonNormal
-UI.ActivateButton.BackgroundTransparency = 0.1
-UI.ActivateButton.Position = UDim2.new(0.5, -100, 1, -70)
-UI.ActivateButton.Size = UDim2.new(0, 200, 0, 50)
-UI.ActivateButton.AutoButtonColor = false
-UI.ActivateButton.ZIndex = 5
-UI.ActivateButton.Parent = UI.Frame
-
-local activateCorner = Instance.new("UICorner")
-activateCorner.CornerRadius = UDim.new(0, 12)
-activateCorner.Parent = UI.ActivateButton
-
-local activateBorder = Instance.new("UIStroke")
-activateBorder.Color = Config.ButtonNormal
-activateBorder.Thickness = 2
-activateBorder.Transparency = 0.3
-activateBorder.Parent = UI.ActivateButton
-
-local btnGradient = Instance.new("UIGradient")
-btnGradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 230, 240)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 190, 200))
+local borderGradient = Instance.new("UIGradient")
+borderGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 101, 242)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 140, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(88, 101, 242))
 }
-btnGradient.Rotation = 90
-btnGradient.Parent = UI.ActivateButton
+borderGradient.Rotation = 0
+borderGradient.Parent = border
 
-local btnText = Instance.new("TextLabel")
-btnText.Text = "ACTIVATE"
-btnText.Font = Enum.Font.GothamBold
-btnText.TextColor3 = Config.BackgroundDark
-btnText.TextSize = 16
-btnText.BackgroundTransparency = 1
-btnText.Size = UDim2.new(1, 0, 1, 0)
-btnText.ZIndex = 6
-btnText.Parent = UI.ActivateButton
+-- Rotating border animation
+spawn(function()
+	while mainFrame and mainFrame.Parent do
+		tween(borderGradient, 4, {Rotation = 360}):Play()
+		wait(4)
+		if mainFrame and mainFrame.Parent then
+			borderGradient.Rotation = 0
+		end
+	end
+end)
 
--- ========================================
--- CUSTOM CURSOR
--- ========================================
-UI.CursorGlow = Instance.new("Frame")
-UI.CursorGlow.Size = UDim2.new(0, 18, 0, 18)
-UI.CursorGlow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-UI.CursorGlow.BackgroundTransparency = 0
-UI.CursorGlow.BorderSizePixel = 0
-UI.CursorGlow.ZIndex = 1000
-UI.CursorGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-UI.CursorGlow.Parent = gui
+-- Chain background decoration (just like loader!)
+local chainBG = Instance.new("ImageLabel")
+chainBG.Size = UDim2.new(1, 0, 1, 0)
+chainBG.Position = UDim2.new(0, 0, 0, 0)
+chainBG.BackgroundTransparency = 1
+chainBG.Image = "rbxassetid://140337915830730"
+chainBG.ImageTransparency = 0.92
+chainBG.ImageColor3 = Color3.fromRGB(88, 101, 242)
+chainBG.ScaleType = Enum.ScaleType.Stretch
+chainBG.ZIndex = 0
+chainBG.Parent = mainFrame
 
-local cursorCorner = Instance.new("UICorner")
-cursorCorner.CornerRadius = UDim.new(1, 0)
-cursorCorner.Parent = UI.CursorGlow
+-- Entrance animation (smooth!)
+mainFrame.Position = UDim2.new(0.5, -270, 1.5, 0)
+mainFrame.BackgroundTransparency = 1
+outerShadow.ImageTransparency = 1
+border.Transparency = 1
 
-local outerRing = Instance.new("Frame")
-outerRing.Size = UDim2.new(0, 28, 0, 28)
-outerRing.Position = UDim2.new(0.5, 0, 0.5, 0)
-outerRing.AnchorPoint = Vector2.new(0.5, 0.5)
-outerRing.BackgroundTransparency = 1
-outerRing.ZIndex = 999
-outerRing.Parent = UI.CursorGlow
+tween(mainFrame, 0.5, {Position = UDim2.new(0.5, -270, 0.5, -210), BackgroundTransparency = 0}):Play()
+tween(outerShadow, 0.5, {ImageTransparency = 0.6}):Play()
+tween(border, 0.5, {Transparency = 0.5}):Play()
 
-local ringCorner = Instance.new("UICorner")
-ringCorner.CornerRadius = UDim.new(1, 0)
-ringCorner.Parent = outerRing
+-- Top info bar
+local infoBar = Instance.new("Frame")
+infoBar.Size = UDim2.new(1, 0, 0, 24)
+infoBar.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+infoBar.BorderSizePixel = 0
+infoBar.Parent = mainFrame
 
-local ringStroke = Instance.new("UIStroke")
-ringStroke.Color = Color3.fromRGB(255, 255, 255)
-ringStroke.Thickness = 1.5
-ringStroke.Transparency = 0.6
-ringStroke.Parent = outerRing
+local infoText = Instance.new("TextLabel")
+infoText.Text = "CHAINIX V1 - Time : " .. os.date("%a %b %d %H:%M:%S %Y") .. " - Welcome to the club."
+infoText.Font = Enum.Font.Code
+infoText.TextSize = 10
+infoText.TextColor3 = Color3.fromRGB(150, 160, 200)
+infoText.BackgroundTransparency = 1
+infoText.Size = UDim2.new(1, -10, 1, 0)
+infoText.Position = UDim2.new(0, 5, 0, 0)
+infoText.TextXAlignment = Enum.TextXAlignment.Left
+infoText.Parent = infoBar
 
-print(">> CHAINIX: UI elements created successfully")
-print(">> Total features loaded: ALL OF THEM! 🔥")
+-- Dragging system (simple and working!)
+local dragging = false
+local dragInput, mousePos, framePos
 
--- ========================================
--- SETTINGS PANEL
--- ========================================
-UI.SettingsPanel = Instance.new("Frame")
-UI.SettingsPanel.Size = UDim2.new(0, 250, 1, 0)
-UI.SettingsPanel.Position = UDim2.new(1, 0, 0, 0)
-UI.SettingsPanel.BackgroundColor3 = Config.BackgroundDark
-UI.SettingsPanel.BorderSizePixel = 0
-UI.SettingsPanel.ZIndex = 20
-UI.SettingsPanel.Parent = UI.Frame
+table.insert(connections, infoBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		mousePos = input.Position
+		framePos = mainFrame.Position
+		playSound(Sounds.Click, 0.3, 1.2, 1)
+		
+		table.insert(connections, input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				-- Save position when drag ends
+				updateConfig("window_x", mainFrame.Position.X.Offset)
+				updateConfig("window_y", mainFrame.Position.Y.Offset)
+			end
+		end))
+	end
+end))
 
-local settingsPanelCorner = Instance.new("UICorner")
-settingsPanelCorner.CornerRadius = UDim.new(0, 0)
-settingsPanelCorner.Parent = UI.SettingsPanel
+table.insert(connections, UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - mousePos
+		mainFrame.Position = UDim2.new(
+			framePos.X.Scale,
+			framePos.X.Offset + delta.X,
+			framePos.Y.Scale,
+			framePos.Y.Offset + delta.Y
+		)
+	end
+end))
 
-local settingsPanelBorder = Instance.new("UIStroke")
-settingsPanelBorder.Color = Config.BorderLight
-settingsPanelBorder.Thickness = 2
-settingsPanelBorder.Transparency = 0.7
-settingsPanelBorder.Parent = UI.SettingsPanel
+-- Cursor change on hover to show it's draggable
+table.insert(connections, infoBar.MouseEnter:Connect(function()
+	infoBar.BackgroundColor3 = Color3.fromRGB(8, 8, 15)
+end))
 
--- Settings Title
-local settingsTitle = Instance.new("TextLabel")
-settingsTitle.Text = "SETTINGS"
-settingsTitle.Font = Enum.Font.GothamBold
-settingsTitle.TextColor3 = Config.AccentPrimary
-settingsTitle.TextSize = 18
-settingsTitle.BackgroundTransparency = 1
-settingsTitle.Size = UDim2.new(1, 0, 0, 50)
-settingsTitle.Position = UDim2.new(0, 0, 0, 10)
-settingsTitle.ZIndex = 21
-settingsTitle.Parent = UI.SettingsPanel
+table.insert(connections, infoBar.MouseLeave:Connect(function()
+	infoBar.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+end))
 
--- Back button for settings
-UI.SettingsBackButton = Instance.new("TextButton")
-UI.SettingsBackButton.Text = "×"
-UI.SettingsBackButton.Font = Enum.Font.GothamBold
-UI.SettingsBackButton.TextColor3 = Config.AccentSecondary
-UI.SettingsBackButton.TextSize = 24
-UI.SettingsBackButton.BackgroundColor3 = Config.BackgroundMain
-UI.SettingsBackButton.BackgroundTransparency = 0.3
-UI.SettingsBackButton.Size = UDim2.new(0, 32, 0, 32)
-UI.SettingsBackButton.Position = UDim2.new(1, -40, 0, 15)
-UI.SettingsBackButton.AutoButtonColor = false
-UI.SettingsBackButton.ZIndex = 22
-UI.SettingsBackButton.Parent = UI.SettingsPanel
+-- Tab bar
+local tabBar = Instance.new("Frame")
+tabBar.Size = UDim2.new(1, 0, 0, 32)
+tabBar.Position = UDim2.new(0, 0, 0, 24)
+tabBar.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+tabBar.BorderSizePixel = 0
+tabBar.Parent = mainFrame
 
-local settingsBackCorner = Instance.new("UICorner")
-settingsBackCorner.CornerRadius = UDim.new(0, 8)
-settingsBackCorner.Parent = UI.SettingsBackButton
+-- Tabs: Auto Farm first, Settings before Misc
+local tabs = {"Auto Farm", "Combat", "Movement", "Visuals", "Settings", "Misc"}
+local currentTab = "Auto Farm"
+local tabButtons = {}
+local tabPages = {}
 
-local settingsBackBorder = Instance.new("UIStroke")
-settingsBackBorder.Color = Config.AccentDim
-settingsBackBorder.Thickness = 1.5
-settingsBackBorder.Transparency = 0.6
-settingsBackBorder.Parent = UI.SettingsBackButton
-
--- Volume Setting
-local volumeLabel = Instance.new("TextLabel")
-volumeLabel.Text = "Volume: 100%"
-volumeLabel.Font = Enum.Font.GothamMedium
-volumeLabel.TextColor3 = Config.AccentSecondary
-volumeLabel.TextSize = 12
-volumeLabel.BackgroundTransparency = 1
-volumeLabel.Size = UDim2.new(1, -20, 0, 20)
-volumeLabel.Position = UDim2.new(0, 10, 0, 70)
-volumeLabel.TextXAlignment = Enum.TextXAlignment.Left
-volumeLabel.ZIndex = 21
-volumeLabel.Parent = UI.SettingsPanel
-
--- Volume Slider Container
-local volumeSliderBG = Instance.new("Frame")
-volumeSliderBG.Size = UDim2.new(1, -40, 0, 6)
-volumeSliderBG.Position = UDim2.new(0, 20, 0, 100)
-volumeSliderBG.BackgroundColor3 = Config.BackgroundMain
-volumeSliderBG.BorderSizePixel = 0
-volumeSliderBG.ZIndex = 21
-volumeSliderBG.Parent = UI.SettingsPanel
-
-local sliderCorner = Instance.new("UICorner")
-sliderCorner.CornerRadius = UDim.new(1, 0)
-sliderCorner.Parent = volumeSliderBG
-
--- Volume Slider Fill
-UI.VolumeSliderFill = Instance.new("Frame")
-UI.VolumeSliderFill.Size = UDim2.new(1, 0, 1, 0)
-UI.VolumeSliderFill.BackgroundColor3 = Config.AccentPrimary
-UI.VolumeSliderFill.BorderSizePixel = 0
-UI.VolumeSliderFill.ZIndex = 22
-UI.VolumeSliderFill.Parent = volumeSliderBG
-
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(1, 0)
-fillCorner.Parent = UI.VolumeSliderFill
-
--- Slider Handle (Knob)
-local sliderHandle = Instance.new("TextLabel")
-sliderHandle.Size = UDim2.new(0, 16, 0, 16)
-sliderHandle.Position = UDim2.new(1, -8, 0.5, -8)
-sliderHandle.AnchorPoint = Vector2.new(0.5, 0.5)
-sliderHandle.BackgroundColor3 = Config.AccentPrimary
-sliderHandle.BorderSizePixel = 0
-sliderHandle.ZIndex = 23
-sliderHandle.Text = ""
-sliderHandle.Parent = volumeSliderBG
-
-local handleCorner = Instance.new("UICorner")
-handleCorner.CornerRadius = UDim.new(1, 0)
-handleCorner.Parent = sliderHandle
-
-local handleBorder = Instance.new("UIStroke")
-handleBorder.Color = Color3.fromRGB(0, 0, 0)
-handleBorder.Thickness = 2
-handleBorder.Transparency = 0
-handleBorder.Parent = sliderHandle
-
--- Notifications Toggle
-local notificationsLabel = Instance.new("TextLabel")
-notificationsLabel.Text = "Notifications"
-notificationsLabel.Font = Enum.Font.GothamMedium
-notificationsLabel.TextColor3 = Config.AccentSecondary
-notificationsLabel.TextSize = 12
-notificationsLabel.BackgroundTransparency = 1
-notificationsLabel.Size = UDim2.new(0.7, 0, 0, 20)
-notificationsLabel.Position = UDim2.new(0, 10, 0, 130)
-notificationsLabel.TextXAlignment = Enum.TextXAlignment.Left
-notificationsLabel.ZIndex = 21
-notificationsLabel.Parent = UI.SettingsPanel
-
-UI.NotificationsToggle = Instance.new("TextButton")
-UI.NotificationsToggle.Text = "ON"
-UI.NotificationsToggle.Font = Enum.Font.GothamBold
-UI.NotificationsToggle.TextColor3 = Config.StatusColor
-UI.NotificationsToggle.TextSize = 11
-UI.NotificationsToggle.BackgroundColor3 = Config.BackgroundMain
-UI.NotificationsToggle.Size = UDim2.new(0, 50, 0, 24)
-UI.NotificationsToggle.Position = UDim2.new(1, -60, 0, 128)
-UI.NotificationsToggle.AutoButtonColor = false
-UI.NotificationsToggle.ZIndex = 21
-UI.NotificationsToggle.Parent = UI.SettingsPanel
-
-local notifCorner = Instance.new("UICorner")
-notifCorner.CornerRadius = UDim.new(0, 6)
-notifCorner.Parent = UI.NotificationsToggle
-
-local notifBorder = Instance.new("UIStroke")
-notifBorder.Color = Config.StatusColor
-notifBorder.Thickness = 1.5
-notifBorder.Transparency = 0.5
-notifBorder.Parent = UI.NotificationsToggle
-
--- Theme Selector in Settings
-local themeLabel = Instance.new("TextLabel")
-themeLabel.Text = "Theme"
-themeLabel.Font = Enum.Font.GothamMedium
-themeLabel.TextColor3 = Config.AccentSecondary
-themeLabel.TextSize = 12
-themeLabel.BackgroundTransparency = 1
-themeLabel.Size = UDim2.new(0.5, 0, 0, 20)
-themeLabel.Position = UDim2.new(0, 10, 0, 165)
-themeLabel.TextXAlignment = Enum.TextXAlignment.Left
-themeLabel.ZIndex = 21
-themeLabel.Parent = UI.SettingsPanel
-
--- Theme Dropdown Button
-local themeDropdown = Instance.new("TextButton")
-themeDropdown.Text = "Default Dark  ▼"
-themeDropdown.Font = Enum.Font.GothamMedium
-themeDropdown.TextColor3 = Config.AccentPrimary
-themeDropdown.TextSize = 11
-themeDropdown.BackgroundColor3 = Config.BackgroundMain
-themeDropdown.Size = UDim2.new(1, -20, 0, 28)
-themeDropdown.Position = UDim2.new(0, 10, 0, 190)
-themeDropdown.TextXAlignment = Enum.TextXAlignment.Left
-themeDropdown.AutoButtonColor = false
-themeDropdown.ZIndex = 21
-themeDropdown.Parent = UI.SettingsPanel
-
-local dropdownCorner = Instance.new("UICorner")
-dropdownCorner.CornerRadius = UDim.new(0, 6)
-dropdownCorner.Parent = themeDropdown
-
-local dropdownBorder = Instance.new("UIStroke")
-dropdownBorder.Color = Config.AccentDim
-dropdownBorder.Thickness = 1.5
-dropdownBorder.Transparency = 0.6
-dropdownBorder.Parent = themeDropdown
-
-local dropdownPadding = Instance.new("UIPadding")
-dropdownPadding.PaddingLeft = UDim.new(0, 10)
-dropdownPadding.Parent = themeDropdown
-
--- Theme Dropdown Menu (hidden by default)
--- Theme Dropdown Menu (hidden by default) - Now with scrolling!
-local themeDropdownMenu = Instance.new("ScrollingFrame")
-themeDropdownMenu.Size = UDim2.new(1, -20, 0, 0)
-themeDropdownMenu.Position = UDim2.new(0, 10, 0, 222)
-themeDropdownMenu.BackgroundColor3 = Config.BackgroundDark
-themeDropdownMenu.BorderSizePixel = 0
-themeDropdownMenu.Visible = false
-themeDropdownMenu.ZIndex = 30
-themeDropdownMenu.ScrollBarThickness = 6
-themeDropdownMenu.ScrollBarImageColor3 = Config.AccentPrimary
-themeDropdownMenu.ScrollBarImageTransparency = 0.3
-themeDropdownMenu.CanvasSize = UDim2.new(0, 0, 0, 250) -- 8 themes × 30px + padding = 250px
-themeDropdownMenu.Parent = UI.SettingsPanel
-
-local menuCorner = Instance.new("UICorner")
-menuCorner.CornerRadius = UDim.new(0, 6)
-menuCorner.Parent = themeDropdownMenu
-
-local menuBorder = Instance.new("UIStroke")
-menuBorder.Color = Config.BorderLight
-menuBorder.Thickness = 2
-menuBorder.Transparency = 0.7
-menuBorder.Parent = themeDropdownMenu
-
--- Create theme options
-local themeNames = {"Default", "Ocean", "Purple", "Matrix", "Ruby", "Gold", "Pink", "Custom"}
-local themeButtons = {}
-local themeDropdownOpen = false
-
-for i, themeName in ipairs(themeNames) do
-	local optionBtn = Instance.new("TextButton")
-	optionBtn.Name = themeName
-	optionBtn.Text = Themes[themeName].Name
-	optionBtn.Font = Enum.Font.GothamMedium
-	optionBtn.TextColor3 = Themes[themeName].AccentPrimary
-	optionBtn.TextSize = 11
-	optionBtn.BackgroundColor3 = Config.BackgroundMain
-	optionBtn.BackgroundTransparency = 0.3
-	optionBtn.Size = UDim2.new(1, -4, 0, 30)
-	optionBtn.Position = UDim2.new(0, 0, 0, (i-1) * 30)
-	optionBtn.TextXAlignment = Enum.TextXAlignment.Left
-	optionBtn.AutoButtonColor = false
-	optionBtn.ZIndex = 31
-	optionBtn.Parent = themeDropdownMenu
+-- Create tabs
+for i, tabName in ipairs(tabs) do
+	local tabBtn = Instance.new("TextButton")
+	tabBtn.Size = UDim2.new(0, 90, 1, 0)
+	tabBtn.Position = UDim2.new(0, (i-1) * 90, 0, 0)
+	tabBtn.BackgroundColor3 = currentTab == tabName and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(18, 18, 24)
+	tabBtn.BorderSizePixel = 0
+	tabBtn.Text = tabName
+	tabBtn.Font = Enum.Font.GothamBold
+	tabBtn.TextSize = 11
+	tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tabBtn.AutoButtonColor = false
+	tabBtn.Parent = tabBar
 	
-	local optionPadding = Instance.new("UIPadding")
-	optionPadding.PaddingLeft = UDim.new(0, 10)
-	optionPadding.Parent = optionBtn
+	-- Glow effect for active tab
+	if currentTab == tabName then
+		local glow = Instance.new("Frame")
+		glow.Name = "Glow"
+		glow.Size = UDim2.new(1, 0, 1, 0)
+		glow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		glow.BackgroundTransparency = 0.7
+		glow.BorderSizePixel = 0
+		glow.ZIndex = 0
+		glow.Parent = tabBtn
+		
+		-- Glow pulse
+		spawn(function()
+			while tabBtn and tabBtn.Parent do
+				tween(glow, 1.5, {BackgroundTransparency = 0.9}):Play()
+				wait(1.5)
+				if tabBtn and tabBtn.Parent then
+					tween(glow, 1.5, {BackgroundTransparency = 0.7}):Play()
+					wait(1.5)
+				end
+			end
+		end)
+	end
 	
-	table.insert(themeButtons, optionBtn)
+	tabButtons[tabName] = tabBtn
+	
+	-- Page
+	local page = Instance.new("Frame")
+	page.Size = UDim2.new(1, 0, 1, -56)
+	page.Position = UDim2.new(0, 0, 0, 56)
+	page.BackgroundTransparency = 1
+	page.Visible = (tabName == currentTab)
+	page.Parent = mainFrame
+	
+	tabPages[tabName] = page
 end
 
-
--- Custom Theme Creator Panel
-local customThemePanel = Instance.new("Frame")
-customThemePanel.Size = UDim2.new(0, 280, 0, 400)
-customThemePanel.Position = UDim2.new(0.5, -140, 0.5, -200)
-customThemePanel.BackgroundColor3 = Config.BackgroundDark
-customThemePanel.BorderSizePixel = 0
-customThemePanel.Visible = false
-customThemePanel.ZIndex = 50
-customThemePanel.Parent = UI.Frame
-
-local customPanelCorner = Instance.new("UICorner")
-customPanelCorner.CornerRadius = UDim.new(0, 12)
-customPanelCorner.Parent = customThemePanel
-
-local customPanelBorder = Instance.new("UIStroke")
-customPanelBorder.Color = Config.BorderLight
-customPanelBorder.Thickness = 2
-customPanelBorder.Transparency = 0.5
-customPanelBorder.Parent = customThemePanel
-
--- Title
-local customThemeTitle = Instance.new("TextLabel")
-customThemeTitle.Text = "CUSTOM THEME CREATOR"
-customThemeTitle.Font = Enum.Font.GothamBold
-customThemeTitle.TextColor3 = Config.AccentPrimary
-customThemeTitle.TextSize = 16
-customThemeTitle.BackgroundTransparency = 1
-customThemeTitle.Size = UDim2.new(1, -60, 0, 40)
-customThemeTitle.Position = UDim2.new(0, 20, 0, 10)
-customThemeTitle.TextXAlignment = Enum.TextXAlignment.Left
-customThemeTitle.ZIndex = 51
-customThemeTitle.Parent = customThemePanel
-
--- Close button for custom theme panel
-local customThemeClose = Instance.new("TextButton")
-customThemeClose.Text = "×"
-customThemeClose.Font = Enum.Font.GothamBold
-customThemeClose.TextColor3 = Config.AccentSecondary
-customThemeClose.TextSize = 24
-customThemeClose.BackgroundColor3 = Config.BackgroundMain
-customThemeClose.BackgroundTransparency = 0.3
-customThemeClose.Size = UDim2.new(0, 32, 0, 32)
-customThemeClose.Position = UDim2.new(1, -42, 0, 10)
-customThemeClose.AutoButtonColor = false
-customThemeClose.ZIndex = 51
-customThemeClose.Parent = customThemePanel
-
-local customCloseCorner = Instance.new("UICorner")
-customCloseCorner.CornerRadius = UDim.new(0, 8)
-customCloseCorner.Parent = customThemeClose
-
--- Color pickers storage
-local customColors = {
-	Background = Color3.fromRGB(0, 0, 0),
-	Accent = Color3.fromRGB(255, 255, 255),
-	Status = Color3.fromRGB(50, 200, 100)
-}
-
--- Background Color Picker
-local bgLabel = Instance.new("TextLabel")
-bgLabel.Text = "Background Color"
-bgLabel.Font = Enum.Font.GothamMedium
-bgLabel.TextColor3 = Config.AccentSecondary
-bgLabel.TextSize = 12
-bgLabel.BackgroundTransparency = 1
-bgLabel.Size = UDim2.new(1, -40, 0, 20)
-bgLabel.Position = UDim2.new(0, 20, 0, 60)
-bgLabel.TextXAlignment = Enum.TextXAlignment.Left
-bgLabel.ZIndex = 51
-bgLabel.Parent = customThemePanel
-
-local bgPicker = Instance.new("Frame")
-bgPicker.Size = UDim2.new(1, -40, 0, 80)
-bgPicker.Position = UDim2.new(0, 20, 0, 85)
-bgPicker.BackgroundColor3 = Config.BackgroundMain
-bgPicker.BorderSizePixel = 0
-bgPicker.ZIndex = 51
-bgPicker.Parent = customThemePanel
-
-local bgPickerCorner = Instance.new("UICorner")
-bgPickerCorner.CornerRadius = UDim.new(0, 8)
-bgPickerCorner.Parent = bgPicker
-
--- RGB Sliders for Background
-local bgSliders = {}
-local colorNames = {"R", "G", "B"}
-local colorDefaults = {0, 0, 0}
-
-for i, colorName in ipairs(colorNames) do
-	local label = Instance.new("TextLabel")
-	label.Text = colorName .. ": 0"
-	label.Font = Enum.Font.GothamMedium
-	label.TextColor3 = Config.AccentSecondary
-	label.TextSize = 10
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(0, 40, 0, 20)
-	label.Position = UDim2.new(0, 10, 0, (i-1) * 25 + 5)
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.ZIndex = 52
-	label.Parent = bgPicker
+-- Tab switching with effects
+local function switchTab(tabName)
+	currentTab = tabName
+	for name, btn in pairs(tabButtons) do
+		local isActive = (name == tabName)
+		
+		-- Smooth color transition
+		tween(btn, 0.3, {
+			BackgroundColor3 = isActive and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(18, 18, 24)
+		}):Play()
+		
+		-- Add/remove glow
+		local existingGlow = btn:FindFirstChild("Glow")
+		if isActive and not existingGlow then
+			local glow = Instance.new("Frame")
+			glow.Name = "Glow"
+			glow.Size = UDim2.new(1, 0, 1, 0)
+			glow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+			glow.BackgroundTransparency = 1
+			glow.BorderSizePixel = 0
+			glow.ZIndex = 0
+			glow.Parent = btn
+			
+			tween(glow, 0.3, {BackgroundTransparency = 0.7}):Play()
+			
+			-- Pulse animation
+			spawn(function()
+				while glow and glow.Parent do
+					tween(glow, 1.5, {BackgroundTransparency = 0.9}):Play()
+					wait(1.5)
+					if glow and glow.Parent then
+						tween(glow, 1.5, {BackgroundTransparency = 0.7}):Play()
+						wait(1.5)
+					end
+				end
+			end)
+		elseif not isActive and existingGlow then
+			tween(existingGlow, 0.3, {BackgroundTransparency = 1}):Play()
+			task.delay(0.3, function()
+				if existingGlow then existingGlow:Destroy() end
+			end)
+		end
+	end
 	
-	local sliderBG = Instance.new("Frame")
-	sliderBG.Size = UDim2.new(1, -60, 0, 6)
-	sliderBG.Position = UDim2.new(0, 50, 0, (i-1) * 25 + 12)
-	sliderBG.BackgroundColor3 = Config.BackgroundDark
-	sliderBG.BorderSizePixel = 0
-	sliderBG.ZIndex = 52
-	sliderBG.Parent = bgPicker
-	
-	local sliderCorner = Instance.new("UICorner")
-	sliderCorner.CornerRadius = UDim.new(1, 0)
-	sliderCorner.Parent = sliderBG
-	
-	local sliderFill = Instance.new("Frame")
-	sliderFill.Size = UDim2.new(0, 0, 1, 0)
-	sliderFill.BackgroundColor3 = i == 1 and Color3.fromRGB(255, 0, 0) or i == 2 and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 0, 255)
-	sliderFill.BorderSizePixel = 0
-	sliderFill.ZIndex = 53
-	sliderFill.Parent = sliderBG
-	
-	local fillCorner = Instance.new("UICorner")
-	fillCorner.CornerRadius = UDim.new(1, 0)
-	fillCorner.Parent = sliderFill
-	
-	bgSliders[colorName] = {label = label, sliderBG = sliderBG, sliderFill = sliderFill, value = colorDefaults[i]}
+	-- Simple page visibility (no transparency animation to prevent text duplication bug)
+	for name, page in pairs(tabPages) do
+		page.Visible = (name == tabName)
+	end
 end
 
--- Accent Color Label
-local accentLabel = Instance.new("TextLabel")
-accentLabel.Text = "Accent Color"
-accentLabel.Font = Enum.Font.GothamMedium
-accentLabel.TextColor3 = Config.AccentSecondary
-accentLabel.TextSize = 12
-accentLabel.BackgroundTransparency = 1
-accentLabel.Size = UDim2.new(1, -40, 0, 20)
-accentLabel.Position = UDim2.new(0, 20, 0, 175)
-accentLabel.TextXAlignment = Enum.TextXAlignment.Left
-accentLabel.ZIndex = 51
-accentLabel.Parent = customThemePanel
+for name, btn in pairs(tabButtons) do
+	table.insert(connections, btn.MouseButton1Click:Connect(function()
+		playSound(Sounds.Click, 0.4, 1.1, 1)
+		switchTab(name)
+	end))
+	
+	-- Hover effects
+	table.insert(connections, btn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.2, 1.3, 1)
+		if currentTab ~= name then
+			tween(btn, 0.2, {BackgroundColor3 = Color3.fromRGB(30, 35, 50)}):Play()
+		end
+	end))
+	
+	table.insert(connections, btn.MouseLeave:Connect(function()
+		if currentTab ~= name then
+			tween(btn, 0.2, {BackgroundColor3 = Color3.fromRGB(18, 18, 24)}):Play()
+		end
+	end))
+end
 
--- Accent Color Preview Box
-local accentPreview = Instance.new("Frame")
-accentPreview.Size = UDim2.new(1, -40, 0, 40)
-accentPreview.Position = UDim2.new(0, 20, 0, 200)
-accentPreview.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-accentPreview.BorderSizePixel = 0
-accentPreview.ZIndex = 51
-accentPreview.Parent = customThemePanel
-
-local accentPreviewCorner = Instance.new("UICorner")
-accentPreviewCorner.CornerRadius = UDim.new(0, 8)
-accentPreviewCorner.Parent = accentPreview
-
-local accentPreviewText = Instance.new("TextLabel")
-accentPreviewText.Text = "RGB(255, 255, 255)"
-accentPreviewText.Font = Enum.Font.GothamBold
-accentPreviewText.TextColor3 = Color3.fromRGB(0, 0, 0)
-accentPreviewText.TextSize = 11
-accentPreviewText.BackgroundTransparency = 1
-accentPreviewText.Size = UDim2.new(1, 0, 1, 0)
-accentPreviewText.ZIndex = 52
-accentPreviewText.Parent = accentPreview
-
--- Status Color Label
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Text = "Status Color"
-statusLabel.Font = Enum.Font.GothamMedium
-statusLabel.TextColor3 = Config.AccentSecondary
-statusLabel.TextSize = 12
-statusLabel.BackgroundTransparency = 1
-statusLabel.Size = UDim2.new(1, -40, 0, 20)
-statusLabel.Position = UDim2.new(0, 20, 0, 250)
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.ZIndex = 51
-statusLabel.Parent = customThemePanel
-
--- Status Color Preview Box
-local statusPreview = Instance.new("Frame")
-statusPreview.Size = UDim2.new(1, -40, 0, 40)
-statusPreview.Position = UDim2.new(0, 20, 0, 275)
-statusPreview.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
-statusPreview.BorderSizePixel = 0
-statusPreview.ZIndex = 51
-statusPreview.Parent = customThemePanel
-
-local statusPreviewCorner = Instance.new("UICorner")
-statusPreviewCorner.CornerRadius = UDim.new(0, 8)
-statusPreviewCorner.Parent = statusPreview
-
-local statusPreviewText = Instance.new("TextLabel")
-statusPreviewText.Text = "RGB(50, 200, 100)"
-statusPreviewText.Font = Enum.Font.GothamBold
-statusPreviewText.TextColor3 = Color3.fromRGB(255, 255, 255)
-statusPreviewText.TextSize = 11
-statusPreviewText.BackgroundTransparency = 1
-statusPreviewText.Size = UDim2.new(1, 0, 1, 0)
-statusPreviewText.ZIndex = 52
-statusPreviewText.Parent = statusPreview
-
--- Apply Custom Theme Button
-local applyCustomButton = Instance.new("TextButton")
-applyCustomButton.Text = "APPLY CUSTOM THEME"
-applyCustomButton.Font = Enum.Font.GothamBold
-applyCustomButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-applyCustomButton.TextSize = 13
-applyCustomButton.BackgroundColor3 = Config.AccentPrimary
-applyCustomButton.Size = UDim2.new(1, -40, 0, 45)
-applyCustomButton.Position = UDim2.new(0, 20, 1, -60)
-applyCustomButton.AutoButtonColor = false
-applyCustomButton.ZIndex = 51
-applyCustomButton.Parent = customThemePanel
-
-local applyCustomCorner = Instance.new("UICorner")
-applyCustomCorner.CornerRadius = UDim.new(0, 8)
-applyCustomCorner.Parent = applyCustomButton
-
--- Keybind Setting
-local keybindLabel = Instance.new("TextLabel")
-keybindLabel.Text = "Toggle Key: INSERT"
-keybindLabel.Font = Enum.Font.GothamMedium
-keybindLabel.TextColor3 = Config.AccentSecondary
-keybindLabel.TextSize = 12
-keybindLabel.BackgroundTransparency = 1
-keybindLabel.Size = UDim2.new(1, -20, 0, 20)
-keybindLabel.Position = UDim2.new(0, 10, 1, -30)
-keybindLabel.TextXAlignment = Enum.TextXAlignment.Left
-keybindLabel.ZIndex = 21
-keybindLabel.Parent = UI.SettingsPanel
-
--- ========================================
--- CUSTOM THEME CREATOR PANEL
--- ========================================
-local customThemePanel = Instance.new("ScrollingFrame")
-customThemePanel.Size = UDim2.new(0, 250, 1, 0)
-customThemePanel.Position = UDim2.new(1, 0, 0, 0)
-customThemePanel.BackgroundColor3 = Config.BackgroundDark
-customThemePanel.BorderSizePixel = 0
-customThemePanel.Visible = false
-customThemePanel.ZIndex = 20
-customThemePanel.ScrollBarThickness = 6
-customThemePanel.ScrollBarImageColor3 = Config.AccentPrimary
-customThemePanel.ScrollBarImageTransparency = 0.3
-customThemePanel.CanvasSize = UDim2.new(0, 0, 0, 390)
-customThemePanel.Parent = UI.Frame
-
-local customPanelCorner = Instance.new("UICorner")
-customPanelCorner.CornerRadius = UDim.new(0, 12)
-customPanelCorner.Parent = customThemePanel
-
-local customPanelBorder = Instance.new("UIStroke")
-customPanelBorder.Color = Config.BorderLight
-customPanelBorder.Thickness = 2
-customPanelBorder.Transparency = 0.7
-customPanelBorder.Parent = customThemePanel
-
--- Custom Theme Title
-local customTitle = Instance.new("TextLabel")
-customTitle.Text = "CUSTOM THEME"
-customTitle.Font = Enum.Font.GothamBold
-customTitle.TextColor3 = Config.AccentPrimary
-customTitle.TextSize = 14
-customTitle.BackgroundTransparency = 1
-customTitle.Size = UDim2.new(1, -50, 0, 50)
-customTitle.Position = UDim2.new(0, 10, 0, 0)
-customTitle.TextXAlignment = Enum.TextXAlignment.Left
-customTitle.ZIndex = 21
-customTitle.Parent = customThemePanel
-
--- Custom Theme Back Button
-local customBackButton = Instance.new("TextButton")
-customBackButton.Text = "×"
-customBackButton.Font = Enum.Font.GothamBold
-customBackButton.TextColor3 = Config.AccentSecondary
-customBackButton.TextSize = 24
-customBackButton.BackgroundColor3 = Config.BackgroundMain
-customBackButton.BackgroundTransparency = 0.3
-customBackButton.Size = UDim2.new(0, 32, 0, 32)
-customBackButton.Position = UDim2.new(1, -40, 0, 15)
-customBackButton.AutoButtonColor = false
-customBackButton.ZIndex = 22
-customBackButton.Parent = customThemePanel
-
-local customBackCorner = Instance.new("UICorner")
-customBackCorner.CornerRadius = UDim.new(0, 8)
-customBackCorner.Parent = customBackButton
-
--- Color Picker Helper Function
-local function createColorPicker(name, yPos, defaultColor)
-	local container = Instance.new("Frame")
-	container.Size = UDim2.new(1, -20, 0, 85)
-	container.Position = UDim2.new(0, 10, 0, yPos)
-	container.BackgroundTransparency = 1
-	container.ZIndex = 21
-	container.Parent = customThemePanel
+-- Create section
+local function createSection(name, parent, yPos)
+	local section = Instance.new("Frame")
+	section.Size = UDim2.new(1, 0, 0, 25)
+	section.Position = UDim2.new(0, 0, 0, yPos)
+	section.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+	section.BorderSizePixel = 1
+	section.BorderColor3 = Color3.fromRGB(40, 45, 80)
+	section.ClipsDescendants = true
+	section.Parent = parent
 	
 	local label = Instance.new("TextLabel")
 	label.Text = name
-	label.Font = Enum.Font.GothamMedium
-	label.TextColor3 = Config.AccentSecondary
+	label.Font = Enum.Font.GothamBold
 	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(240, 242, 245)
 	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 0, 20)
+	label.Size = UDim2.new(1, -10, 1, 0)
+	label.Position = UDim2.new(0, 5, 0, 0)
 	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.ZIndex = 21
+	label.TextTruncate = Enum.TextTruncate.AtEnd
+	label.Parent = section
+	
+	return yPos + 30
+end
+
+-- Create checkbox
+local function createCheckbox(name, parent, yPos, callback)
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1, 0, 0, 20)
+	container.Position = UDim2.new(0, 0, 0, yPos)
+	container.BackgroundTransparency = 1
+	container.Parent = parent
+	
+	local checkbox = Instance.new("TextButton")
+	checkbox.Size = UDim2.new(0, 12, 0, 12)
+	checkbox.Position = UDim2.new(0, 5, 0, 4)
+	checkbox.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+	checkbox.BorderSizePixel = 1
+	checkbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+	checkbox.Text = ""
+	checkbox.AutoButtonColor = false
+	checkbox.Parent = container
+	
+	-- Glow effect for checkbox
+	local checkGlow = Instance.new("Frame")
+	checkGlow.Size = UDim2.new(1, 4, 1, 4)
+	checkGlow.Position = UDim2.new(0, -2, 0, -2)
+	checkGlow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+	checkGlow.BackgroundTransparency = 1
+	checkGlow.BorderSizePixel = 0
+	checkGlow.ZIndex = 0
+	checkGlow.Parent = checkbox
+	
+	local glowCorner = Instance.new("UICorner")
+	glowCorner.CornerRadius = UDim.new(0, 2)
+	glowCorner.Parent = checkGlow
+	
+	local checkmark = Instance.new("TextLabel")
+	checkmark.Size = UDim2.new(1, 0, 1, 0)
+	checkmark.BackgroundTransparency = 1
+	checkmark.Text = ""
+	checkmark.Font = Enum.Font.GothamBold
+	checkmark.TextSize = 10
+	checkmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+	checkmark.Parent = checkbox
+	
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(200, 205, 215)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -25, 1, 0)
+	label.Position = UDim2.new(0, 22, 0, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.Parent = container
 	
-	-- Color preview (bigger)
-	local colorPreview = Instance.new("Frame")
-	colorPreview.Size = UDim2.new(1, 0, 0, 25)
-	colorPreview.Position = UDim2.new(0, 0, 0, 18)
-	colorPreview.BackgroundColor3 = defaultColor
-	colorPreview.BorderSizePixel = 0
-	colorPreview.ZIndex = 22
-	colorPreview.Parent = container
+	local isChecked = false
 	
-	local previewCorner = Instance.new("UICorner")
-	previewCorner.CornerRadius = UDim.new(0, 6)
-	previewCorner.Parent = colorPreview
+	-- Hover effects
+	table.insert(connections, checkbox.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
+		tween(checkbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+		if isChecked then
+			tween(checkGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+		end
+	end))
 	
-	local previewBorder = Instance.new("UIStroke")
-	previewBorder.Color = Color3.fromRGB(255, 255, 255)
-	previewBorder.Thickness = 2
-	previewBorder.Transparency = 0.5
-	previewBorder.Parent = colorPreview
+	table.insert(connections, checkbox.MouseLeave:Connect(function()
+		tween(checkbox, 0.2, {BorderColor3 = Color3.fromRGB(60, 65, 100)}):Play()
+		if isChecked then
+			tween(checkGlow, 0.2, {BackgroundTransparency = 1}):Play()
+		end
+	end))
 	
-	-- Color wheel (preset colors in a grid)
-	local colors = {
-		Color3.fromRGB(255, 0, 0),     -- Red
-		Color3.fromRGB(255, 128, 0),   -- Orange
-		Color3.fromRGB(255, 255, 0),   -- Yellow
-		Color3.fromRGB(128, 255, 0),   -- Lime
-		Color3.fromRGB(0, 255, 0),     -- Green
-		Color3.fromRGB(0, 255, 128),   -- Cyan-Green
-		Color3.fromRGB(0, 255, 255),   -- Cyan
-		Color3.fromRGB(0, 128, 255),   -- Sky Blue
-		Color3.fromRGB(0, 0, 255),     -- Blue
-		Color3.fromRGB(128, 0, 255),   -- Purple
-		Color3.fromRGB(255, 0, 255),   -- Magenta
-		Color3.fromRGB(255, 0, 128),   -- Pink
-		Color3.fromRGB(255, 255, 255), -- White
-		Color3.fromRGB(180, 180, 180), -- Light Gray
-		Color3.fromRGB(100, 100, 100), -- Gray
-		Color3.fromRGB(0, 0, 0),       -- Black
-	}
-	
-	local colorButtons = {}
-	for i, color in ipairs(colors) do
-		local colorBtn = Instance.new("TextButton")
-		colorBtn.Size = UDim2.new(0, 20, 0, 20)
-		colorBtn.Position = UDim2.new((i-1) % 8 * 0.125, 1, math.floor((i-1) / 8) * 24, 48)
-		colorBtn.BackgroundColor3 = color
-		colorBtn.BorderSizePixel = 0
-		colorBtn.Text = ""
-		colorBtn.AutoButtonColor = false
-		colorBtn.ZIndex = 22
-		colorBtn.Parent = container
+	table.insert(connections, checkbox.MouseButton1Click:Connect(function()
+		isChecked = not isChecked
 		
-		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(1, 0)
-		btnCorner.Parent = colorBtn
+		-- Sound effect
+		playSound(Sounds.Click, 0.5, isChecked and 1.2 or 0.9, 1)
 		
-		local btnBorder = Instance.new("UIStroke")
-		btnBorder.Color = Color3.fromRGB(255, 255, 255)
-		btnBorder.Thickness = 1
-		btnBorder.Transparency = 0.7
-		btnBorder.Parent = colorBtn
-		
-		table.insert(colorButtons, {button = colorBtn, color = color})
-	end
-	
-	return {container = container, preview = colorPreview, buttons = colorButtons, selectedColor = defaultColor}
-end
-
--- Create Color Pickers
-local backgroundPicker = createColorPicker("Background Color", 60, Config.BackgroundMain)
-local accentPicker = createColorPicker("Accent Color", 150, Config.AccentPrimary)
-local statusPicker = createColorPicker("Status Color", 240, Config.StatusColor)
-
--- Save Custom Theme Button
-local saveCustomButton = Instance.new("TextButton")
-saveCustomButton.Text = "DONE"
-saveCustomButton.Font = Enum.Font.GothamBold
-saveCustomButton.TextColor3 = Config.AccentPrimary
-saveCustomButton.TextSize = 13
-saveCustomButton.BackgroundColor3 = Config.BackgroundMain
-saveCustomButton.BackgroundTransparency = 0.2
-saveCustomButton.Size = UDim2.new(1, -20, 0, 40)
-saveCustomButton.Position = UDim2.new(0, 10, 0, 335)
-saveCustomButton.AutoButtonColor = false
-saveCustomButton.ZIndex = 22
-saveCustomButton.Parent = customThemePanel
-
-local saveCorner = Instance.new("UICorner")
-saveCorner.CornerRadius = UDim.new(0, 8)
-saveCorner.Parent = saveCustomButton
-
-local saveBorder = Instance.new("UIStroke")
-saveBorder.Color = Config.AccentPrimary
-saveBorder.Thickness = 2
-saveBorder.Transparency = 0.3
-saveBorder.Parent = saveCustomButton
-
--- ========================================
--- NOTIFICATION CONTAINER
--- ========================================
-UI.NotificationContainer = Instance.new("Frame")
-UI.NotificationContainer.Size = UDim2.new(0, 300, 0, 400)
-UI.NotificationContainer.Position = UDim2.new(1, -320, 0, 20)
-UI.NotificationContainer.BackgroundTransparency = 1
-UI.NotificationContainer.ZIndex = 50
-UI.NotificationContainer.Parent = gui
-
--- ========================================
--- SEARCH BAR (for game menu)
--- ========================================
-UI.SearchBar = Instance.new("TextBox")
-UI.SearchBar.PlaceholderText = "Search games..."
-UI.SearchBar.Text = ""
-UI.SearchBar.Font = Enum.Font.GothamMedium
-UI.SearchBar.TextColor3 = Config.AccentPrimary
-UI.SearchBar.PlaceholderColor3 = Config.AccentSecondary
-UI.SearchBar.TextSize = 12
-UI.SearchBar.BackgroundColor3 = Config.BackgroundDark
-UI.SearchBar.BackgroundTransparency = 0.3
-UI.SearchBar.Size = UDim2.new(1, -24, 0, 32)
-UI.SearchBar.Position = UDim2.new(0, 12, 0, 50)
-UI.SearchBar.Visible = false
-UI.SearchBar.ClearTextOnFocus = false
-UI.SearchBar.ZIndex = 6
-UI.SearchBar.Parent = UI.Frame
-
-local searchCorner = Instance.new("UICorner")
-searchCorner.CornerRadius = UDim.new(0, 8)
-searchCorner.Parent = UI.SearchBar
-
-local searchBorder = Instance.new("UIStroke")
-searchBorder.Color = Config.AccentDim
-searchBorder.Thickness = 1.5
-searchBorder.Transparency = 0.6
-searchBorder.Parent = UI.SearchBar
-
-print(">> CHAINIX: Settings panel, theme selector, and notifications ready!")
-
--- ========================================
--- ANIMATION FUNCTIONS
--- ========================================
-local function startBackgroundAnimation()
-	task.spawn(function()
-		while animatedBG.Parent do
-			for i = 45, 135, 1 do
-				gradient.Rotation = i
-				task.wait(0.05)
-			end
-			for i = 135, 45, -1 do
-				gradient.Rotation = i
-				task.wait(0.05)
-			end
-		end
-	end)
-end
-
-local function startParticleSpawning()
-	task.spawn(function()
-		while particlesContainer.Parent do
-			createParticle()
-			task.wait(math.random(50, 150) / 100)
-		end
-	end)
-end
-
-local function pulseStatusDot()
-	task.spawn(function()
-		while statusDot.Parent do
-			Utils.CreateTween(statusDot, 1, {BackgroundTransparency = 0.3}, Enum.EasingStyle.Sine):Play()
-			task.wait(1)
-			Utils.CreateTween(statusDot, 1, {BackgroundTransparency = 0}, Enum.EasingStyle.Sine):Play()
-			task.wait(1)
-		end
-	end)
-end
-
-local function pulseBorder()
-	task.spawn(function()
-		while UI.Frame.Parent do
-			Utils.CreateTween(UI.OuterBorder, 3, {Transparency = 0.7}, Enum.EasingStyle.Sine):Play()
-			task.wait(3)
-			Utils.CreateTween(UI.OuterBorder, 3, {Transparency = 0.9}, Enum.EasingStyle.Sine):Play()
-			task.wait(3)
-		end
-	end)
-end
-
-local function pulseCursor()
-	task.spawn(function()
-		while UI.CursorGlow.Parent do
-			Utils.CreateTween(outerRing, 1.5, {Size = UDim2.new(0, 34, 0, 34)}, Enum.EasingStyle.Sine):Play()
-			Utils.CreateTween(ringStroke, 1.5, {Transparency = 0.8}, Enum.EasingStyle.Sine):Play()
-			task.wait(1.5)
-			Utils.CreateTween(outerRing, 1.5, {Size = UDim2.new(0, 28, 0, 28)}, Enum.EasingStyle.Sine):Play()
-			Utils.CreateTween(ringStroke, 1.5, {Transparency = 0.5}, Enum.EasingStyle.Sine):Play()
-			task.wait(1.5)
-		end
-	end)
-end
-
--- ========================================
--- NOTIFICATION SYSTEM
--- ========================================
-function Utils.ShowNotification(message, duration)
-	if not SavedData.Settings.NotificationsEnabled then return end
-	
-	duration = duration or 3
-	
-	local notif = Instance.new("Frame")
-	notif.Size = UDim2.new(1, 0, 0, 60)
-	notif.Position = UDim2.new(0, 0, 0, 0)
-	notif.BackgroundColor3 = Config.BackgroundDark
-	notif.BackgroundTransparency = 1
-	notif.BorderSizePixel = 0
-	notif.ZIndex = 51
-	
-	local notifCorner = Instance.new("UICorner")
-	notifCorner.CornerRadius = UDim.new(0, 10)
-	notifCorner.Parent = notif
-	
-	local notifBorder = Instance.new("UIStroke")
-	notifBorder.Color = Config.AccentPrimary
-	notifBorder.Thickness = 2
-	notifBorder.Transparency = 1
-	notifBorder.Parent = notif
-	
-	local notifText = Instance.new("TextLabel")
-	notifText.Text = message
-	notifText.Font = Enum.Font.GothamMedium
-	notifText.TextColor3 = Config.AccentPrimary
-	notifText.TextSize = 12
-	notifText.BackgroundTransparency = 1
-	notifText.Size = UDim2.new(1, -20, 1, 0)
-	notifText.Position = UDim2.new(0, 10, 0, 0)
-	notifText.TextWrapped = true
-	notifText.TextTransparency = 1
-	notifText.ZIndex = 52
-	notifText.Parent = notif
-	
-	-- Shift existing notifications down
-	for _, child in ipairs(UI.NotificationContainer:GetChildren()) do
-		if child:IsA("Frame") then
-			Utils.CreateTween(child, 0.3, {Position = child.Position + UDim2.new(0, 0, 0, 65)}):Play()
-		end
-	end
-	
-	notif.Parent = UI.NotificationContainer
-	
-	-- Fade in
-	Utils.CreateTween(notif, 0.3, {BackgroundTransparency = 0.1}):Play()
-	Utils.CreateTween(notifBorder, 0.3, {Transparency = 0.6}):Play()
-	Utils.CreateTween(notifText, 0.3, {TextTransparency = 0}):Play()
-	
-	-- Fade out after duration
-	task.spawn(function()
-		task.wait(duration)
-		Utils.CreateTween(notif, 0.3, {BackgroundTransparency = 1}):Play()
-		Utils.CreateTween(notifBorder, 0.3, {Transparency = 1}):Play()
-		Utils.CreateTween(notifText, 0.3, {TextTransparency = 1}):Play()
-		task.wait(0.3)
-		notif:Destroy()
-	end)
-	
-	Utils.PlaySound(Config.Sounds.Hover, 0.4, 1.2, 1)
-end
-
--- ========================================
--- THEME SWITCHING
--- ========================================
-local function applyTheme(themeName)
-	print(">> CHAINIX: Attempting to apply theme: " .. tostring(themeName))
-	
-	local theme = Themes[themeName]
-	if not theme then 
-		warn(">> CHAINIX ERROR: Theme '" .. tostring(themeName) .. "' not found!")
-		return 
-	end
-	
-	print(">> CHAINIX: Found theme: " .. theme.Name)
-	
-	-- Store non-color properties before theme switch
-	local frameSizeBackup = Config.FrameSize
-	local framePosBackup = Config.FramePosition
-	local soundsBackup = Config.Sounds
-	local framesBackup = Config.ChainFrames
-	local gridBackup = Config.GridColumns
-	local btnWidthBackup = Config.ButtonWidth
-	local btnHeightBackup = Config.ButtonHeight
-	local spacingXBackup = Config.ButtonSpacingX
-	local spacingYBackup = Config.ButtonSpacingY
-	
-	print(">> CHAINIX: Backed up non-color properties")
-	
-	-- Apply ONLY color properties from theme
-	Config.BackgroundDark = theme.BackgroundDark
-	Config.BackgroundMain = theme.BackgroundMain
-	Config.AccentPrimary = theme.AccentPrimary
-	Config.AccentSecondary = theme.AccentSecondary
-	Config.AccentDim = theme.AccentDim
-	Config.BorderLight = theme.BorderLight
-	Config.ButtonNormal = theme.ButtonNormal
-	Config.ButtonHover = theme.ButtonHover
-	Config.StatusColor = theme.StatusColor
-	
-	print(">> CHAINIX: Applied color properties")
-	
-	-- Restore non-color properties
-	Config.FrameSize = frameSizeBackup
-	Config.FramePosition = framePosBackup
-	Config.Sounds = soundsBackup
-	Config.ChainFrames = framesBackup
-	Config.GridColumns = gridBackup
-	Config.ButtonWidth = btnWidthBackup
-	Config.ButtonHeight = btnHeightBackup
-	Config.ButtonSpacingX = spacingXBackup
-	Config.ButtonSpacingY = spacingYBackup
-	
-	print(">> CHAINIX: Restored non-color properties")
-	
-	-- Update all UI colors
-	animatedBG.BackgroundColor3 = Config.BackgroundMain
-	gradient.Color = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Config.BackgroundMain),
-		ColorSequenceKeypoint.new(0.5, Config.BackgroundDark),
-		ColorSequenceKeypoint.new(1, Config.BackgroundMain)
-	}
-	
-	UI.OuterBorder.Color = Config.BorderLight
-	accentLine.BackgroundColor3 = Config.AccentPrimary
-	UI.Title.TextColor3 = Config.AccentPrimary
-	UI.Subtitle.TextColor3 = Config.AccentSecondary
-	UI.Logo.ImageColor3 = Config.AccentPrimary
-	
-	statusBorder.Color = Config.StatusColor
-	statusDot.BackgroundColor3 = Config.StatusColor
-	statusText.TextColor3 = Config.StatusColor
-	
-	activateBorder.Color = Config.ButtonNormal
-	btnGradient.Color = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(math.clamp(Config.ButtonNormal.R*255 + 20, 0, 255), math.clamp(Config.ButtonNormal.G*255 + 20, 0, 255), math.clamp(Config.ButtonNormal.B*255 + 20, 0, 255))),
-		ColorSequenceKeypoint.new(1, Config.ButtonNormal)
-	}
-	
-	-- Update all buttons
-	UI.CloseButton.BackgroundColor3 = Config.BackgroundDark
-	UI.CloseButton.TextColor3 = Config.AccentSecondary
-	UI.SettingsButton.BackgroundColor3 = Config.BackgroundDark
-	UI.SettingsButton.TextColor3 = Config.AccentSecondary
-	UI.BackButton.BackgroundColor3 = Config.BackgroundDark
-	UI.BackButton.TextColor3 = Config.AccentSecondary
-	
-	-- Update settings panel
-	UI.SettingsPanel.BackgroundColor3 = Config.BackgroundDark
-	volumeLabel.TextColor3 = Config.AccentSecondary
-	UI.VolumeSliderFill.BackgroundColor3 = Config.AccentPrimary
-	sliderHandle.BackgroundColor3 = Config.AccentPrimary
-	volumeSliderBG.BackgroundColor3 = Config.BackgroundMain
-	
-	notificationsLabel.TextColor3 = Config.AccentSecondary
-	UI.NotificationsToggle.BackgroundColor3 = Config.BackgroundMain
-	
-	themeLabel.TextColor3 = Config.AccentSecondary
-	themeDropdown.BackgroundColor3 = Config.BackgroundMain
-	themeDropdown.TextColor3 = Config.AccentPrimary
-	themeDropdownMenu.BackgroundColor3 = Config.BackgroundDark
-	themeDropdownMenu.ScrollBarImageColor3 = Config.AccentPrimary
-	
-	keybindLabel.TextColor3 = Config.AccentSecondary
-	
-	-- Update version badge
-	UI.Version.TextColor3 = Config.AccentSecondary
-	
-	-- Update discord button
-	UI.DiscordButton.BackgroundColor3 = Config.BackgroundDark
-	UI.DiscordButton.TextColor3 = Config.AccentSecondary
-	
-	-- Update search bar
-	UI.SearchBar.TextColor3 = Config.AccentPrimary
-	UI.SearchBar.PlaceholderColor3 = Config.AccentSecondary
-	UI.SearchBar.BackgroundColor3 = Config.BackgroundMain
-	
-	print(">> CHAINIX: Updated all UI colors")
-	
-	SavedData.Settings.Theme = themeName
-	Utils.ShowNotification("Theme changed to " .. theme.Name .. "! ✅", 2)
-	
-	print(">> CHAINIX: Theme change complete! ✅")
-end
-
--- ========================================
--- SETTINGS PANEL FUNCTIONS
--- ========================================
-local function toggleSettingsPanel()
-	settingsPanelOpen = not settingsPanelOpen
-	
-	if settingsPanelOpen then
-		Utils.CreateTween(UI.SettingsPanel, 0.3, {Position = UDim2.new(1, -250, 0, 0)}):Play()
-		Utils.ShowNotification("Settings opened ⚙️", 1.5)
-	else
-		Utils.CreateTween(UI.SettingsPanel, 0.3, {Position = UDim2.new(1, 0, 0, 0)}):Play()
-	end
-	
-	Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-end
-
-local function toggleNotifications()
-	SavedData.Settings.NotificationsEnabled = not SavedData.Settings.NotificationsEnabled
-	
-	if SavedData.Settings.NotificationsEnabled then
-		UI.NotificationsToggle.Text = "ON"
-		UI.NotificationsToggle.TextColor3 = Config.StatusColor
-		notifBorder.Color = Config.StatusColor
-		Utils.ShowNotification("Notifications enabled! 🔔", 2)
-	else
-		UI.NotificationsToggle.Text = "OFF"
-		UI.NotificationsToggle.TextColor3 = Color3.fromRGB(200, 80, 80)
-		notifBorder.Color = Color3.fromRGB(200, 80, 80)
-	end
-	
-	Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-end
-
--- ========================================
--- THEME PANEL FUNCTIONS
--- ========================================
--- BUTTON HOVER EFFECTS
--- ========================================
-local function setupActivateButton()
-	local hoverIn = Utils.CreateTween(UI.ActivateButton, 0.25, {
-		Size = UDim2.new(0, 210, 0, 52),
-		BackgroundColor3 = Config.ButtonHover,
-		BackgroundTransparency = 0
-	})
-	local hoverOut = Utils.CreateTween(UI.ActivateButton, 0.25, {
-		Size = UDim2.new(0, 200, 0, 50),
-		BackgroundColor3 = Config.ButtonNormal,
-		BackgroundTransparency = 0.1
-	})
-	local glowIn = Utils.CreateTween(activateBorder, 0.25, {Transparency = 0, Thickness = 3})
-	local glowOut = Utils.CreateTween(activateBorder, 0.25, {Transparency = 0.3, Thickness = 2})
-	local textIn = Utils.CreateTween(btnText, 0.25, {TextColor3 = Color3.fromRGB(0, 0, 0)})
-	local textOut = Utils.CreateTween(btnText, 0.25, {TextColor3 = Config.BackgroundDark})
-	
-	UI.ActivateButton.MouseEnter:Connect(function()
-		hoverIn:Play()
-		glowIn:Play()
-		textIn:Play()
-		Utils.PlaySound(Config.Sounds.Hover, 0.2, 1.3, 1)
-	end)
-	
-	UI.ActivateButton.MouseLeave:Connect(function()
-		hoverOut:Play()
-		glowOut:Play()
-		textOut:Play()
-	end)
-end
-
-local function setupCloseButton()
-	local hoverIn = Utils.CreateTween(UI.CloseButton, 0.2, {
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0,
-		TextColor3 = Color3.fromRGB(255, 50, 50)
-	})
-	local hoverOut = Utils.CreateTween(UI.CloseButton, 0.2, {
-		BackgroundColor3 = Config.BackgroundDark,
-		BackgroundTransparency = 0.3,
-		TextColor3 = Config.AccentSecondary
-	})
-	
-	UI.CloseButton.MouseEnter:Connect(function()
-		hoverIn:Play()
-		Utils.PlaySound(Config.Sounds.Hover, 0.2, 1.3, 1)
-	end)
-	
-	UI.CloseButton.MouseLeave:Connect(function()
-		hoverOut:Play()
-	end)
-end
-
-local function setupBackButton()
-	local hoverIn = Utils.CreateTween(UI.BackButton, 0.2, {
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0,
-		TextColor3 = Config.BackgroundDark
-	})
-	local hoverOut = Utils.CreateTween(UI.BackButton, 0.2, {
-		BackgroundColor3 = Config.BackgroundDark,
-		BackgroundTransparency = 0.3,
-		TextColor3 = Config.AccentSecondary
-	})
-	
-	UI.BackButton.MouseEnter:Connect(function()
-		hoverIn:Play()
-	end)
-	
-	UI.BackButton.MouseLeave:Connect(function()
-		hoverOut:Play()
-	end)
-end
-
-local function setupDiscordButton()
-	local hoverIn = Utils.CreateTween(UI.DiscordButton, 0.2, {
-		BackgroundColor3 = Color3.fromRGB(88, 101, 242),
-		BackgroundTransparency = 0,
-		TextColor3 = Color3.fromRGB(255, 255, 255)
-	})
-	local hoverOut = Utils.CreateTween(UI.DiscordButton, 0.2, {
-		BackgroundColor3 = Config.BackgroundDark,
-		BackgroundTransparency = 0.1,
-		TextColor3 = Color3.fromRGB(88, 101, 242)
-	})
-	
-	UI.DiscordButton.MouseEnter:Connect(function()
-		hoverIn:Play()
-		Utils.PlaySound(Config.Sounds.Hover, 0.2, 1.3, 1)
-	end)
-	
-	UI.DiscordButton.MouseLeave:Connect(function()
-		hoverOut:Play()
-	end)
-	
-	UI.DiscordButton.MouseButton1Click:Connect(function()
-		Utils.PlaySound(Config.Sounds.Click, 0.6, 1.1, 1)
-		setclipboard("https://discord.gg/uc3ywyJM7B")
-		Utils.ShowNotification("Discord link copied! 💬", 2)
-	end)
-end
-
-local function setupSettingsButton()
-	-- Hover effect for main settings button
-	local settingsHoverIn = Utils.CreateTween(UI.SettingsButton, 0.2, {
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0,
-		TextColor3 = Config.AccentPrimary
-	})
-	local settingsHoverOut = Utils.CreateTween(UI.SettingsButton, 0.2, {
-		BackgroundColor3 = Config.BackgroundDark,
-		BackgroundTransparency = 0.3,
-		TextColor3 = Config.AccentSecondary
-	})
-	local settingsGlowIn = Utils.CreateTween(settingsBorder, 0.2, {Transparency = 0, Thickness = 2})
-	local settingsGlowOut = Utils.CreateTween(settingsBorder, 0.2, {Transparency = 0.6, Thickness = 1.5})
-	
-	UI.SettingsButton.MouseEnter:Connect(function()
-		settingsHoverIn:Play()
-		settingsGlowIn:Play()
-		Utils.PlaySound(Config.Sounds.Hover, 0.2, 1.3, 1)
-	end)
-	
-	UI.SettingsButton.MouseLeave:Connect(function()
-		settingsHoverOut:Play()
-		settingsGlowOut:Play()
-	end)
-	
-	UI.SettingsButton.MouseButton1Click:Connect(toggleSettingsPanel)
-	
-	-- Settings back button
-	UI.SettingsBackButton.MouseButton1Click:Connect(toggleSettingsPanel)
-	
-	-- Hover effect for settings back button
-	local backHoverIn = Utils.CreateTween(UI.SettingsBackButton, 0.2, {
-		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-		BackgroundTransparency = 0,
-		TextColor3 = Color3.fromRGB(255, 50, 50)
-	})
-	local backHoverOut = Utils.CreateTween(UI.SettingsBackButton, 0.2, {
-		BackgroundColor3 = Config.BackgroundMain,
-		BackgroundTransparency = 0.3,
-		TextColor3 = Config.AccentSecondary
-	})
-	
-	UI.SettingsBackButton.MouseEnter:Connect(function()
-		backHoverIn:Play()
-		Utils.PlaySound(Config.Sounds.Hover, 0.2, 1.3, 1)
-	end)
-	
-	UI.SettingsBackButton.MouseLeave:Connect(function()
-		backHoverOut:Play()
-	end)
-end
-
-
--- Setup theme buttons
--- Theme dropdown toggle
-themeDropdown.MouseButton1Click:Connect(function()
-	themeDropdownOpen = not themeDropdownOpen
-	
-	if themeDropdownOpen then
-		themeDropdown.Text = themeDropdown.Text:gsub("▼", "▲")
-		Utils.CreateTween(themeDropdownMenu, 0.2, {Size = UDim2.new(1, -20, 0, 120)}):Play()
-		themeDropdownMenu.Visible = true
-	else
-		themeDropdown.Text = themeDropdown.Text:gsub("▲", "▼")
-		Utils.CreateTween(themeDropdownMenu, 0.2, {Size = UDim2.new(1, -20, 0, 0)}):Play()
-		task.wait(0.2)
-		themeDropdownMenu.Visible = false
-	end
-	
-	Utils.PlaySound(Config.Sounds.Click, 0.4, 1.1, 1)
-end)
-
--- Theme option clicks
-for _, themeBtn in ipairs(themeButtons) do
-	-- Hover effect
-	themeBtn.MouseEnter:Connect(function()
-		Utils.CreateTween(themeBtn, 0.15, {BackgroundTransparency = 0}):Play()
-	end)
-	
-	themeBtn.MouseLeave:Connect(function()
-		Utils.CreateTween(themeBtn, 0.15, {BackgroundTransparency = 0.3}):Play()
-	end)
-	
-	-- Click to select theme
-	themeBtn.MouseButton1Click:Connect(function()
-		-- If Custom theme, open custom theme creator
-		if themeBtn.Name == "Custom" then
-			-- Close dropdown
-			themeDropdownOpen = false
-			Utils.CreateTween(themeDropdownMenu, 0.2, {Size = UDim2.new(1, -20, 0, 0)}):Play()
-			themeDropdownMenu.Visible = false
-			
-			-- Close settings panel
-			settingsPanelOpen = false
-			Utils.CreateTween(UI.SettingsPanel, 0.3, {Position = UDim2.new(1, 0, 0, 0)}):Play()
-			
-			-- Open custom theme panel
-			customThemePanel.Visible = true
-			Utils.CreateTween(customThemePanel, 0.3, {Position = UDim2.new(1, -250, 0, 0)}):Play()
-			Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
+		-- Smooth animations
+		if isChecked then
+			tween(checkbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+			tween(checkGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+			checkmark.Text = "✓"
+			-- Scale animation
+			checkbox.Size = UDim2.new(0, 10, 0, 10)
+			tween(checkbox, 0.15, {Size = UDim2.new(0, 12, 0, 12)}):Play()
 		else
-			-- Normal theme selection
-			applyTheme(themeBtn.Name)
-			
-			-- Update dropdown text
-			themeDropdown.Text = Themes[themeBtn.Name].Name .. "  ▼"
-			
-			-- Close dropdown
-			themeDropdownOpen = false
-			Utils.CreateTween(themeDropdownMenu, 0.2, {Size = UDim2.new(1, -20, 0, 0)}):Play()
-			task.wait(0.2)
-			themeDropdownMenu.Visible = false
-			
-			Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-		end
-	end)
-end
-
--- Setup toggles
-UI.NotificationsToggle.MouseButton1Click:Connect(toggleNotifications)
-
--- Custom Theme Creator functionality
--- Back button to close custom theme panel
-customBackButton.MouseButton1Click:Connect(function()
-	Utils.CreateTween(customThemePanel, 0.3, {Position = UDim2.new(1, 0, 0, 0)}):Play()
-	task.wait(0.3)
-	customThemePanel.Visible = false
-	Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-end)
-
--- Color slider functionality
-local function setupColorButtons(picker)
-	for _, colorData in ipairs(picker.buttons) do
-		colorData.button.MouseButton1Click:Connect(function()
-			picker.selectedColor = colorData.color
-			picker.preview.BackgroundColor3 = colorData.color
-			Utils.PlaySound(Config.Sounds.Click, 0.3, 1.2, 1)
-		end)
-	end
-end
-
-setupColorButtons(backgroundPicker)
-setupColorButtons(accentPicker)
-setupColorButtons(statusPicker)
-
--- Save custom theme button
-saveCustomButton.MouseButton1Click:Connect(function()
-	-- Get selected colors from buttons
-	local bgColor = backgroundPicker.selectedColor
-	local acColor = accentPicker.selectedColor
-	local stColor = statusPicker.selectedColor
-	
-	-- Update Custom theme
-	Themes.Custom.BackgroundDark = Color3.fromRGB(
-		math.max(0, bgColor.R * 255 - 10),
-		math.max(0, bgColor.G * 255 - 10),
-		math.max(0, bgColor.B * 255 - 10)
-	)
-	Themes.Custom.BackgroundMain = bgColor
-	Themes.Custom.AccentPrimary = acColor
-	Themes.Custom.AccentSecondary = Color3.fromRGB(
-		math.min(255, acColor.R * 255 + 50),
-		math.min(255, acColor.G * 255 + 50),
-		math.min(255, acColor.B * 255 + 50)
-	)
-	Themes.Custom.AccentDim = Color3.fromRGB(
-		math.max(0, acColor.R * 255 - 50),
-		math.max(0, acColor.G * 255 - 50),
-		math.max(0, acColor.B * 255 - 50)
-	)
-	Themes.Custom.BorderLight = acColor
-	Themes.Custom.ButtonNormal = acColor
-	Themes.Custom.ButtonHover = Color3.fromRGB(
-		math.min(255, acColor.R * 255 + 20),
-		math.min(255, acColor.G * 255 + 20),
-		math.min(255, acColor.B * 255 + 20)
-	)
-	Themes.Custom.StatusColor = stColor
-	
-	-- Apply the custom theme
-	applyTheme("Custom")
-	
-	-- Update dropdown to show Custom
-	themeDropdown.Text = "Custom Theme  ▼"
-	
-	-- Close custom panel
-	Utils.CreateTween(customThemePanel, 0.3, {Position = UDim2.new(1, 0, 0, 0)}):Play()
-	task.wait(0.3)
-	customThemePanel.Visible = false
-	
-	Utils.ShowNotification("Custom theme applied! ✨", 2)
-	Utils.PlaySound(Config.Sounds.Click, 0.7, 1.2, 1)
-end)
-
-
-
--- Volume slider functionality
-local volumeDragging = false
-
-volumeSliderBG.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		volumeDragging = true
-		
-		local function updateVolume(inputPos)
-			local sliderPos = volumeSliderBG.AbsolutePosition.X
-			local sliderSize = volumeSliderBG.AbsoluteSize.X
-			local mouseX = inputPos.X
-			
-			local percent = math.clamp((mouseX - sliderPos) / sliderSize, 0, 1)
-			local volume = math.floor(percent * 100)
-			
-			SavedData.Settings.Volume = volume
-			UI.VolumeSliderFill.Size = UDim2.new(percent, 0, 1, 0)
-			sliderHandle.Position = UDim2.new(percent, 0, 0.5, 0)
-			volumeLabel.Text = "Volume: " .. volume .. "%"
+			tween(checkbox, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 22, 30)}):Play()
+			tween(checkGlow, 0.2, {BackgroundTransparency = 1}):Play()
+			checkmark.Text = ""
 		end
 		
-		updateVolume(input.Position)
-		
-		local connection
-		connection = UserInputService.InputChanged:Connect(function(input2)
-			if input2.UserInputType == Enum.UserInputType.MouseMovement and volumeDragging then
-				updateVolume(input2.Position)
-			end
-		end)
-		
-		local endConnection
-		endConnection = UserInputService.InputEnded:Connect(function(input3)
-			if input3.UserInputType == Enum.UserInputType.MouseButton1 then
-				volumeDragging = false
-				connection:Disconnect()
-				endConnection:Disconnect()
-				Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-			end
-		end)
-	end
-end)
-
-volumeSliderBG.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement and volumeDragging then
-		local sliderPos = volumeSliderBG.AbsolutePosition.X
-		local sliderSize = volumeSliderBG.AbsoluteSize.X
-		local mouseX = input.Position.X
-		
-		local percent = math.clamp((mouseX - sliderPos) / sliderSize, 0, 1)
-		local volume = math.floor(percent * 100)
-		
-		SavedData.Settings.Volume = volume
-		UI.VolumeSliderFill.Size = UDim2.new(percent, 0, 1, 0)
-		sliderHandle.Position = UDim2.new(percent, 0, 0.5, 0)
-		volumeLabel.Text = "Volume: " .. volume .. "%"
-	end
-end)
-
-print(">> CHAINIX: All interactive functions loaded!")
-print(">> Settings, themes, notifications ready!")
-
--- ========================================
--- GAME MENU FUNCTIONS
--- ========================================
-local function isFavorite(gameName)
-	for _, name in ipairs(SavedData.Favorites) do
-		if name == gameName then return true end
-	end
-	return false
+		callback(isChecked)
+	end))
+	
+	return yPos + 22
 end
 
-local function toggleFavorite(gameName)
-	if isFavorite(gameName) then
-		for i, name in ipairs(SavedData.Favorites) do
-			if name == gameName then
-				table.remove(SavedData.Favorites, i)
-				Utils.ShowNotification("Removed from favorites! ⭐", 2)
-				break
-			end
+-- Create slider
+local function createSlider(name, parent, yPos, min, max, default, callback)
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1, 0, 0, 35)
+	container.Position = UDim2.new(0, 0, 0, yPos)
+	container.BackgroundTransparency = 1
+	container.Parent = parent
+	
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(200, 205, 215)
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -50, 0, 15)
+	label.Position = UDim2.new(0, 5, 0, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = container
+	
+	local value = Instance.new("TextLabel")
+	value.Text = tostring(default)
+	value.Font = Enum.Font.GothamBold
+	value.TextSize = 11
+	value.TextColor3 = Color3.fromRGB(88, 101, 242)
+	value.BackgroundTransparency = 1
+	value.Size = UDim2.new(0, 40, 0, 15)
+	value.Position = UDim2.new(1, -45, 0, 0)
+	value.TextXAlignment = Enum.TextXAlignment.Right
+	value.Parent = container
+	
+	local sliderBG = Instance.new("Frame")
+	sliderBG.Size = UDim2.new(1, -10, 0, 3)
+	sliderBG.Position = UDim2.new(0, 5, 0, 20)
+	sliderBG.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+	sliderBG.BorderSizePixel = 0
+	sliderBG.Parent = container
+	
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.Parent = sliderBG
+	
+	-- Glow on fill
+	local fillGlow = Instance.new("Frame")
+	fillGlow.Size = UDim2.new(1, 0, 1, 2)
+	fillGlow.Position = UDim2.new(0, 0, 0, -1)
+	fillGlow.BackgroundColor3 = Color3.fromRGB(120, 140, 255)
+	fillGlow.BackgroundTransparency = 0.7
+	fillGlow.BorderSizePixel = 0
+	fillGlow.ZIndex = 0
+	fillGlow.Parent = sliderFill
+	
+	local sliderBtn = Instance.new("TextButton")
+	sliderBtn.Size = UDim2.new(0, 10, 0, 10)
+	sliderBtn.Position = UDim2.new((default - min) / (max - min), -5, 0.5, -5)
+	sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	sliderBtn.BorderSizePixel = 1
+	sliderBtn.BorderColor3 = Color3.fromRGB(88, 101, 242)
+	sliderBtn.Text = ""
+	sliderBtn.AutoButtonColor = false
+	sliderBtn.Parent = sliderBG
+	
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(1, 0)
+	btnCorner.Parent = sliderBtn
+	
+	-- Button glow
+	local btnGlow = Instance.new("ImageLabel")
+	btnGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+	btnGlow.Size = UDim2.new(1, 10, 1, 10)
+	btnGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+	btnGlow.BackgroundTransparency = 1
+	btnGlow.Image = "rbxassetid://4996891970"
+	btnGlow.ImageColor3 = Color3.fromRGB(88, 101, 242)
+	btnGlow.ImageTransparency = 1
+	btnGlow.ScaleType = Enum.ScaleType.Slice
+	btnGlow.SliceCenter = Rect.new(128, 128, 128, 128)
+	btnGlow.ZIndex = 0
+	btnGlow.Parent = sliderBtn
+	
+	-- Hover effects
+	table.insert(connections, sliderBtn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
+		tween(sliderBtn, 0.2, {Size = UDim2.new(0, 14, 0, 14)}):Play()
+		tween(btnGlow, 0.2, {ImageTransparency = 0.6}):Play()
+	end))
+	
+	table.insert(connections, sliderBtn.MouseLeave:Connect(function()
+		tween(sliderBtn, 0.2, {Size = UDim2.new(0, 10, 0, 10)}):Play()
+		tween(btnGlow, 0.2, {ImageTransparency = 1}):Play()
+	end))
+	
+	local dragging = false
+	table.insert(connections, sliderBtn.MouseButton1Down:Connect(function() 
+		dragging = true
+		tween(btnGlow, 0.1, {ImageTransparency = 0.4}):Play()
+	end))
+	
+	table.insert(connections, UserInputService.InputEnded:Connect(function(inp)
+		if inp.UserInputType == Enum.UserInputType.MouseButton1 then 
+			dragging = false
+			tween(btnGlow, 0.2, {ImageTransparency = 1}):Play()
 		end
+	end))
+	
+	table.insert(connections, sliderBG.InputBegan:Connect(function(inp)
+		if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+	end))
+	
+	table.insert(connections, UserInputService.InputChanged:Connect(function(inp)
+		if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+			local mousePos = UserInputService:GetMouseLocation().X
+			local sliderPos = sliderBG.AbsolutePosition.X
+			local sliderSize = sliderBG.AbsoluteSize.X
+			local percent = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
+			local val = math.floor(min + (max - min) * percent)
+			value.Text = tostring(val)
+			
+			-- Smooth animations
+			tween(sliderFill, 0.1, {Size = UDim2.new(percent, 0, 1, 0)}):Play()
+			tween(sliderBtn, 0.1, {Position = UDim2.new(percent, -5, 0.5, -5)}):Play()
+			
+			callback(val)
+		end
+	end))
+	
+	return yPos + 37
+end
+
+-- AUTO FARM PAGE
+local autoFarmPage = tabPages["Auto Farm"]
+
+local farmLeftCol = Instance.new("Frame")
+farmLeftCol.Size = UDim2.new(0.5, -10, 1, -10)
+farmLeftCol.Position = UDim2.new(0, 5, 0, 5)
+farmLeftCol.BackgroundTransparency = 1
+farmLeftCol.Parent = autoFarmPage
+
+local farmRightCol = Instance.new("Frame")
+farmRightCol.Size = UDim2.new(0.5, -10, 1, -10)
+farmRightCol.Position = UDim2.new(0.5, 5, 0, 5)
+farmRightCol.BackgroundTransparency = 1
+farmRightCol.Parent = autoFarmPage
+
+local farmLeftY = createSection("Auto Farm", farmLeftCol, 0)
+farmLeftY = createCheckbox("Enable Auto Farm", farmLeftCol, farmLeftY, function(enabled)
+	autoFarmEnabled = enabled
+	notify(enabled and "Auto Farm ON" or "Auto Farm OFF")
+end)
+farmLeftY = createCheckbox("Auto Collect", farmLeftCol, farmLeftY, function(enabled)
+	notify(enabled and "Auto Collect ON" or "Auto Collect OFF")
+end)
+farmLeftY = createCheckbox("Auto Equip Best Tool", farmLeftCol, farmLeftY, function(enabled)
+	notify(enabled and "Auto Equip ON" or "Auto Equip OFF")
+end)
+
+farmLeftY = farmLeftY + 5
+farmLeftY = createSlider("Farm Distance", farmLeftCol, farmLeftY, 5, 50, 20, function(val)
+	-- Farm distance
+end)
+
+local farmRightY = createSection("Settings", farmRightCol, 0)
+farmRightY = createCheckbox("Safe Mode", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Safe Mode ON" or "Safe Mode OFF")
+end)
+farmRightY = createCheckbox("Auto Heal", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Auto Heal ON" or "Auto Heal OFF")
+end)
+farmRightY = createCheckbox("Avoid Players", farmRightCol, farmRightY, function(enabled)
+	notify(enabled and "Avoid Players ON" or "Avoid Players OFF")
+end)
+
+-- COMBAT PAGE
+local combatPage = tabPages["Combat"]
+
+local leftColumn = Instance.new("Frame")
+leftColumn.Size = UDim2.new(0.5, -10, 1, -10)
+leftColumn.Position = UDim2.new(0, 5, 0, 5)
+leftColumn.BackgroundTransparency = 1
+leftColumn.Parent = combatPage
+
+local rightColumn = Instance.new("Frame")
+rightColumn.Size = UDim2.new(0.5, -10, 1, -10)
+rightColumn.Position = UDim2.new(0.5, 5, 0, 5)
+rightColumn.BackgroundTransparency = 1
+rightColumn.Parent = combatPage
+
+local leftY = createSection("PvP", leftColumn, 0)
+leftY = createCheckbox("Auto Dodge", leftColumn, leftY, function(enabled)
+	notify(enabled and "Auto Dodge ON" or "Auto Dodge OFF")
+end)
+leftY = createCheckbox("Teleport Behind On Hit", leftColumn, leftY, function(enabled)
+	notify(enabled and "Teleport Behind ON" or "Teleport Behind OFF")
+end)
+leftY = createCheckbox("Keep At Range", leftColumn, leftY, function(enabled)
+	notify(enabled and "Keep Range ON" or "Keep Range OFF")
+end)
+
+leftY = leftY + 5
+leftY = createSlider("Range", leftColumn, leftY, 5, 20, 10, function(val)
+	-- Range logic
+end)
+
+leftY = leftY + 10
+leftY = createSection("Rage", leftColumn, leftY)
+leftY = createCheckbox("Anti-Parry", leftColumn, leftY, function(enabled)
+	notify(enabled and "Anti-Parry ON" or "Anti-Parry OFF")
+end)
+leftY = createCheckbox("Fling Nearest Player", leftColumn, leftY, function(enabled)
+	notify(enabled and "Fling ON" or "Fling OFF")
+end)
+
+leftY = leftY + 5
+leftY = createSlider("Fling Power", leftColumn, leftY, 50, 500, 250, function(val)
+	-- Fling power
+end)
+
+local rightY = createSection("Parry", rightColumn, 0)
+rightY = createCheckbox("Auto Parry", rightColumn, rightY, function(enabled)
+	notify(enabled and "Auto Parry ON" or "Auto Parry OFF")
+end)
+rightY = createCheckbox("Ignore Friends", rightColumn, rightY, function(enabled)
+	notify(enabled and "Ignore Friends ON" or "Ignore Friends OFF")
+end)
+
+rightY = rightY + 5
+rightY = createSlider("Sword Parry Delay", rightColumn, rightY, 0, 100, 0, function(val)
+	-- Delay
+end)
+rightY = createSlider("Axe Parry Delay", rightColumn, rightY, 0, 100, 0, function(val)
+	-- Delay
+end)
+
+-- MOVEMENT PAGE
+local movementPage = tabPages["Movement"]
+
+local movLeftCol = Instance.new("Frame")
+movLeftCol.Size = UDim2.new(1, -10, 1, -10)
+movLeftCol.Position = UDim2.new(0, 5, 0, 5)
+movLeftCol.BackgroundTransparency = 1
+movLeftCol.Parent = movementPage
+
+local movY = createSection("Movement", movLeftCol, 0)
+
+movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
+	flyEnabled = enabled
+	updateConfig("flight_enabled", enabled)
+	if enabled then
+		bodyVelocity = Instance.new("BodyVelocity")
+		bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+		bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		bodyVelocity.Parent = humanoidRootPart
+		
+		bodyGyro = Instance.new("BodyGyro")
+		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bodyGyro.CFrame = humanoidRootPart.CFrame
+		bodyGyro.Parent = humanoidRootPart
+		notify("Flight ON")
 	else
-		table.insert(SavedData.Favorites, gameName)
-		Utils.ShowNotification("Added to favorites! ⭐", 2)
+		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
+		if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+		notify("Flight OFF")
 	end
-end
+end)
 
-local function addToRecentlyUsed(gameName)
-	-- Remove if already in list
-	for i, name in ipairs(SavedData.RecentlyUsed) do
-		if name == gameName then
-			table.remove(SavedData.RecentlyUsed, i)
-			break
+movY = movY + 5
+movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, currentConfig.flight_speed or 50, function(val)
+	flySpeed = val
+	updateConfig("flight_speed", val)
+end)
+
+movY = movY + 10
+movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
+	speedEnabled = enabled
+	updateConfig("speed_enabled", enabled)
+	if enabled then
+		humanoid.WalkSpeed = walkSpeed
+		notify("Speed ON")
+	else
+		humanoid.WalkSpeed = 16
+		notify("Speed OFF")
+	end
+end)
+
+movY = movY + 5
+movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, currentConfig.walk_speed or 100, function(val)
+	walkSpeed = val
+	updateConfig("walk_speed", val)
+	if speedEnabled then humanoid.WalkSpeed = val end
+end)
+
+movY = movY + 10
+movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
+	jumpEnabled = enabled
+	updateConfig("jump_enabled", enabled)
+	notify(enabled and "Infinite Jump ON" or "Infinite Jump OFF")
+end)
+
+movY = movY + 5
+movY = createCheckbox("No-Clip", movLeftCol, movY, function(enabled)
+	noclipEnabled = enabled
+	updateConfig("noclip_enabled", enabled)
+	notify(enabled and "No-Clip ON" or "No-Clip OFF")
+end)
+
+-- VISUALS PAGE
+local visualsPage = tabPages["Visuals"]
+
+local visLeftCol = Instance.new("Frame")
+visLeftCol.Size = UDim2.new(1, -10, 1, -10)
+visLeftCol.Position = UDim2.new(0, 5, 0, 5)
+visLeftCol.BackgroundTransparency = 1
+visLeftCol.Parent = visualsPage
+
+local visY = createSection("ESP", visLeftCol, 0)
+
+visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
+	espEnabled = enabled
+	updateConfig("esp_enabled", enabled)
+	for _, p in pairs(Players:GetPlayers()) do
+		if p ~= player and p.Character then
+			local h = p.Character:FindFirstChild("ESPHighlight")
+			if enabled and not h then
+				h = Instance.new("Highlight")
+				h.Name = "ESPHighlight"
+				h.FillColor = Color3.fromRGB(88, 101, 242)
+				h.OutlineColor = Color3.fromRGB(255, 255, 255)
+				h.FillTransparency = 0.6
+				h.OutlineTransparency = 0
+				h.Parent = p.Character
+			elseif not enabled and h then
+				h:Destroy()
+			end
 		end
 	end
-	
-	-- Add to front
-	table.insert(SavedData.RecentlyUsed, 1, gameName)
-	
-	-- Keep only last 3
-	while #SavedData.RecentlyUsed > 3 do
-		table.remove(SavedData.RecentlyUsed)
-	end
-end
+	notify(enabled and "ESP ON" or "ESP OFF")
+end)
 
-local function createGameButton(info, index)
-	local col = (index - 1) % Config.GridColumns
-	local row = math.floor((index - 1) / Config.GridColumns)
+visY = createCheckbox("Show Names", visLeftCol, visY, function(enabled)
+	notify(enabled and "Names ON" or "Names OFF")
+end)
+
+visY = createCheckbox("Show Distance", visLeftCol, visY, function(enabled)
+	notify(enabled and "Distance ON" or "Distance OFF")
+end)
+
+-- SETTINGS PAGE
+local settingsPage = tabPages["Settings"]
+
+local setScrollFrame = Instance.new("ScrollingFrame")
+setScrollFrame.Size = UDim2.new(1, -10, 1, -10)
+setScrollFrame.Position = UDim2.new(0, 5, 0, 5)
+setScrollFrame.BackgroundTransparency = 1
+setScrollFrame.BorderSizePixel = 0
+setScrollFrame.ScrollBarThickness = 3
+setScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(88, 101, 242)
+setScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
+setScrollFrame.Parent = settingsPage
+
+local setLeftCol = setScrollFrame
+
+local setY = createSection("UI Settings", setLeftCol, 0)
+
+-- Create notifications checkbox (checked by default)
+local notifContainer = Instance.new("Frame")
+notifContainer.Size = UDim2.new(1, 0, 0, 20)
+notifContainer.Position = UDim2.new(0, 0, 0, setY)
+notifContainer.BackgroundTransparency = 1
+notifContainer.Parent = setLeftCol
+
+local notifCheckbox = Instance.new("TextButton")
+notifCheckbox.Size = UDim2.new(0, 12, 0, 12)
+notifCheckbox.Position = UDim2.new(0, 5, 0, 4)
+notifCheckbox.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckbox.BorderSizePixel = 1
+notifCheckbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+notifCheckbox.Text = ""
+notifCheckbox.AutoButtonColor = false
+notifCheckbox.Parent = notifContainer
+
+local notifCheckGlow = Instance.new("Frame")
+notifCheckGlow.Size = UDim2.new(1, 4, 1, 4)
+notifCheckGlow.Position = UDim2.new(0, -2, 0, -2)
+notifCheckGlow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckGlow.BackgroundTransparency = 1
+notifCheckGlow.BorderSizePixel = 0
+notifCheckGlow.ZIndex = 0
+notifCheckGlow.Parent = notifCheckbox
+
+local notifGlowCorner = Instance.new("UICorner")
+notifGlowCorner.CornerRadius = UDim.new(0, 2)
+notifGlowCorner.Parent = notifCheckGlow
+
+local notifCheckmark = Instance.new("TextLabel")
+notifCheckmark.Size = UDim2.new(1, 0, 1, 0)
+notifCheckmark.BackgroundTransparency = 1
+notifCheckmark.Text = "✓"
+notifCheckmark.Font = Enum.Font.GothamBold
+notifCheckmark.TextSize = 10
+notifCheckmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckmark.Parent = notifCheckbox
+
+local notifLabel = Instance.new("TextLabel")
+notifLabel.Text = "Enable Notifications"
+notifLabel.Font = Enum.Font.Gotham
+notifLabel.TextSize = 11
+notifLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+notifLabel.BackgroundTransparency = 1
+notifLabel.Size = UDim2.new(1, -25, 1, 0)
+notifLabel.Position = UDim2.new(0, 22, 0, 0)
+notifLabel.TextXAlignment = Enum.TextXAlignment.Left
+notifLabel.TextTruncate = Enum.TextTruncate.AtEnd
+notifLabel.Parent = notifContainer
+
+table.insert(connections, notifCheckbox.MouseEnter:Connect(function()
+	tween(notifCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	if notificationsEnabled then
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+	end
+end))
+
+table.insert(connections, notifCheckbox.MouseLeave:Connect(function()
+	tween(notifCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(60, 65, 100)}):Play()
+	if notificationsEnabled then
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+	end
+end))
+
+table.insert(connections, notifCheckbox.MouseButton1Click:Connect(function()
+	notificationsEnabled = not notificationsEnabled
 	
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(0, Config.ButtonWidth, 0, Config.ButtonHeight)
-	button.Position = UDim2.new(
-		0, 
-		20 + col * (Config.ButtonWidth + Config.ButtonSpacingX), 
-		0, 
-		95 + row * (Config.ButtonHeight + Config.ButtonSpacingY)
-	)
-	button.BackgroundColor3 = info.available and Config.ButtonNormal or Config.AccentDim
-	button.BackgroundTransparency = info.available and 0.1 or 0.5
-	button.Text = ""
-	button.AutoButtonColor = false
-	button.ZIndex = 5
-	button.Parent = UI.Frame
-	
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 10)
-	corner.Parent = button
-	
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = info.available and Config.BorderLight or Config.AccentDim
-	stroke.Thickness = 1.5
-	stroke.Transparency = info.available and 0.3 or 0.7
-	stroke.Parent = button
-	
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Text = info.name
-	nameLabel.Font = Enum.Font.GothamBold
-	nameLabel.TextColor3 = info.available and Config.BackgroundDark or Config.AccentSecondary
-	nameLabel.TextSize = 11
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Size = UDim2.new(1, -10, 1, 0)
-	nameLabel.Position = UDim2.new(0, 5, 0, 0)
-	nameLabel.TextXAlignment = Enum.TextXAlignment.Center
-	nameLabel.TextYAlignment = Enum.TextYAlignment.Center
-	nameLabel.TextTransparency = info.available and 0 or 0.4
-	nameLabel.ZIndex = 6
-	nameLabel.Parent = button
-	
-	if info.available then
-		-- Favorite star
-		local starBtn = Instance.new("TextButton")
-		starBtn.Text = isFavorite(info.name) and "⭐" or "☆"
-		starBtn.Font = Enum.Font.GothamBold
-		starBtn.TextSize = 14
-		starBtn.BackgroundTransparency = 1
-		starBtn.Size = UDim2.new(0, 20, 0, 20)
-		starBtn.Position = UDim2.new(1, -22, 0, 2)
-		starBtn.ZIndex = 7
-		starBtn.Parent = button
-		
-		starBtn.MouseButton1Click:Connect(function()
-			toggleFavorite(info.name)
-			starBtn.Text = isFavorite(info.name) and "⭐" or "☆"
-			Utils.PlaySound(Config.Sounds.Click, 0.4, 1.2, 1)
-		end)
-		
-		-- Hover effects
-		local hoverIn = Utils.CreateTween(button, 0.2, {
-			Size = UDim2.new(0, Config.ButtonWidth + 4, 0, Config.ButtonHeight + 2),
-			BackgroundColor3 = Config.ButtonHover,
-			BackgroundTransparency = 0
-		})
-		local hoverOut = Utils.CreateTween(button, 0.2, {
-			Size = UDim2.new(0, Config.ButtonWidth, 0, Config.ButtonHeight),
-			BackgroundColor3 = Config.ButtonNormal,
-			BackgroundTransparency = 0.1
-		})
-		local textIn = Utils.CreateTween(nameLabel, 0.2, {TextColor3 = Color3.fromRGB(0, 0, 0)})
-		local textOut = Utils.CreateTween(nameLabel, 0.2, {TextColor3 = Config.BackgroundDark})
-		
-		button.MouseEnter:Connect(function()
-			Utils.PlaySound(Config.Sounds.Hover, 0.3, 1.4, 1)
-			hoverIn:Play()
-			textIn:Play()
-			
-			-- Show info tooltip
-			if info.description then
-				Utils.ShowNotification(info.name .. "\n" .. info.description, 2)
-			end
-		end)
-		
-		button.MouseLeave:Connect(function()
-			hoverOut:Play()
-			textOut:Play()
-		end)
-		
-		button.MouseButton1Click:Connect(function()
-			Utils.PlaySound(Config.Sounds.Click, 0.6, 0.9, 1)
-			print(">> CHAINIX: Loading " .. info.name)
-			
-			addToRecentlyUsed(info.name)
-			Utils.ShowNotification("Loading " .. info.name .. "... ⏳", 2)
-			
-			local flash = Instance.new("Frame")
-			flash.Size = UDim2.new(1, 0, 1, 0)
-			flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			flash.BackgroundTransparency = 0
-			flash.BorderSizePixel = 0
-			flash.ZIndex = 10
-			flash.Parent = button
-			
-			local flashCorner = Instance.new("UICorner")
-			flashCorner.CornerRadius = UDim.new(0, 10)
-			flashCorner.Parent = flash
-			
-			Utils.CreateTween(flash, 0.3, {BackgroundTransparency = 1}):Play()
-			Debris:AddItem(flash, 0.3)
-			
-			task.wait(0.5)
-			
-			print(">> CHAINIX DEBUG: Starting to load " .. info.name)
-			print(">> CHAINIX DEBUG: URL = " .. tostring(info.url))
-			
-			local success, err = pcall(function()
-				if info.script then
-					-- Load embedded script
-					print(">> CHAINIX DEBUG: Loading embedded script")
-					loadstring(info.script)()
-				elseif info.url ~= "" then
-					-- Load from URL
-					print(">> CHAINIX DEBUG: Downloading from URL...")
-					local scriptContent = game:HttpGet(info.url)
-					print(">> CHAINIX DEBUG: Downloaded! Length: " .. #scriptContent)
-					loadstring(scriptContent)()
-					print(">> CHAINIX DEBUG: Executed!")
-				else
-					error("No script or URL provided")
-				end
-			end)
-			
-			print(">> CHAINIX DEBUG: Success = " .. tostring(success))
-			if not success then
-				print(">> CHAINIX DEBUG: Error = " .. tostring(err))
-			end
-			
-			if success then
-				Utils.ShowNotification(info.name .. " loaded successfully! ✅", 3)
-				
-				-- Unload CHAINIX completely
-				task.wait(0.5)
-				gui:Destroy()
-				print(">> CHAINIX: Unloaded - " .. info.name .. " is now running")
-			else
-				warn("CHAINIX Error: " .. tostring(err))
-				Utils.ShowNotification("Failed to load " .. info.name .. " ❌", 3)
-			end
-		end)
+	if notificationsEnabled then
+		tween(notifCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+		notifCheckmark.Text = "✓"
+		notifCheckbox.Size = UDim2.new(0, 10, 0, 10)
+		tween(notifCheckbox, 0.15, {Size = UDim2.new(0, 12, 0, 12)}):Play()
+	else
+		tween(notifCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 22, 30)}):Play()
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+		notifCheckmark.Text = ""
 	end
 	
-	table.insert(gameButtons, button)
-end
+	-- Always show this notification regardless of setting
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "CHAINIX";
+		Text = notificationsEnabled and "Notifications enabled" or "Notifications disabled";
+		Duration = 2;
+	})
+end))
 
-local function showGameMenu()
-	print(">> CHAINIX: Activation triggered")
+setY = setY + 22
+
+-- Mute sounds checkbox (checked by default since sounds are enabled)
+local soundContainer = Instance.new("Frame")
+soundContainer.Size = UDim2.new(1, 0, 0, 20)
+soundContainer.Position = UDim2.new(0, 0, 0, setY)
+soundContainer.BackgroundTransparency = 1
+soundContainer.Parent = setLeftCol
+
+local soundCheckbox = Instance.new("TextButton")
+soundCheckbox.Size = UDim2.new(0, 12, 0, 12)
+soundCheckbox.Position = UDim2.new(0, 5, 0, 4)
+soundCheckbox.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckbox.BorderSizePixel = 1
+soundCheckbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+soundCheckbox.Text = ""
+soundCheckbox.AutoButtonColor = false
+soundCheckbox.Parent = soundContainer
+
+local soundCheckGlow = Instance.new("Frame")
+soundCheckGlow.Size = UDim2.new(1, 4, 1, 4)
+soundCheckGlow.Position = UDim2.new(0, -2, 0, -2)
+soundCheckGlow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckGlow.BackgroundTransparency = 1
+soundCheckGlow.BorderSizePixel = 0
+soundCheckGlow.ZIndex = 0
+soundCheckGlow.Parent = soundCheckbox
+
+local soundGlowCorner = Instance.new("UICorner")
+soundGlowCorner.CornerRadius = UDim.new(0, 2)
+soundGlowCorner.Parent = soundCheckGlow
+
+local soundCheckmark = Instance.new("TextLabel")
+soundCheckmark.Size = UDim2.new(1, 0, 1, 0)
+soundCheckmark.BackgroundTransparency = 1
+soundCheckmark.Text = "✓"
+soundCheckmark.Font = Enum.Font.GothamBold
+soundCheckmark.TextSize = 10
+soundCheckmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckmark.Parent = soundCheckbox
+
+local soundLabel = Instance.new("TextLabel")
+soundLabel.Text = "Enable Sounds"
+soundLabel.Font = Enum.Font.Gotham
+soundLabel.TextSize = 11
+soundLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+soundLabel.BackgroundTransparency = 1
+soundLabel.Size = UDim2.new(1, -25, 1, 0)
+soundLabel.Position = UDim2.new(0, 22, 0, 0)
+soundLabel.TextXAlignment = Enum.TextXAlignment.Left
+soundLabel.TextTruncate = Enum.TextTruncate.AtEnd
+soundLabel.Parent = soundContainer
+
+table.insert(connections, soundCheckbox.MouseEnter:Connect(function()
+	-- Only play sound if sounds are currently enabled
+	if soundsEnabled then
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
+	end
+	tween(soundCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	if soundsEnabled then
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+	end
+end))
+
+table.insert(connections, soundCheckbox.MouseLeave:Connect(function()
+	tween(soundCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(60, 65, 100)}):Play()
+	if soundsEnabled then
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+	end
+end))
+
+table.insert(connections, soundCheckbox.MouseButton1Click:Connect(function()
+	-- Toggle state FIRST
+	soundsEnabled = not soundsEnabled
 	
-	-- Create loading bar
-	local loadingContainer = Instance.new("Frame")
-	loadingContainer.Size = UDim2.new(0, 300, 0, 6)
-	loadingContainer.Position = UDim2.new(0.5, -150, 0.5, 30)
-	loadingContainer.BackgroundColor3 = Config.BackgroundDark
-	loadingContainer.BackgroundTransparency = 0.3
-	loadingContainer.BorderSizePixel = 0
-	loadingContainer.ZIndex = 11
-	loadingContainer.Parent = UI.Frame
+	-- Visual updates
+	if soundsEnabled then
+		tween(soundCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+		soundCheckmark.Text = "✓"
+		soundCheckbox.Size = UDim2.new(0, 10, 0, 10)
+		tween(soundCheckbox, 0.15, {Size = UDim2.new(0, 12, 0, 12)}):Play()
+	else
+		tween(soundCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 22, 30)}):Play()
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+		soundCheckmark.Text = ""
+	end
 	
-	local loadingCorner = Instance.new("UICorner")
-	loadingCorner.CornerRadius = UDim.new(1, 0)
-	loadingCorner.Parent = loadingContainer
+	-- THEN play confirmation sound (always plays to confirm the toggle)
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundsEnabled and Sounds.Success or Sounds.Click
+	sound.Volume = 0.5
+	sound.PlaybackSpeed = soundsEnabled and 1.2 or 0.8
+	sound.Parent = game:GetService("SoundService")
+	sound:Play()
+	game:GetService("Debris"):AddItem(sound, 2)
 	
-	local loadingBar = Instance.new("Frame")
-	loadingBar.Size = UDim2.new(0, 0, 1, 0)
-	loadingBar.BackgroundColor3 = Config.AccentPrimary
-	loadingBar.BorderSizePixel = 0
-	loadingBar.ZIndex = 12
-	loadingBar.Parent = loadingContainer
+	notify(soundsEnabled and "Sounds enabled" or "Sounds muted")
+end))
+
+setY = setY + 22
+
+setY = createCheckbox("Auto Save Config", setLeftCol, setY, function(enabled)
+	autoSaveEnabled = enabled
+	updateConfig("auto_save_enabled", enabled)
+	notify(enabled and "Auto Save ON" or "Auto Save OFF")
+end)
+
+setY = setY + 10
+setY = createSection("Config Management", setLeftCol, setY)
+
+-- Save Config Button
+local saveConfigBtn = Instance.new("TextButton")
+saveConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+saveConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+saveConfigBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100)
+saveConfigBtn.BorderSizePixel = 0
+saveConfigBtn.Text = "Save Config Now"
+saveConfigBtn.Font = Enum.Font.GothamBold
+saveConfigBtn.TextSize = 11
+saveConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+saveConfigBtn.AutoButtonColor = false
+saveConfigBtn.Parent = setLeftCol
+
+local saveConfigCorner = Instance.new("UICorner")
+saveConfigCorner.CornerRadius = UDim.new(0, 4)
+saveConfigCorner.Parent = saveConfigBtn
+
+local saveConfigGlow = Instance.new("Frame")
+saveConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+saveConfigGlow.BackgroundColor3 = Color3.fromRGB(80, 220, 130)
+saveConfigGlow.BackgroundTransparency = 1
+saveConfigGlow.BorderSizePixel = 0
+saveConfigGlow.ZIndex = 0
+saveConfigGlow.Parent = saveConfigBtn
+
+local saveGlowCorner = Instance.new("UICorner")
+saveGlowCorner.CornerRadius = UDim.new(0, 4)
+saveGlowCorner.Parent = saveConfigGlow
+
+table.insert(connections, saveConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(saveConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(60, 200, 120)}):Play()
+	tween(saveConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, saveConfigBtn.MouseLeave:Connect(function()
+	tween(saveConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(50, 180, 100)}):Play()
+	tween(saveConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Success, 0.6, 1.2, 2)
+	saveConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	local barCorner = Instance.new("UICorner")
-	barCorner.CornerRadius = UDim.new(1, 0)
-	barCorner.Parent = loadingBar
+	-- Force save regardless of auto-save setting
+	local tempAutoSave = autoSaveEnabled
+	autoSaveEnabled = true
+	saveConfig()
+	autoSaveEnabled = tempAutoSave
+end))
+
+setY = setY + 35
+
+-- Load Config Button
+local loadConfigBtn = Instance.new("TextButton")
+loadConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+loadConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+loadConfigBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+loadConfigBtn.BorderSizePixel = 0
+loadConfigBtn.Text = "Reload Config"
+loadConfigBtn.Font = Enum.Font.GothamBold
+loadConfigBtn.TextSize = 11
+loadConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadConfigBtn.AutoButtonColor = false
+loadConfigBtn.Parent = setLeftCol
+
+local loadConfigCorner = Instance.new("UICorner")
+loadConfigCorner.CornerRadius = UDim.new(0, 4)
+loadConfigCorner.Parent = loadConfigBtn
+
+local loadConfigGlow = Instance.new("Frame")
+loadConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+loadConfigGlow.BackgroundColor3 = Color3.fromRGB(120, 140, 255)
+loadConfigGlow.BackgroundTransparency = 1
+loadConfigGlow.BorderSizePixel = 0
+loadConfigGlow.ZIndex = 0
+loadConfigGlow.Parent = loadConfigBtn
+
+local loadGlowCorner = Instance.new("UICorner")
+loadGlowCorner.CornerRadius = UDim.new(0, 4)
+loadGlowCorner.Parent = loadConfigGlow
+
+table.insert(connections, loadConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(loadConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(100, 115, 255)}):Play()
+	tween(loadConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, loadConfigBtn.MouseLeave:Connect(function()
+	tween(loadConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	tween(loadConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, loadConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.5, 1, 1)
+	loadConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(loadConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	local loadingText = Instance.new("TextLabel")
-	loadingText.Text = "LOADING..."
-	loadingText.Font = Enum.Font.GothamBold
-	loadingText.TextColor3 = Config.AccentPrimary
-	loadingText.TextSize = 12
-	loadingText.BackgroundTransparency = 1
-	loadingText.Size = UDim2.new(0, 300, 0, 20)
-	loadingText.Position = UDim2.new(0.5, -150, 0.5, 8)
-	loadingText.TextTransparency = 0.3
-	loadingText.ZIndex = 11
-	loadingText.Parent = UI.Frame
+	loadConfig()
+	notify("Config reloaded! Rejoin to apply.")
+end))
+
+setY = setY + 35
+
+-- Reset Config Button
+local resetConfigBtn = Instance.new("TextButton")
+resetConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+resetConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+resetConfigBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+resetConfigBtn.BorderSizePixel = 0
+resetConfigBtn.Text = "Reset to Defaults"
+resetConfigBtn.Font = Enum.Font.GothamBold
+resetConfigBtn.TextSize = 11
+resetConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+resetConfigBtn.AutoButtonColor = false
+resetConfigBtn.Parent = setLeftCol
+
+local resetConfigCorner = Instance.new("UICorner")
+resetConfigCorner.CornerRadius = UDim.new(0, 4)
+resetConfigCorner.Parent = resetConfigBtn
+
+local resetConfigGlow = Instance.new("Frame")
+resetConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+resetConfigGlow.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+resetConfigGlow.BackgroundTransparency = 1
+resetConfigGlow.BorderSizePixel = 0
+resetConfigGlow.ZIndex = 0
+resetConfigGlow.Parent = resetConfigBtn
+
+local resetGlowCorner = Instance.new("UICorner")
+resetGlowCorner.CornerRadius = UDim.new(0, 4)
+resetGlowCorner.Parent = resetConfigGlow
+
+table.insert(connections, resetConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(resetConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+	tween(resetConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, resetConfigBtn.MouseLeave:Connect(function()
+	tween(resetConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+	tween(resetConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, resetConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Error, 0.7, 1, 2)
+	resetConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(resetConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	local percentText = Instance.new("TextLabel")
-	percentText.Text = "0%"
-	percentText.Font = Enum.Font.GothamBold
-	percentText.TextColor3 = Config.AccentSecondary
-	percentText.TextSize = 11
-	percentText.BackgroundTransparency = 1
-	percentText.Size = UDim2.new(0, 50, 0, 20)
-	percentText.Position = UDim2.new(0.5, -25, 0.5, 40)
-	percentText.ZIndex = 11
-	percentText.Parent = UI.Frame
-	
-	-- Animate loading bar independently
-	task.spawn(function()
-		Utils.CreateTween(loadingBar, 1, {Size = UDim2.new(1, 0, 1, 0)}, Enum.EasingStyle.Sine):Play()
+	resetConfig()
+	notify("Config reset! Rejoin to apply.")
+end))
+
+setY = setY + 40
+
+-- Custom Crosshair
+local crosshairEnabled = currentConfig.crosshair_enabled or false
+local crosshairGui = nil
+
+setY = setY + 5
+setY = createCheckbox("Custom Crosshair", setLeftCol, setY, function(enabled)
+	crosshairEnabled = enabled
+	updateConfig("crosshair_enabled", enabled)
+	if enabled then
+		-- Create crosshair
+		crosshairGui = Instance.new("ScreenGui")
+		crosshairGui.Name = "ChainixCrosshair"
+		crosshairGui.ResetOnSpawn = false
+		crosshairGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		crosshairGui.IgnoreGuiInset = true
 		
-		for i = 0, 100 do
-			percentText.Text = i .. "%"
-			task.wait(0.01)
+		pcall(function()
+			crosshairGui.Parent = game:GetService("CoreGui")
+		end)
+		if not crosshairGui.Parent then
+			crosshairGui.Parent = player:WaitForChild("PlayerGui")
 		end
 		
-		task.wait(0.2)
-		Utils.CreateTween(loadingContainer, 0.2, {BackgroundTransparency = 1}):Play()
-		Utils.CreateTween(loadingBar, 0.2, {BackgroundTransparency = 1}):Play()
-		Utils.CreateTween(loadingText, 0.2, {TextTransparency = 1}):Play()
-		Utils.CreateTween(percentText, 0.2, {TextTransparency = 1}):Play()
-		task.wait(0.2)
-		loadingContainer:Destroy()
-		loadingText:Destroy()
-		percentText:Destroy()
+		-- Center container
+		local centerFrame = Instance.new("Frame")
+		centerFrame.Size = UDim2.new(0, 40, 0, 40)
+		centerFrame.Position = UDim2.new(0.5, -20, 0.5, -20)
+		centerFrame.BackgroundTransparency = 1
+		centerFrame.Parent = crosshairGui
+		
+		-- Horizontal line
+		local hLine = Instance.new("Frame")
+		hLine.Size = UDim2.new(0, 14, 0, 2)
+		hLine.Position = UDim2.new(0.5, -7, 0.5, -1)
+		hLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		hLine.BorderSizePixel = 0
+		hLine.Parent = centerFrame
+		
+		-- Vertical line
+		local vLine = Instance.new("Frame")
+		vLine.Size = UDim2.new(0, 2, 0, 14)
+		vLine.Position = UDim2.new(0.5, -1, 0.5, -7)
+		vLine.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+		vLine.BorderSizePixel = 0
+		vLine.Parent = centerFrame
+		
+		-- Center dot
+		local dot = Instance.new("Frame")
+		dot.Size = UDim2.new(0, 3, 0, 3)
+		dot.Position = UDim2.new(0.5, -1.5, 0.5, -1.5)
+		dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		dot.BorderSizePixel = 0
+		dot.Parent = centerFrame
+		
+		local dotCorner = Instance.new("UICorner")
+		dotCorner.CornerRadius = UDim.new(1, 0)
+		dotCorner.Parent = dot
+		
+		notify("Custom Crosshair ON")
+	else
+		if crosshairGui then
+			crosshairGui:Destroy()
+			crosshairGui = nil
+		end
+		notify("Custom Crosshair OFF")
+	end
+end)
+
+-- Auto-enable crosshair if it was saved as enabled
+if crosshairEnabled and not crosshairGui then
+	task.delay(0.5, function()
+		-- Trigger the checkbox to enable crosshair
+		-- We'll need to manually enable it here since checkbox starts unchecked
 	end)
+end
+
+setY = setY + 10
+setY = createSection("Keybinds", setLeftCol, setY)
+
+-- Toggle UI Keybind
+local toggleUIContainer = Instance.new("Frame")
+toggleUIContainer.Size = UDim2.new(1, 0, 0, 30)
+toggleUIContainer.Position = UDim2.new(0, 0, 0, setY)
+toggleUIContainer.BackgroundTransparency = 1
+toggleUIContainer.Parent = setLeftCol
+
+local toggleUILabel = Instance.new("TextLabel")
+toggleUILabel.Text = "Toggle UI"
+toggleUILabel.Font = Enum.Font.Gotham
+toggleUILabel.TextSize = 11
+toggleUILabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+toggleUILabel.BackgroundTransparency = 1
+toggleUILabel.Size = UDim2.new(0.5, -10, 1, 0)
+toggleUILabel.Position = UDim2.new(0, 5, 0, 0)
+toggleUILabel.TextXAlignment = Enum.TextXAlignment.Left
+toggleUILabel.Parent = toggleUIContainer
+
+toggleUIBtn = Instance.new("TextButton")
+toggleUIBtn.Size = UDim2.new(0.5, -10, 0, 24)
+toggleUIBtn.Position = UDim2.new(0.5, 5, 0, 3)
+toggleUIBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+toggleUIBtn.BorderSizePixel = 1
+toggleUIBtn.BorderColor3 = Color3.fromRGB(60, 65, 100)
+toggleUIBtn.Text = getKeyName(toggleUIKey)
+toggleUIBtn.Font = Enum.Font.GothamBold
+toggleUIBtn.TextSize = 10
+toggleUIBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+toggleUIBtn.AutoButtonColor = false
+toggleUIBtn.Parent = toggleUIContainer
+
+local toggleUICorner = Instance.new("UICorner")
+toggleUICorner.CornerRadius = UDim.new(0, 4)
+toggleUICorner.Parent = toggleUIBtn
+
+table.insert(connections, toggleUIBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.4, 1.1, 1)
+	toggleUIBtn.Text = "Press any key..."
+	toggleUIBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
+	waitingForKeybind = "toggleUI"
+end))
+
+setY = setY + 33
+
+-- Unload Keybind
+local unloadContainer = Instance.new("Frame")
+unloadContainer.Size = UDim2.new(1, 0, 0, 30)
+unloadContainer.Position = UDim2.new(0, 0, 0, setY)
+unloadContainer.BackgroundTransparency = 1
+unloadContainer.Parent = setLeftCol
+
+local unloadLabel = Instance.new("TextLabel")
+unloadLabel.Text = "Unload Script"
+unloadLabel.Font = Enum.Font.Gotham
+unloadLabel.TextSize = 11
+unloadLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+unloadLabel.BackgroundTransparency = 1
+unloadLabel.Size = UDim2.new(0.5, -10, 1, 0)
+unloadLabel.Position = UDim2.new(0, 5, 0, 0)
+unloadLabel.TextXAlignment = Enum.TextXAlignment.Left
+unloadLabel.Parent = unloadContainer
+
+unloadBtn = Instance.new("TextButton")
+unloadBtn.Size = UDim2.new(0.5, -10, 0, 24)
+unloadBtn.Position = UDim2.new(0.5, 5, 0, 3)
+unloadBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+unloadBtn.BorderSizePixel = 1
+unloadBtn.BorderColor3 = Color3.fromRGB(60, 65, 100)
+unloadBtn.Text = getKeyName(unloadKey)
+unloadBtn.Font = Enum.Font.GothamBold
+unloadBtn.TextSize = 10
+unloadBtn.TextColor3 = Color3.fromRGB(220, 50, 50)
+unloadBtn.AutoButtonColor = false
+unloadBtn.Parent = unloadContainer
+
+local unloadBtnCorner = Instance.new("UICorner")
+unloadBtnCorner.CornerRadius = UDim.new(0, 4)
+unloadBtnCorner.Parent = unloadBtn
+
+table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.4, 1.1, 1)
+	unloadBtn.Text = "Press any key..."
+	unloadBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
+	waitingForKeybind = "unload"
+end))
+
+setY = setY + 40
+
+setY = createSection("UI Controls", setLeftCol, setY)
+
+-- Hide button
+local hideBtn = Instance.new("TextButton")
+hideBtn.Size = UDim2.new(1, -10, 0, 30)
+hideBtn.Position = UDim2.new(0, 5, 0, setY)
+hideBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+hideBtn.BorderSizePixel = 0
+hideBtn.Text = "Hide UI"
+hideBtn.Font = Enum.Font.GothamBold
+hideBtn.TextSize = 11
+hideBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hideBtn.AutoButtonColor = false
+hideBtn.Parent = setLeftCol
+
+local hideBtnCorner = Instance.new("UICorner")
+hideBtnCorner.CornerRadius = UDim.new(0, 4)
+hideBtnCorner.Parent = hideBtn
+
+-- Button glow
+local hideBtnGlow = Instance.new("Frame")
+hideBtnGlow.Size = UDim2.new(1, 0, 1, 0)
+hideBtnGlow.BackgroundColor3 = Color3.fromRGB(120, 140, 255)
+hideBtnGlow.BackgroundTransparency = 1
+hideBtnGlow.BorderSizePixel = 0
+hideBtnGlow.ZIndex = 0
+hideBtnGlow.Parent = hideBtn
+
+local hideGlowCorner = Instance.new("UICorner")
+hideGlowCorner.CornerRadius = UDim.new(0, 4)
+hideGlowCorner.Parent = hideBtnGlow
+
+table.insert(connections, hideBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(hideBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(100, 115, 255)}):Play()
+	tween(hideBtnGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, hideBtn.MouseLeave:Connect(function()
+	tween(hideBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	tween(hideBtnGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, hideBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.5, 1, 1)
+	-- Click animation
+	hideBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(hideBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	Utils.PlaySound(Config.Sounds.ChainBreak, 0.7, 1, 2)
+	mainFrame.Visible = false
+	notify("UI Hidden - Press " .. getKeyName(toggleUIKey) .. " to show")
+end))
+
+setY = setY + 35
+
+-- Unload button
+local unloadBtn = Instance.new("TextButton")
+unloadBtn.Size = UDim2.new(1, -10, 0, 30)
+unloadBtn.Position = UDim2.new(0, 5, 0, setY)
+unloadBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+unloadBtn.BorderSizePixel = 0
+unloadBtn.Text = "Unload CHAINIX"
+unloadBtn.Font = Enum.Font.GothamBold
+unloadBtn.TextSize = 11
+unloadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+unloadBtn.AutoButtonColor = false
+unloadBtn.Parent = setLeftCol
+
+local unloadBtnCorner = Instance.new("UICorner")
+unloadBtnCorner.CornerRadius = UDim.new(0, 4)
+unloadBtnCorner.Parent = unloadBtn
+
+-- Button glow
+local unloadBtnGlow = Instance.new("Frame")
+unloadBtnGlow.Size = UDim2.new(1, 0, 1, 0)
+unloadBtnGlow.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+unloadBtnGlow.BackgroundTransparency = 1
+unloadBtnGlow.BorderSizePixel = 0
+unloadBtnGlow.ZIndex = 0
+unloadBtnGlow.Parent = unloadBtn
+
+local unloadGlowCorner = Instance.new("UICorner")
+unloadGlowCorner.CornerRadius = UDim.new(0, 4)
+unloadGlowCorner.Parent = unloadBtnGlow
+
+table.insert(connections, unloadBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(unloadBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+	tween(unloadBtnGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, unloadBtn.MouseLeave:Connect(function()
+	tween(unloadBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+	tween(unloadBtnGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Error, 0.7, 1, 2)
+	-- Click animation
+	unloadBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(unloadBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	-- Chain animation
-	for i, frameId in ipairs(Config.ChainFrames) do
-		UI.Logo.Image = frameId
-		if i == #Config.ChainFrames then
-			task.wait(0.15)
+	notify("Unloading CHAINIX...")
+	wait(0.5)
+	cleanup()
+end))
+
+setY = setY + 40
+
+setY = createSection("Performance", setLeftCol, setY)
+
+setY = createCheckbox("Low Graphics Mode", setLeftCol, setY, function(enabled)
+	notify(enabled and "Low Graphics ON" or "Low Graphics OFF")
+end)
+
+-- Update canvas size so all sections are reachable!
+setScrollFrame.CanvasSize = UDim2.new(0, 0, 0, setY + 20)
+
+-- MISC PAGE
+local miscPage = tabPages["Misc"]
+
+local miscLeftCol = Instance.new("Frame")
+miscLeftCol.Size = UDim2.new(1, -10, 1, -10)
+miscLeftCol.Position = UDim2.new(0, 5, 0, 5)
+miscLeftCol.BackgroundTransparency = 1
+miscLeftCol.Parent = miscPage
+
+local miscY = createSection("Misc", miscLeftCol, 0)
+
+miscY = createCheckbox("Anti AFK", miscLeftCol, miscY, function(enabled)
+	notify(enabled and "Anti AFK ON" or "Anti AFK OFF")
+end)
+
+miscY = createCheckbox("Auto Respawn", miscLeftCol, miscY, function(enabled)
+	notify(enabled and "Auto Respawn ON" or "Auto Respawn OFF")
+end)
+
+-- CHAINIX Logo (bottom right)
+local logo = Instance.new("TextLabel")
+logo.Text = "⛓"
+logo.Font = Enum.Font.GothamBold
+logo.TextSize = 32
+logo.TextColor3 = Color3.fromRGB(88, 101, 242)
+logo.BackgroundTransparency = 1
+logo.Size = UDim2.new(0, 40, 0, 40)
+logo.Position = UDim2.new(1, -50, 1, -50)
+logo.TextTransparency = 0.3
+logo.Parent = mainFrame
+
+local logoText = Instance.new("TextLabel")
+logoText.Text = "CHAINIX"
+logoText.Font = Enum.Font.Code
+logoText.TextSize = 8
+logoText.TextColor3 = Color3.fromRGB(150, 160, 200)
+logoText.BackgroundTransparency = 1
+logoText.Size = UDim2.new(0, 60, 0, 15)
+logoText.Position = UDim2.new(1, -65, 1, -20)
+logoText.TextTransparency = 0.5
+logoText.Parent = mainFrame
+
+-- Feature loops
+table.insert(connections, RunService.Heartbeat:Connect(function()
+	if flyEnabled and bodyVelocity and bodyGyro then
+		local cam = workspace.CurrentCamera
+		local move = Vector3.new(0, 0, 0)
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector * flySpeed end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector * flySpeed end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector * flySpeed end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector * flySpeed end
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, flySpeed, 0) end
+		if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then move = move - Vector3.new(0, flySpeed, 0) end
+		bodyVelocity.Velocity = move
+		bodyGyro.CFrame = cam.CFrame
+	end
+end))
+
+table.insert(connections, UserInputService.JumpRequest:Connect(function()
+	if jumpEnabled then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+end))
+
+table.insert(connections, RunService.Stepped:Connect(function()
+	if noclipEnabled and character then
+		for _, part in pairs(character:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = false end
+		end
+	end
+end))
+
+table.insert(connections, player.CharacterAdded:Connect(function(newChar)
+	character = newChar
+	humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
+	humanoid = newChar:WaitForChild("Humanoid")
+	if flyEnabled then
+		flyEnabled = false
+		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
+		if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+	end
+end))
+
+-- Keybind detection system
+table.insert(connections, UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	
+	-- Check if waiting for keybind
+	if waitingForKeybind then
+		if input.KeyCode ~= Enum.KeyCode.Unknown then
+			playSound(Sounds.Success, 0.5, 1.2, 2)
+			if waitingForKeybind == "toggleUI" then
+				toggleUIKey = input.KeyCode
+				toggleUIBtn.Text = getKeyName(toggleUIKey)
+				toggleUIBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+				updateConfig("toggle_key", getKeyName(toggleUIKey))
+				notify("Toggle UI key set to: " .. getKeyName(toggleUIKey))
+			elseif waitingForKeybind == "unload" then
+				unloadKey = input.KeyCode
+				unloadBtn.Text = getKeyName(unloadKey)
+				unloadBtn.TextColor3 = Color3.fromRGB(220, 50, 50)
+				updateConfig("unload_key", getKeyName(unloadKey))
+				notify("Unload key set to: " .. getKeyName(unloadKey))
+			end
+			waitingForKeybind = nil
+		end
+		return
+	end
+	
+	-- Toggle UI keybind
+	if input.KeyCode == toggleUIKey then
+		playSound(Sounds.Click, 0.3, 1, 1)
+		mainFrame.Visible = not mainFrame.Visible
+		if mainFrame.Visible then
+			notify("UI Shown")
 		else
-			task.wait(0.1)
+			notify("UI Hidden - Press " .. getKeyName(toggleUIKey) .. " to show")
 		end
 	end
 	
-	-- Flash
-	local flash = Instance.new("Frame")
-	flash.Size = UDim2.new(1, 0, 1, 0)
-	flash.BackgroundColor3 = Color3.fromRGB(240, 245, 250)
-	flash.BackgroundTransparency = 0.6
-	flash.BorderSizePixel = 0
-	flash.ZIndex = 10
-	flash.Parent = UI.Frame
-	
-	local flashIn = Utils.CreateTween(flash, 0.12, {BackgroundTransparency = 0.2})
-	local flashOut = Utils.CreateTween(flash, 0.25, {BackgroundTransparency = 1})
-	flashIn:Play()
-	flashIn.Completed:Connect(function()
-		flashOut:Play()
-	end)
-	Debris:AddItem(flash, 0.4)
-	
-	task.wait(0.25)
-	
-	-- Title change
-	Utils.CreateTween(UI.Title, 0.18, {TextTransparency = 1}):Play()
-	task.wait(0.18)
-	UI.Title.Text = "SELECT GAME"
-	UI.Title.TextSize = 26
-	UI.Title.Position = UDim2.new(0, 0, 0, 18)
-	Utils.CreateTween(UI.Title, 0.25, {TextTransparency = 0}):Play()
-	
-	-- Fade elements
-	Utils.CreateTween(UI.LogoBG, 0.22, {BackgroundTransparency = 1}):Play()
-	Utils.CreateTween(UI.Logo, 0.22, {ImageTransparency = 1}):Play()
-	Utils.CreateTween(UI.Subtitle, 0.22, {TextTransparency = 1}):Play()
-	
-	task.wait(0.22)
-	
-	UI.ActivateButton.Visible = false
-	UI.CloseButton.Visible = false
-	UI.BackButton.Visible = true
-	UI.Version.Visible = false
-	UI.DiscordButton.Visible = false
-	UI.SettingsButton.Visible = false
-	UI.SearchBar.Visible = true
-	
-	task.wait(0.35)
-	
-	Utils.PlaySound(Config.Sounds.GameClick, 0.7, 1, 3)
-	Utils.ShowNotification("Choose your script! 🎮", 2)
-	
-	task.wait(0.12)
-	
-	-- Show favorites first, then rest
-	local sortedGames = {}
-	for _, info in ipairs(GameList) do
-		if info.available and isFavorite(info.name) then
-			table.insert(sortedGames, info)
-		end
+	-- Unload keybind
+	if input.KeyCode == unloadKey then
+		playSound(Sounds.Error, 0.7, 1, 2)
+		notify("Unloading CHAINIX...")
+		wait(0.5)
+		cleanup()
 	end
-	for _, info in ipairs(GameList) do
-		if not isFavorite(info.name) then
-			table.insert(sortedGames, info)
-		end
-	end
-	
-	for i, gameInfo in ipairs(sortedGames) do
-		createGameButton(gameInfo, i)
-		task.wait(0.035)
-	end
-end
+end))
 
-local function hideGameMenu()
-	Utils.PlaySound(Config.Sounds.Click, 0.6, 1, 1)
-	
-	-- Title change
-	Utils.CreateTween(UI.Title, 0.18, {TextTransparency = 1}):Play()
-	task.wait(0.18)
-	UI.Title.Text = "CHAINIX"
-	UI.Title.TextSize = 48
-	UI.Title.Position = UDim2.new(0, 0, 0, 0)
-	Utils.CreateTween(UI.Title, 0.25, {TextTransparency = 0}):Play()
-	
-	for _, button in ipairs(gameButtons) do
-		Utils.CreateTween(button, 0.18, {BackgroundTransparency = 1}):Play()
-		task.wait(0.025)
-		button:Destroy()
-	end
-	gameButtons = {}
-	
-	UI.Logo.Image = Config.ChainFrames[1]
-	Utils.CreateTween(UI.Logo, 0.35, {ImageTransparency = 0.15}):Play()
-	Utils.CreateTween(UI.Subtitle, 0.35, {TextTransparency = 0.3}):Play()
-	
-	UI.ActivateButton.Visible = true
-	UI.CloseButton.Visible = true
-	UI.BackButton.Visible = false
-	UI.Version.Visible = true
-	UI.DiscordButton.Visible = true
-	UI.SettingsButton.Visible = true
-	UI.SearchBar.Visible = false
-	UI.SearchBar.Text = ""
-end
-
--- Search functionality
-UI.SearchBar:GetPropertyChangedSignal("Text"):Connect(function()
-	local query = UI.SearchBar.Text:lower()
-	
-	for _, button in ipairs(gameButtons) do
-		local gameName = button:FindFirstChild("TextLabel")
-		if gameName then
-			local matches = gameName.Text:lower():find(query, 1, true)
-			button.Visible = (query == "" or matches ~= nil)
-		end
-	end
-end)
-
-print(">> CHAINIX: Game menu functions loaded!")
-print(">> Favorites, search, recently used ready!")
-
--- ========================================
--- CURSOR TRACKING
--- ========================================
-local function setupCursorGlow()
-	local mouse = game:GetService("Players").LocalPlayer:GetMouse()
-	
-	RunService.RenderStepped:Connect(function()
-		UI.CursorGlow.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
-	end)
-end
-
--- ========================================
--- DRAGGABLE FUNCTIONALITY
--- ========================================
-local dragging = false
-local dragInput, dragStart, startPos
-
-local function updateDrag(input)
-	local delta = input.Position - dragStart
-	UI.Frame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
-	shadowFrame1.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X - 10,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y - 10
-	)
-	shadowFrame2.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X - 5,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y - 5
-	)
-end
-
-local function setupDragging()
-	UI.Frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			-- Don't drag if clicking on settings panel, volume slider, or custom theme panel
-			if settingsPanelOpen or customThemePanel.Visible then
-				return
-			end
-			
-			dragging = true
-			dragStart = input.Position
-			startPos = UI.Frame.Position
-			
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-	
-	UI.Frame.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			updateDrag(input)
-		end
-	end)
-end
-
--- ========================================
--- KEYBIND SYSTEM
--- ========================================
-local keybindConnection
-
-local function setupKeybind()
-	keybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
-		
-		if input.KeyCode == SavedData.Settings.ToggleKey then
-			loaderVisible = not loaderVisible
-			
-			if loaderVisible then
-				Utils.CreateTween(UI.Frame, 0.3, {Position = Config.FramePosition}):Play()
-				Utils.CreateTween(shadowFrame1, 0.3, {BackgroundTransparency = 0.92}):Play()
-				Utils.CreateTween(shadowFrame2, 0.3, {BackgroundTransparency = 0.88}):Play()
-				Utils.ShowNotification("Loader opened! 🔓", 1.5)
-			else
-				Utils.CreateTween(UI.Frame, 0.3, {Position = UDim2.new(0.5, -250, 1.5, 0)}):Play()
-				Utils.CreateTween(shadowFrame1, 0.3, {BackgroundTransparency = 1}):Play()
-				Utils.CreateTween(shadowFrame2, 0.3, {BackgroundTransparency = 1}):Play()
-			end
-			
-			Utils.PlaySound(Config.Sounds.Click, 0.5, 1, 1)
-		end
-	end)
-end
-
--- ========================================
--- INITIALIZATION
--- ========================================
-local function initializeUI()
-	Utils.PlaySound(Config.Sounds.Boot, 0.8, 1, 3)
-	task.wait(0.2)
-	Utils.PlaySound(Config.Sounds.Scrape, 0.5, 1, 3)
-	
-	-- Fade in
-	Utils.CreateTween(UI.Frame, 1, {BackgroundTransparency = 0}):Play()
-	Utils.CreateTween(shadowFrame1, 1, {BackgroundTransparency = 0.92}):Play()
-	Utils.CreateTween(shadowFrame2, 1, {BackgroundTransparency = 0.88}):Play()
-	Utils.CreateTween(UI.OuterBorder, 1, {Transparency = 0.85}):Play()
-	
-	Utils.ShowNotification("CHAINIX ULTIMATE v5.0 loaded! 🔥", 3)
-	Utils.ShowNotification("Press INSERT to toggle loader 🔑", 3)
-end
-
--- ========================================
--- EVENT CONNECTIONS
--- ========================================
-UI.CloseButton.MouseButton1Click:Connect(function()
-	Utils.PlaySound(Config.Sounds.Click, 0.6, 1, 1)
-	Utils.ShowNotification("Closing CHAINIX... 👋", 2)
-	
-	-- Disconnect keybind listener
-	if keybindConnection then
-		keybindConnection:Disconnect()
-		keybindConnection = nil
-		print(">> CHAINIX: Keybind disconnected")
-	end
-	
-	task.wait(0.5)
-	Utils.CreateTween(UI.Frame, 0.25, {BackgroundTransparency = 1}):Play()
-	Utils.CreateTween(shadowFrame1, 0.25, {BackgroundTransparency = 1}):Play()
-	Utils.CreateTween(shadowFrame2, 0.25, {BackgroundTransparency = 1}):Play()
-	Utils.CreateTween(UI.OuterBorder, 0.25, {Transparency = 1}):Play()
-	task.wait(0.25)
-	gui:Destroy()
-	print(">> CHAINIX: Fully unloaded!")
-end)
-
-UI.ActivateButton.MouseButton1Click:Connect(showGameMenu)
-UI.BackButton.MouseButton1Click:Connect(hideGameMenu)
-
--- ========================================
--- STARTUP SEQUENCE
--- ========================================
-setupActivateButton()
-setupCloseButton()
-setupBackButton()
-setupDiscordButton()
-setupSettingsButton()
-setupDragging()
-setupCursorGlow()
-setupKeybind()
-
--- Start all animations
-startBackgroundAnimation()
-startParticleSpawning()
-pulseStatusDot()
-pulseBorder()
-pulseCursor()
-
--- Initialize
-initializeUI()
-
--- ========================================
--- FINAL MESSAGES
--- ========================================
-print("=" .. string.rep("=", 60))
-print(">> CHAINIX ULTIMATE EDITION v5.0 - FULLY LOADED!")
-print("=" .. string.rep("=", 60))
-print(">> ✅ ALL FEATURES ENABLED:")
-print(">>    🎨 5 Themes (Default, Ocean, Purple, Matrix, Ruby, Gold)")
-print(">>    ⚙️  Settings Panel (Volume, Animations, Notifications)")
-print(">>    ⌨️  Keybind System (Press INSERT to toggle)")
-print(">>    ⭐ Favorites System")
-print(">>    🔍 Search Bar")
-print(">>    📊 Sound Visualizer")
-print(">>    🟢 Status Indicator")
-print(">>    ✨ Floating Particles")
-print(">>    🌊 Animated Background")
-print(">>    🔔 Notification System")
-print(">>    📱 Discord Integration")
-print(">>    💎 Loading Bar")
-print(">>    🎯 Recently Used")
-print(">>    ℹ️  Info Tooltips")
-print(">>    🖱️  Custom Cursor")
-print(">>    🎮 12 Game Slots")
-print("=" .. string.rep("=", 60))
-print(">> THIS IS THE MOST FEATURE-RICH LOADER EVER! 🔥")
-print("=" .. string.rep("=", 60))
+notify("CHAINIX V1 loaded")
+print("CHAINIX V1: Initialized")
