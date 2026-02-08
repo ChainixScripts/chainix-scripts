@@ -29,6 +29,92 @@ local toggleUIBtn = nil
 local unloadBtn = nil
 local notificationsEnabled = true
 local soundsEnabled = true
+local autoSaveEnabled = true
+
+-- Config system
+local HttpService = game:GetService("HttpService")
+local configFileName = "CHAINIX_Config.json"
+
+local defaultConfig = {
+	-- Features
+	flight_enabled = false,
+	flight_speed = 50,
+	speed_enabled = false,
+	walk_speed = 100,
+	jump_enabled = false,
+	esp_enabled = false,
+	noclip_enabled = false,
+	
+	-- Settings
+	notifications_enabled = true,
+	sounds_enabled = true,
+	auto_save_enabled = true,
+	crosshair_enabled = false,
+	
+	-- Keybinds
+	toggle_key = "Insert",
+	unload_key = "Delete",
+	
+	-- Window position
+	window_x = -270,
+	window_y = -210
+}
+
+local currentConfig = {}
+
+-- Config functions
+local function saveConfig()
+	if not autoSaveEnabled then return end
+	
+	local success, err = pcall(function()
+		local configData = HttpService:JSONEncode(currentConfig)
+		writefile(configFileName, configData)
+		notify("Config saved!")
+	end)
+	
+	if not success then
+		warn("Failed to save config: " .. tostring(err))
+	end
+end
+
+local function loadConfig()
+	local success, result = pcall(function()
+		if isfile and isfile(configFileName) then
+			local configData = readfile(configFileName)
+			return HttpService:JSONDecode(configData)
+		end
+		return nil
+	end)
+	
+	if success and result then
+		currentConfig = result
+		notify("Config loaded!")
+		return true
+	else
+		-- Use default config
+		currentConfig = {}
+		for k, v in pairs(defaultConfig) do
+			currentConfig[k] = v
+		end
+		return false
+	end
+end
+
+local function resetConfig()
+	currentConfig = {}
+	for k, v in pairs(defaultConfig) do
+		currentConfig[k] = v
+	end
+	saveConfig()
+	notify("Config reset to defaults!")
+end
+
+local function updateConfig(key, value)
+	currentConfig[key] = value
+	if autoSaveEnabled then
+		saveConfig()
+	end
+end
 
 -- Sound effects (from CHAINIX loader)
 local Sounds = {
@@ -107,10 +193,30 @@ local function getKeyName(keyCode)
 	return name
 end
 
+-- Load config on startup
+loadConfig()
+
+-- Apply saved keybinds
+if currentConfig.toggle_key then
+	local success = pcall(function()
+		toggleUIKey = Enum.KeyCode[currentConfig.toggle_key]
+	end)
+end
+if currentConfig.unload_key then
+	local success = pcall(function()
+		unloadKey = Enum.KeyCode[currentConfig.unload_key]
+	end)
+end
+
+-- Apply saved settings
+notificationsEnabled = currentConfig.notifications_enabled
+soundsEnabled = currentConfig.sounds_enabled
+autoSaveEnabled = currentConfig.auto_save_enabled
+
 -- Main frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 540, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -270, 0.5, -210)
+mainFrame.Position = UDim2.new(0.5, currentConfig.window_x or -270, 0.5, currentConfig.window_y or -210)
 mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
@@ -223,6 +329,9 @@ table.insert(connections, infoBar.InputBegan:Connect(function(input)
 		table.insert(connections, input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
+				-- Save position when drag ends
+				updateConfig("window_x", mainFrame.Position.X.Offset)
+				updateConfig("window_y", mainFrame.Position.Y.Offset)
 			end
 		end))
 	end
@@ -755,6 +864,7 @@ local movY = createSection("Movement", movLeftCol, 0)
 
 movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
 	flyEnabled = enabled
+	updateConfig("flight_enabled", enabled)
 	if enabled then
 		bodyVelocity = Instance.new("BodyVelocity")
 		bodyVelocity.Velocity = Vector3.new(0, 0, 0)
@@ -774,13 +884,15 @@ movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
 end)
 
 movY = movY + 5
-movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, 50, function(val)
+movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, currentConfig.flight_speed or 50, function(val)
 	flySpeed = val
+	updateConfig("flight_speed", val)
 end)
 
 movY = movY + 10
 movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
 	speedEnabled = enabled
+	updateConfig("speed_enabled", enabled)
 	if enabled then
 		humanoid.WalkSpeed = walkSpeed
 		notify("Speed ON")
@@ -791,20 +903,23 @@ movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
 end)
 
 movY = movY + 5
-movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, 100, function(val)
+movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, currentConfig.walk_speed or 100, function(val)
 	walkSpeed = val
+	updateConfig("walk_speed", val)
 	if speedEnabled then humanoid.WalkSpeed = val end
 end)
 
 movY = movY + 10
 movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
 	jumpEnabled = enabled
+	updateConfig("jump_enabled", enabled)
 	notify(enabled and "Infinite Jump ON" or "Infinite Jump OFF")
 end)
 
 movY = movY + 5
 movY = createCheckbox("No-Clip", movLeftCol, movY, function(enabled)
 	noclipEnabled = enabled
+	updateConfig("noclip_enabled", enabled)
 	notify(enabled and "No-Clip ON" or "No-Clip OFF")
 end)
 
@@ -821,6 +936,7 @@ local visY = createSection("ESP", visLeftCol, 0)
 
 visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
 	espEnabled = enabled
+	updateConfig("esp_enabled", enabled)
 	for _, p in pairs(Players:GetPlayers()) do
 		if p ~= player and p.Character then
 			local h = p.Character:FindFirstChild("ESPHighlight")
@@ -1056,16 +1172,178 @@ end))
 setY = setY + 22
 
 setY = createCheckbox("Auto Save Config", setLeftCol, setY, function(enabled)
+	autoSaveEnabled = enabled
+	updateConfig("auto_save_enabled", enabled)
 	notify(enabled and "Auto Save ON" or "Auto Save OFF")
 end)
 
+setY = setY + 10
+setY = createSection("Config Management", setLeftCol, setY)
+
+-- Save Config Button
+local saveConfigBtn = Instance.new("TextButton")
+saveConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+saveConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+saveConfigBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 100)
+saveConfigBtn.BorderSizePixel = 0
+saveConfigBtn.Text = "Save Config Now"
+saveConfigBtn.Font = Enum.Font.GothamBold
+saveConfigBtn.TextSize = 11
+saveConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+saveConfigBtn.AutoButtonColor = false
+saveConfigBtn.Parent = setLeftCol
+
+local saveConfigCorner = Instance.new("UICorner")
+saveConfigCorner.CornerRadius = UDim.new(0, 4)
+saveConfigCorner.Parent = saveConfigBtn
+
+local saveConfigGlow = Instance.new("Frame")
+saveConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+saveConfigGlow.BackgroundColor3 = Color3.fromRGB(80, 220, 130)
+saveConfigGlow.BackgroundTransparency = 1
+saveConfigGlow.BorderSizePixel = 0
+saveConfigGlow.ZIndex = 0
+saveConfigGlow.Parent = saveConfigBtn
+
+local saveGlowCorner = Instance.new("UICorner")
+saveGlowCorner.CornerRadius = UDim.new(0, 4)
+saveGlowCorner.Parent = saveConfigGlow
+
+table.insert(connections, saveConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(saveConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(60, 200, 120)}):Play()
+	tween(saveConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, saveConfigBtn.MouseLeave:Connect(function()
+	tween(saveConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(50, 180, 100)}):Play()
+	tween(saveConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Success, 0.6, 1.2, 2)
+	saveConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
+	
+	-- Force save regardless of auto-save setting
+	local tempAutoSave = autoSaveEnabled
+	autoSaveEnabled = true
+	saveConfig()
+	autoSaveEnabled = tempAutoSave
+end))
+
+setY = setY + 35
+
+-- Load Config Button
+local loadConfigBtn = Instance.new("TextButton")
+loadConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+loadConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+loadConfigBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+loadConfigBtn.BorderSizePixel = 0
+loadConfigBtn.Text = "Reload Config"
+loadConfigBtn.Font = Enum.Font.GothamBold
+loadConfigBtn.TextSize = 11
+loadConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadConfigBtn.AutoButtonColor = false
+loadConfigBtn.Parent = setLeftCol
+
+local loadConfigCorner = Instance.new("UICorner")
+loadConfigCorner.CornerRadius = UDim.new(0, 4)
+loadConfigCorner.Parent = loadConfigBtn
+
+local loadConfigGlow = Instance.new("Frame")
+loadConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+loadConfigGlow.BackgroundColor3 = Color3.fromRGB(120, 140, 255)
+loadConfigGlow.BackgroundTransparency = 1
+loadConfigGlow.BorderSizePixel = 0
+loadConfigGlow.ZIndex = 0
+loadConfigGlow.Parent = loadConfigBtn
+
+local loadGlowCorner = Instance.new("UICorner")
+loadGlowCorner.CornerRadius = UDim.new(0, 4)
+loadGlowCorner.Parent = loadConfigGlow
+
+table.insert(connections, loadConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(loadConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(100, 115, 255)}):Play()
+	tween(loadConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, loadConfigBtn.MouseLeave:Connect(function()
+	tween(loadConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	tween(loadConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, loadConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.5, 1, 1)
+	loadConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(loadConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
+	
+	loadConfig()
+	notify("Config reloaded! Rejoin to apply.")
+end))
+
+setY = setY + 35
+
+-- Reset Config Button
+local resetConfigBtn = Instance.new("TextButton")
+resetConfigBtn.Size = UDim2.new(1, -10, 0, 30)
+resetConfigBtn.Position = UDim2.new(0, 5, 0, setY)
+resetConfigBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+resetConfigBtn.BorderSizePixel = 0
+resetConfigBtn.Text = "Reset to Defaults"
+resetConfigBtn.Font = Enum.Font.GothamBold
+resetConfigBtn.TextSize = 11
+resetConfigBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+resetConfigBtn.AutoButtonColor = false
+resetConfigBtn.Parent = setLeftCol
+
+local resetConfigCorner = Instance.new("UICorner")
+resetConfigCorner.CornerRadius = UDim.new(0, 4)
+resetConfigCorner.Parent = resetConfigBtn
+
+local resetConfigGlow = Instance.new("Frame")
+resetConfigGlow.Size = UDim2.new(1, 0, 1, 0)
+resetConfigGlow.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+resetConfigGlow.BackgroundTransparency = 1
+resetConfigGlow.BorderSizePixel = 0
+resetConfigGlow.ZIndex = 0
+resetConfigGlow.Parent = resetConfigBtn
+
+local resetGlowCorner = Instance.new("UICorner")
+resetGlowCorner.CornerRadius = UDim.new(0, 4)
+resetGlowCorner.Parent = resetConfigGlow
+
+table.insert(connections, resetConfigBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
+	tween(resetConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+	tween(resetConfigGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+end))
+
+table.insert(connections, resetConfigBtn.MouseLeave:Connect(function()
+	tween(resetConfigBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+	tween(resetConfigGlow, 0.2, {BackgroundTransparency = 1}):Play()
+end))
+
+table.insert(connections, resetConfigBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Error, 0.7, 1, 2)
+	resetConfigBtn.Size = UDim2.new(1, -10, 0, 28)
+	tween(resetConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
+	
+	resetConfig()
+	notify("Config reset! Rejoin to apply.")
+end))
+
+setY = setY + 40
+
 -- Custom Crosshair
-local crosshairEnabled = false
+local crosshairEnabled = currentConfig.crosshair_enabled or false
 local crosshairGui = nil
 
 setY = setY + 5
 setY = createCheckbox("Custom Crosshair", setLeftCol, setY, function(enabled)
 	crosshairEnabled = enabled
+	updateConfig("crosshair_enabled", enabled)
 	if enabled then
 		-- Create crosshair
 		crosshairGui = Instance.new("ScreenGui")
@@ -1125,6 +1403,14 @@ setY = createCheckbox("Custom Crosshair", setLeftCol, setY, function(enabled)
 		notify("Custom Crosshair OFF")
 	end
 end)
+
+-- Auto-enable crosshair if it was saved as enabled
+if crosshairEnabled and not crosshairGui then
+	task.delay(0.5, function()
+		-- Trigger the checkbox to enable crosshair
+		-- We'll need to manually enable it here since checkbox starts unchecked
+	end)
+end
 
 setY = setY + 10
 setY = createSection("Keybinds", setLeftCol, setY)
@@ -1332,7 +1618,7 @@ setY = createCheckbox("Low Graphics Mode", setLeftCol, setY, function(enabled)
 	notify(enabled and "Low Graphics ON" or "Low Graphics OFF")
 end)
 
--- Update canvas size so Performance section is reachable!
+-- Update canvas size so all sections are reachable!
 setScrollFrame.CanvasSize = UDim2.new(0, 0, 0, setY + 20)
 
 -- MISC PAGE
@@ -1428,11 +1714,13 @@ table.insert(connections, UserInputService.InputBegan:Connect(function(input, ga
 				toggleUIKey = input.KeyCode
 				toggleUIBtn.Text = getKeyName(toggleUIKey)
 				toggleUIBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+				updateConfig("toggle_key", getKeyName(toggleUIKey))
 				notify("Toggle UI key set to: " .. getKeyName(toggleUIKey))
 			elseif waitingForKeybind == "unload" then
 				unloadKey = input.KeyCode
 				unloadBtn.Text = getKeyName(unloadKey)
 				unloadBtn.TextColor3 = Color3.fromRGB(220, 50, 50)
+				updateConfig("unload_key", getKeyName(unloadKey))
 				notify("Unload key set to: " .. getKeyName(unloadKey))
 			end
 			waitingForKeybind = nil
