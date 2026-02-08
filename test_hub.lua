@@ -967,7 +967,10 @@ soundLabel.TextTruncate = Enum.TextTruncate.AtEnd
 soundLabel.Parent = soundContainer
 
 table.insert(connections, soundCheckbox.MouseEnter:Connect(function()
-	playSound(Sounds.Hover, 0.15, 1.4, 1)
+	-- Only play sound if sounds are currently enabled
+	if soundsEnabled then
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
+	end
 	tween(soundCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
 	if soundsEnabled then
 		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
@@ -982,17 +985,10 @@ table.insert(connections, soundCheckbox.MouseLeave:Connect(function()
 end))
 
 table.insert(connections, soundCheckbox.MouseButton1Click:Connect(function()
+	-- Toggle state FIRST
 	soundsEnabled = not soundsEnabled
 	
-	-- Play one last sound to confirm (regardless of new state)
-	local sound = Instance.new("Sound")
-	sound.SoundId = soundsEnabled and Sounds.Success or Sounds.Click
-	sound.Volume = 0.5
-	sound.PlaybackSpeed = soundsEnabled and 1.2 or 0.8
-	sound.Parent = game:GetService("SoundService")
-	sound:Play()
-	game:GetService("Debris"):AddItem(sound, 2)
-	
+	-- Visual updates
 	if soundsEnabled then
 		tween(soundCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
 		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
@@ -1004,6 +1000,15 @@ table.insert(connections, soundCheckbox.MouseButton1Click:Connect(function()
 		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
 		soundCheckmark.Text = ""
 	end
+	
+	-- THEN play confirmation sound (always plays to confirm the toggle)
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundsEnabled and Sounds.Success or Sounds.Click
+	sound.Volume = 0.5
+	sound.PlaybackSpeed = soundsEnabled and 1.2 or 0.8
+	sound.Parent = game:GetService("SoundService")
+	sound:Play()
+	game:GetService("Debris"):AddItem(sound, 2)
 	
 	notify(soundsEnabled and "Sounds enabled" or "Sounds muted")
 end))
@@ -1397,6 +1402,7 @@ table.insert(connections, UserInputService.InputBegan:Connect(function(input, ga
 	
 	-- Toggle UI keybind
 	if input.KeyCode == toggleUIKey then
+		playSound(Sounds.Click, 0.3, 1, 1)
 		mainFrame.Visible = not mainFrame.Visible
 		if mainFrame.Visible then
 			notify("UI Shown")
@@ -1407,6 +1413,7 @@ table.insert(connections, UserInputService.InputBegan:Connect(function(input, ga
 	
 	-- Unload keybind
 	if input.KeyCode == unloadKey then
+		playSound(Sounds.Error, 0.7, 1, 2)
 		notify("Unloading CHAINIX...")
 		wait(0.5)
 		cleanup()
