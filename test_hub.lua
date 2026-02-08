@@ -65,49 +65,88 @@ local currentConfig = {}
 -- Check if file functions are available
 local hasFileSystem = pcall(function() return writefile and readfile and isfile end)
 
+-- Alternative: Use game:GetService("HttpService") with saved data in player's character
+local function getConfigFromStorage()
+	-- Try to get from player's character (persists in studio/some executors)
+	local success, data = pcall(function()
+		if player.Character then
+			local configValue = player.Character:FindFirstChild("CHAINIX_ConfigData")
+			if configValue and configValue:IsA("StringValue") then
+				return HttpService:JSONDecode(configValue.Value)
+			end
+		end
+		return nil
+	end)
+	return success and data or nil
+end
+
+local function saveConfigToStorage()
+	pcall(function()
+		if player.Character then
+			local configValue = player.Character:FindFirstChild("CHAINIX_ConfigData")
+			if not configValue then
+				configValue = Instance.new("StringValue")
+				configValue.Name = "CHAINIX_ConfigData"
+				configValue.Parent = player.Character
+			end
+			configValue.Value = HttpService:JSONEncode(currentConfig)
+		end
+	end)
+end
+
 -- Config functions
 local function saveConfig()
-	if not autoSaveEnabled or not hasFileSystem then return end
+	if not autoSaveEnabled then return end
 	
-	local success, err = pcall(function()
-		local configData = HttpService:JSONEncode(currentConfig)
-		writefile(configFileName, configData)
-	end)
-	
-	if not success then
-		warn("Failed to save config: " .. tostring(err))
+	if hasFileSystem then
+		-- Save to file (Synapse, Script-Ware, etc.)
+		pcall(function()
+			local configData = HttpService:JSONEncode(currentConfig)
+			writefile(configFileName, configData)
+		end)
+	else
+		-- Save to character storage (Volt, etc.)
+		saveConfigToStorage()
 	end
 end
 
 local function loadConfig()
-	if not hasFileSystem then
+	local loaded = false
+	
+	if hasFileSystem then
+		-- Try loading from file first
+		local success, result = pcall(function()
+			if isfile(configFileName) then
+				local configData = readfile(configFileName)
+				return HttpService:JSONDecode(configData)
+			end
+			return nil
+		end)
+		
+		if success and result then
+			currentConfig = result
+			loaded = true
+		end
+	end
+	
+	if not loaded then
+		-- Try loading from character storage
+		local storageConfig = getConfigFromStorage()
+		if storageConfig then
+			currentConfig = storageConfig
+			loaded = true
+		end
+	end
+	
+	if not loaded then
 		-- Use default config
 		currentConfig = {}
 		for k, v in pairs(defaultConfig) do
 			currentConfig[k] = v
 		end
-		return false
 	end
 	
-	local success, result = pcall(function()
-		if isfile(configFileName) then
-			local configData = readfile(configFileName)
-			return HttpService:JSONDecode(configData)
-		end
-		return nil
-	end)
-	
-	if success and result then
-		currentConfig = result
-		return true
-	else
-		-- Use default config
-		currentConfig = {}
-		for k, v in pairs(defaultConfig) do
-			currentConfig[k] = v
-		end
-		return false
-	end
+	return loaded
 end
 
 local function resetConfig()
@@ -120,12 +159,14 @@ local function resetConfig()
 			local configData = HttpService:JSONEncode(currentConfig)
 			writefile(configFileName, configData)
 		end)
+	else
+		saveConfigToStorage()
 	end
 end
 
 local function updateConfig(key, value)
 	currentConfig[key] = value
-	if autoSaveEnabled and hasFileSystem then
+	if autoSaveEnabled then
 		task.spawn(saveConfig)
 	end
 end
@@ -1239,19 +1280,23 @@ table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
 	saveConfigBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	if not hasFileSystem then
-		notify("File system not available on this executor!")
-		return
+	local success = false
+	
+	if hasFileSystem then
+		-- Save to file
+		success = pcall(function()
+			local configData = HttpService:JSONEncode(currentConfig)
+			writefile(configFileName, configData)
+		end)
+	else
+		-- Save to character storage (for Volt and similar)
+		success = pcall(function()
+			saveConfigToStorage()
+		end)
 	end
 	
-	-- Force save
-	local success = pcall(function()
-		local configData = HttpService:JSONEncode(currentConfig)
-		writefile(configFileName, configData)
-	end)
-	
 	if success then
-		notify("Config saved!")
+		notify("Config saved!" .. (hasFileSystem and "" or " (Session only)"))
 	else
 		notify("Failed to save config!")
 	end
@@ -1304,16 +1349,11 @@ table.insert(connections, loadConfigBtn.MouseButton1Click:Connect(function()
 	loadConfigBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(loadConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	if not hasFileSystem then
-		notify("File system not available on this executor!")
-		return
-	end
-	
 	local success = loadConfig()
 	if success then
 		notify("Config loaded! Rejoin to apply.")
 	else
-		notify("No config file found!")
+		notify("No saved config found!")
 	end
 end))
 
