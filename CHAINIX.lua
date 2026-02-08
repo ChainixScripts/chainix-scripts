@@ -181,13 +181,12 @@ Config.ButtonSpacingY = 12
 -- ========================================
 local GameList = {
 	{
-		name = "TEST", 
-		url = "",
-		icon = "🧪",
+		name = "PREMIUM HUB", 
+		url = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/main/test_hub.lua",
+		icon = "⚡",
 		available = true,
-		description = "Test hub with UI",
-		lastUpdated = "2026-02-07",
-		script = [[local p=game:GetService("Players")local t=game:GetService("TweenService")local u=game:GetService("UserInputService")local r=game:GetService("RunService")local l=p.LocalPlayer;local c=l.Character or l.CharacterAdded:Wait()local h=c:WaitForChild("HumanoidRootPart")local g=Instance.new("ScreenGui")g.Name="ChainixTestHub"g.ResetOnSpawn=false;g.Parent=l.PlayerGui;local m=Instance.new("Frame")m.Size=UDim2.new(0,400,0,450)m.Position=UDim2.new(0.5,-200,0.5,-225)m.BackgroundColor3=Color3.fromRGB(0,0,0)m.BorderSizePixel=0;m.Active=true;m.Draggable=true;m.Parent=g;local n=Instance.new("UICorner")n.CornerRadius=UDim.new(0,12)n.Parent=m;local o=Instance.new("UIStroke")o.Color=Color3.fromRGB(200,210,220)o.Thickness=2;o.Transparency=0.7;o.Parent=m;local q=Instance.new("TextLabel")q.Text="CHAINIX TEST"q.Font=Enum.Font.GothamBold;q.TextColor3=Color3.fromRGB(240,245,250)q.TextSize=20;q.BackgroundTransparency=1;q.Size=UDim2.new(1,-60,0,50)q.Position=UDim2.new(0,0,0,10)q.Parent=m;local s=Instance.new("TextLabel")s.Text="Universal Script Hub"s.Font=Enum.Font.Gotham;s.TextColor3=Color3.fromRGB(160,170,180)s.TextSize=12;s.BackgroundTransparency=1;s.Size=UDim2.new(1,0,0,20)s.Position=UDim2.new(0,0,0,35)s.Parent=m;local v=Instance.new("TextButton")v.Text="X"v.Font=Enum.Font.GothamBold;v.TextColor3=Color3.fromRGB(160,170,180)v.TextSize=18;v.BackgroundColor3=Color3.fromRGB(0,0,0)v.BackgroundTransparency=0.3;v.Size=UDim2.new(0,36,0,36)v.Position=UDim2.new(1,-48,0,12)v.AutoButtonColor=false;v.Parent=m;local w=Instance.new("UICorner")w.CornerRadius=UDim.new(0,8)w.Parent=v;v.MouseButton1Click:Connect(function()g:Destroy()end)local x=Instance.new("Frame")x.Size=UDim2.new(1,-40,0,2)x.Position=UDim2.new(0,20,0,60)x.BackgroundColor3=Color3.fromRGB(240,245,250)x.BorderSizePixel=0;x.Parent=m;local y,z,A=false,false,false;local B,C;local function D(E)game:GetService("StarterGui"):SetCore("SendNotification",{Title="CHAINIX TEST";Text=E;Duration=2})end;local function F(G,H,I,J)local K=Instance.new("Frame")K.Size=UDim2.new(1,-40,0,50)K.Position=UDim2.new(0,20,0,I)K.BackgroundColor3=Color3.fromRGB(16,16,20)K.BackgroundTransparency=0.3;K.Parent=m;local L=Instance.new("UICorner")L.CornerRadius=UDim.new(0,8)L.Parent=K;local M=Instance.new("TextLabel")M.Text=H;M.Font=Enum.Font.GothamBold;M.TextSize=24;M.BackgroundTransparency=1;M.Size=UDim2.new(0,40,1,0)M.Position=UDim2.new(0,10,0,0)M.Parent=K;local N=Instance.new("TextLabel")N.Text=G;N.Font=Enum.Font.GothamMedium;N.TextColor3=Color3.fromRGB(240,245,250)N.TextSize=14;N.BackgroundTransparency=1;N.Size=UDim2.new(1,-140,1,0)N.Position=UDim2.new(0,50,0,0)N.TextXAlignment=Enum.TextXAlignment.Left;N.Parent=K;local O=Instance.new("TextButton")O.Text="OFF"O.Font=Enum.Font.GothamBold;O.TextColor3=Color3.fromRGB(255,100,100)O.TextSize=12;O.BackgroundColor3=Color3.fromRGB(10,10,12)O.Size=UDim2.new(0,60,0,30)O.Position=UDim2.new(1,-70,0.5,-15)O.AutoButtonColor=false;O.Parent=K;local P=Instance.new("UICorner")P.CornerRadius=UDim.new(0,6)P.Parent=O;local Q=Instance.new("UIStroke")Q.Color=Color3.fromRGB(255,100,100)Q.Thickness=2;Q.Transparency=0.3;Q.Parent=O;local R=false;O.MouseButton1Click:Connect(function()R=not R;if R then O.Text="ON"O.TextColor3=Color3.fromRGB(100,255,100)Q.Color=Color3.fromRGB(100,255,100)else O.Text="OFF"O.TextColor3=Color3.fromRGB(255,100,100)Q.Color=Color3.fromRGB(255,100,100)end;J(R)end)end;F("Fly (Press X)","🚀",80,function(S)if S then y=true;B=Instance.new("BodyVelocity")B.Velocity=Vector3.new(0,0,0)B.MaxForce=Vector3.new(9e9,9e9,9e9)B.Parent=h;C=Instance.new("BodyGyro")C.MaxTorque=Vector3.new(9e9,9e9,9e9)C.CFrame=h.CFrame;C.Parent=h;D("Fly enabled! ✅")else y=false;if B then B:Destroy()end;if C then C:Destroy()end;D("Fly disabled! ❌")end end)F("Speed Hack","⚡",140,function(S)local T=c:FindFirstChild("Humanoid")if T then if S then T.WalkSpeed=100;z=true;D("Speed enabled! ✅")else T.WalkSpeed=16;z=false;D("Speed disabled! ❌")end end end)F("Infinite Jump","🦘",200,function(S)A=S;if S then D("Infinite Jump enabled! ✅")else D("Infinite Jump disabled! ❌")end end)F("ESP (Wallhack)","👁️",260,function(S)for U,V in pairs(p:GetPlayers())do if V~=p.LocalPlayer and V.Character then local W=V.Character:FindFirstChild("ESPHighlight")if S and not W then W=Instance.new("Highlight")W.Name="ESPHighlight"W.FillColor=Color3.fromRGB(255,100,100)W.OutlineColor=Color3.fromRGB(255,255,255)W.FillTransparency=0.5;W.OutlineTransparency=0;W.Parent=V.Character elseif not S and W then W:Destroy()end end end;if S then D("ESP enabled! ✅")else D("ESP disabled! ❌")end end)local X=false;F("No-Clip","👻",320,function(S)X=S;if S then D("No-Clip enabled! ✅")else D("No-Clip disabled! ❌")end end)r.Heartbeat:Connect(function()if y and B and C then local Y=workspace.CurrentCamera;local Z=Vector3.new(0,0,0)local _=50;if u:IsKeyDown(Enum.KeyCode.W)then Z=Z+Y.CFrame.LookVector*_ end;if u:IsKeyDown(Enum.KeyCode.S)then Z=Z-Y.CFrame.LookVector*_ end;if u:IsKeyDown(Enum.KeyCode.A)then Z=Z-Y.CFrame.RightVector*_ end;if u:IsKeyDown(Enum.KeyCode.D)then Z=Z+Y.CFrame.RightVector*_ end;if u:IsKeyDown(Enum.KeyCode.Space)then Z=Z+Vector3.new(0,_,0)end;if u:IsKeyDown(Enum.KeyCode.LeftShift)then Z=Z-Vector3.new(0,_,0)end;B.Velocity=Z;C.CFrame=Y.CFrame end end)u.JumpRequest:Connect(function()if A then local T=c:FindFirstChild("Humanoid")if T then T:ChangeState(Enum.HumanoidStateType.Jumping)end end end)r.Stepped:Connect(function()if X then for U,a0 in pairs(c:GetDescendants())do if a0:IsA("BasePart")then a0.CanCollide=false end end end end)l.CharacterAdded:Connect(function(a1)c=a1;h=a1:WaitForChild("HumanoidRootPart")if y then y=false;if B then B:Destroy()end;if C then C:Destroy()end end end)D("Test Hub loaded! 🎮")]]
+		description = "Premium hub with 5 features",
+		lastUpdated = "2026-02-08"
 	},
 	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
 	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
@@ -2192,17 +2191,30 @@ local function createGameButton(info, index)
 			
 			task.wait(0.5)
 			
+			print(">> CHAINIX DEBUG: Starting to load " .. info.name)
+			print(">> CHAINIX DEBUG: URL = " .. tostring(info.url))
+			
 			local success, err = pcall(function()
 				if info.script then
 					-- Load embedded script
+					print(">> CHAINIX DEBUG: Loading embedded script")
 					loadstring(info.script)()
 				elseif info.url ~= "" then
 					-- Load from URL
-					loadstring(game:HttpGet(info.url))()
+					print(">> CHAINIX DEBUG: Downloading from URL...")
+					local scriptContent = game:HttpGet(info.url)
+					print(">> CHAINIX DEBUG: Downloaded! Length: " .. #scriptContent)
+					loadstring(scriptContent)()
+					print(">> CHAINIX DEBUG: Executed!")
 				else
 					error("No script or URL provided")
 				end
 			end)
+			
+			print(">> CHAINIX DEBUG: Success = " .. tostring(success))
+			if not success then
+				print(">> CHAINIX DEBUG: Error = " .. tostring(err))
+			end
 			
 			if success then
 				Utils.ShowNotification(info.name .. " loaded successfully! ✅", 3)
@@ -2613,4 +2625,3 @@ print(">>    🎮 12 Game Slots")
 print("=" .. string.rep("=", 60))
 print(">> THIS IS THE MOST FEATURE-RICH LOADER EVER! 🔥")
 print("=" .. string.rep("=", 60))
-
