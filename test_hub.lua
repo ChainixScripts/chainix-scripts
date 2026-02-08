@@ -28,6 +28,30 @@ local waitingForKeybind = nil
 local toggleUIBtn = nil
 local unloadBtn = nil
 local notificationsEnabled = true
+local soundsEnabled = true
+
+-- Sound effects (from CHAINIX loader)
+local Sounds = {
+	Click = "rbxassetid://6895079853",
+	Hover = "rbxassetid://6895079853", 
+	Success = "rbxassetid://6026984224",
+	Error = "rbxassetid://1254672090"
+}
+
+-- Play sound function
+local function playSound(soundId, volume, pitch, duration)
+	if not soundsEnabled then return end
+	
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundId
+	sound.Volume = volume or 0.5
+	sound.PlaybackSpeed = pitch or 1
+	sound.Parent = game:GetService("SoundService")
+	
+	sound:Play()
+	
+	game:GetService("Debris"):AddItem(sound, duration or 2)
+end
 
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -302,11 +326,13 @@ end
 
 for name, btn in pairs(tabButtons) do
 	table.insert(connections, btn.MouseButton1Click:Connect(function()
+		playSound(Sounds.Click, 0.4, 1.1, 1)
 		switchTab(name)
 	end))
 	
 	-- Hover effects
 	table.insert(connections, btn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.2, 1.3, 1)
 		if currentTab ~= name then
 			tween(btn, 0.2, {BackgroundColor3 = Color3.fromRGB(30, 35, 50)}):Play()
 		end
@@ -402,6 +428,7 @@ local function createCheckbox(name, parent, yPos, callback)
 	
 	-- Hover effects
 	table.insert(connections, checkbox.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
 		tween(checkbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
 		if isChecked then
 			tween(checkGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
@@ -417,6 +444,9 @@ local function createCheckbox(name, parent, yPos, callback)
 	
 	table.insert(connections, checkbox.MouseButton1Click:Connect(function()
 		isChecked = not isChecked
+		
+		-- Sound effect
+		playSound(Sounds.Click, 0.5, isChecked and 1.2 or 0.9, 1)
 		
 		-- Smooth animations
 		if isChecked then
@@ -521,6 +551,7 @@ local function createSlider(name, parent, yPos, min, max, default, callback)
 	
 	-- Hover effects
 	table.insert(connections, sliderBtn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.15, 1.4, 1)
 		tween(sliderBtn, 0.2, {Size = UDim2.new(0, 14, 0, 14)}):Play()
 		tween(btnGlow, 0.2, {ImageTransparency = 0.6}):Play()
 	end))
@@ -884,6 +915,101 @@ end))
 
 setY = setY + 22
 
+-- Mute sounds checkbox (checked by default since sounds are enabled)
+local soundContainer = Instance.new("Frame")
+soundContainer.Size = UDim2.new(1, 0, 0, 20)
+soundContainer.Position = UDim2.new(0, 0, 0, setY)
+soundContainer.BackgroundTransparency = 1
+soundContainer.Parent = setLeftCol
+
+local soundCheckbox = Instance.new("TextButton")
+soundCheckbox.Size = UDim2.new(0, 12, 0, 12)
+soundCheckbox.Position = UDim2.new(0, 5, 0, 4)
+soundCheckbox.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckbox.BorderSizePixel = 1
+soundCheckbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+soundCheckbox.Text = ""
+soundCheckbox.AutoButtonColor = false
+soundCheckbox.Parent = soundContainer
+
+local soundCheckGlow = Instance.new("Frame")
+soundCheckGlow.Size = UDim2.new(1, 4, 1, 4)
+soundCheckGlow.Position = UDim2.new(0, -2, 0, -2)
+soundCheckGlow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckGlow.BackgroundTransparency = 1
+soundCheckGlow.BorderSizePixel = 0
+soundCheckGlow.ZIndex = 0
+soundCheckGlow.Parent = soundCheckbox
+
+local soundGlowCorner = Instance.new("UICorner")
+soundGlowCorner.CornerRadius = UDim.new(0, 2)
+soundGlowCorner.Parent = soundCheckGlow
+
+local soundCheckmark = Instance.new("TextLabel")
+soundCheckmark.Size = UDim2.new(1, 0, 1, 0)
+soundCheckmark.BackgroundTransparency = 1
+soundCheckmark.Text = "✓"
+soundCheckmark.Font = Enum.Font.GothamBold
+soundCheckmark.TextSize = 10
+soundCheckmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+soundCheckmark.Parent = soundCheckbox
+
+local soundLabel = Instance.new("TextLabel")
+soundLabel.Text = "Enable Sounds"
+soundLabel.Font = Enum.Font.Gotham
+soundLabel.TextSize = 11
+soundLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+soundLabel.BackgroundTransparency = 1
+soundLabel.Size = UDim2.new(1, -25, 1, 0)
+soundLabel.Position = UDim2.new(0, 22, 0, 0)
+soundLabel.TextXAlignment = Enum.TextXAlignment.Left
+soundLabel.TextTruncate = Enum.TextTruncate.AtEnd
+soundLabel.Parent = soundContainer
+
+table.insert(connections, soundCheckbox.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.15, 1.4, 1)
+	tween(soundCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	if soundsEnabled then
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+	end
+end))
+
+table.insert(connections, soundCheckbox.MouseLeave:Connect(function()
+	tween(soundCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(60, 65, 100)}):Play()
+	if soundsEnabled then
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+	end
+end))
+
+table.insert(connections, soundCheckbox.MouseButton1Click:Connect(function()
+	soundsEnabled = not soundsEnabled
+	
+	-- Play one last sound to confirm (regardless of new state)
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundsEnabled and Sounds.Success or Sounds.Click
+	sound.Volume = 0.5
+	sound.PlaybackSpeed = soundsEnabled and 1.2 or 0.8
+	sound.Parent = game:GetService("SoundService")
+	sound:Play()
+	game:GetService("Debris"):AddItem(sound, 2)
+	
+	if soundsEnabled then
+		tween(soundCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+		soundCheckmark.Text = "✓"
+		soundCheckbox.Size = UDim2.new(0, 10, 0, 10)
+		tween(soundCheckbox, 0.15, {Size = UDim2.new(0, 12, 0, 12)}):Play()
+	else
+		tween(soundCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 22, 30)}):Play()
+		tween(soundCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+		soundCheckmark.Text = ""
+	end
+	
+	notify(soundsEnabled and "Sounds enabled" or "Sounds muted")
+end))
+
+setY = setY + 22
+
 setY = createCheckbox("Auto Save Config", setLeftCol, setY, function(enabled)
 	notify(enabled and "Auto Save ON" or "Auto Save OFF")
 end)
@@ -994,6 +1120,7 @@ toggleUICorner.CornerRadius = UDim.new(0, 4)
 toggleUICorner.Parent = toggleUIBtn
 
 table.insert(connections, toggleUIBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.4, 1.1, 1)
 	toggleUIBtn.Text = "Press any key..."
 	toggleUIBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
 	waitingForKeybind = "toggleUI"
@@ -1037,6 +1164,7 @@ unloadBtnCorner.CornerRadius = UDim.new(0, 4)
 unloadBtnCorner.Parent = unloadBtn
 
 table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.4, 1.1, 1)
 	unloadBtn.Text = "Press any key..."
 	unloadBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
 	waitingForKeybind = "unload"
@@ -1077,6 +1205,7 @@ hideGlowCorner.CornerRadius = UDim.new(0, 4)
 hideGlowCorner.Parent = hideBtnGlow
 
 table.insert(connections, hideBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
 	tween(hideBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(100, 115, 255)}):Play()
 	tween(hideBtnGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
 end))
@@ -1087,6 +1216,7 @@ table.insert(connections, hideBtn.MouseLeave:Connect(function()
 end))
 
 table.insert(connections, hideBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Click, 0.5, 1, 1)
 	-- Click animation
 	hideBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(hideBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
@@ -1128,6 +1258,7 @@ unloadGlowCorner.CornerRadius = UDim.new(0, 4)
 unloadGlowCorner.Parent = unloadBtnGlow
 
 table.insert(connections, unloadBtn.MouseEnter:Connect(function()
+	playSound(Sounds.Hover, 0.2, 1.3, 1)
 	tween(unloadBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
 	tween(unloadBtnGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
 end))
@@ -1138,6 +1269,7 @@ table.insert(connections, unloadBtn.MouseLeave:Connect(function()
 end))
 
 table.insert(connections, unloadBtn.MouseButton1Click:Connect(function()
+	playSound(Sounds.Error, 0.7, 1, 2)
 	-- Click animation
 	unloadBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(unloadBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
@@ -1246,6 +1378,7 @@ table.insert(connections, UserInputService.InputBegan:Connect(function(input, ga
 	-- Check if waiting for keybind
 	if waitingForKeybind then
 		if input.KeyCode ~= Enum.KeyCode.Unknown then
+			playSound(Sounds.Success, 0.5, 1.2, 2)
 			if waitingForKeybind == "toggleUI" then
 				toggleUIKey = input.KeyCode
 				toggleUIBtn.Text = getKeyName(toggleUIKey)
