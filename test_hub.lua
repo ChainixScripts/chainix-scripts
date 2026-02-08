@@ -291,18 +291,9 @@ local function switchTab(tabName)
 		end
 	end
 	
-	-- Smooth page transition
+	-- Simple page visibility (no transparency animation to prevent text duplication bug)
 	for name, page in pairs(tabPages) do
-		if name == tabName then
-			page.Visible = true
-			page.GroupTransparency = 1
-			tween(page, 0.2, {GroupTransparency = 0}):Play()
-		else
-			tween(page, 0.2, {GroupTransparency = 1}):Play()
-			task.delay(0.2, function()
-				page.Visible = false
-			end)
-		end
+		page.Visible = (name == tabName)
 	end
 end
 
@@ -333,6 +324,7 @@ local function createSection(name, parent, yPos)
 	section.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
 	section.BorderSizePixel = 1
 	section.BorderColor3 = Color3.fromRGB(40, 45, 80)
+	section.ClipsDescendants = true
 	section.Parent = parent
 	
 	local label = Instance.new("TextLabel")
@@ -344,6 +336,7 @@ local function createSection(name, parent, yPos)
 	label.Size = UDim2.new(1, -10, 1, 0)
 	label.Position = UDim2.new(0, 5, 0, 0)
 	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.Parent = section
 	
 	return yPos + 30
@@ -399,6 +392,7 @@ local function createCheckbox(name, parent, yPos, callback)
 	label.Size = UDim2.new(1, -25, 1, 0)
 	label.Position = UDim2.new(0, 22, 0, 0)
 	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.Parent = container
 	
 	local isChecked = false
