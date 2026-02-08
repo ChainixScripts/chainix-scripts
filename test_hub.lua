@@ -209,6 +209,46 @@ infoText.Position = UDim2.new(0, 5, 0, 0)
 infoText.TextXAlignment = Enum.TextXAlignment.Left
 infoText.Parent = infoBar
 
+-- Dragging system (simple and working!)
+local dragging = false
+local dragInput, mousePos, framePos
+
+table.insert(connections, infoBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		mousePos = input.Position
+		framePos = mainFrame.Position
+		playSound(Sounds.Click, 0.3, 1.2, 1)
+		
+		table.insert(connections, input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end))
+	end
+end))
+
+table.insert(connections, UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - mousePos
+		mainFrame.Position = UDim2.new(
+			framePos.X.Scale,
+			framePos.X.Offset + delta.X,
+			framePos.Y.Scale,
+			framePos.Y.Offset + delta.Y
+		)
+	end
+end))
+
+-- Cursor change on hover to show it's draggable
+table.insert(connections, infoBar.MouseEnter:Connect(function()
+	infoBar.BackgroundColor3 = Color3.fromRGB(8, 8, 15)
+end))
+
+table.insert(connections, infoBar.MouseLeave:Connect(function()
+	infoBar.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+end))
+
 -- Tab bar
 local tabBar = Instance.new("Frame")
 tabBar.Size = UDim2.new(1, 0, 0, 32)
