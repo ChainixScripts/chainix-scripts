@@ -27,6 +27,7 @@ local unloadKey = Enum.KeyCode.Delete
 local waitingForKeybind = nil
 local toggleUIBtn = nil
 local unloadBtn = nil
+local notificationsEnabled = true
 
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -67,11 +68,13 @@ local function tween(obj, time, props)
 end
 
 local function notify(msg)
-	game:GetService("StarterGui"):SetCore("SendNotification", {
-		Title = "CHAINIX";
-		Text = msg;
-		Duration = 2;
-	})
+	if notificationsEnabled then
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "CHAINIX";
+			Text = msg;
+			Duration = 2;
+		})
+	end
 end
 
 -- Function to get key name (defined early for keybind system)
@@ -791,11 +794,97 @@ local setLeftCol = setScrollFrame
 
 local setY = createSection("UI Settings", setLeftCol, 0)
 
-setY = createCheckbox("Show Notifications", setLeftCol, setY, function(enabled)
-	notify(enabled and "Notifications ON" or "Notifications OFF")
-end)
+-- Create notifications checkbox (checked by default)
+local notifContainer = Instance.new("Frame")
+notifContainer.Size = UDim2.new(1, 0, 0, 20)
+notifContainer.Position = UDim2.new(0, 0, 0, setY)
+notifContainer.BackgroundTransparency = 1
+notifContainer.Parent = setLeftCol
 
-setY = createCheckbox("Save Config On Exit", setLeftCol, setY, function(enabled)
+local notifCheckbox = Instance.new("TextButton")
+notifCheckbox.Size = UDim2.new(0, 12, 0, 12)
+notifCheckbox.Position = UDim2.new(0, 5, 0, 4)
+notifCheckbox.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckbox.BorderSizePixel = 1
+notifCheckbox.BorderColor3 = Color3.fromRGB(60, 65, 100)
+notifCheckbox.Text = ""
+notifCheckbox.AutoButtonColor = false
+notifCheckbox.Parent = notifContainer
+
+local notifCheckGlow = Instance.new("Frame")
+notifCheckGlow.Size = UDim2.new(1, 4, 1, 4)
+notifCheckGlow.Position = UDim2.new(0, -2, 0, -2)
+notifCheckGlow.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckGlow.BackgroundTransparency = 1
+notifCheckGlow.BorderSizePixel = 0
+notifCheckGlow.ZIndex = 0
+notifCheckGlow.Parent = notifCheckbox
+
+local notifGlowCorner = Instance.new("UICorner")
+notifGlowCorner.CornerRadius = UDim.new(0, 2)
+notifGlowCorner.Parent = notifCheckGlow
+
+local notifCheckmark = Instance.new("TextLabel")
+notifCheckmark.Size = UDim2.new(1, 0, 1, 0)
+notifCheckmark.BackgroundTransparency = 1
+notifCheckmark.Text = "✓"
+notifCheckmark.Font = Enum.Font.GothamBold
+notifCheckmark.TextSize = 10
+notifCheckmark.TextColor3 = Color3.fromRGB(88, 101, 242)
+notifCheckmark.Parent = notifCheckbox
+
+local notifLabel = Instance.new("TextLabel")
+notifLabel.Text = "Enable Notifications"
+notifLabel.Font = Enum.Font.Gotham
+notifLabel.TextSize = 11
+notifLabel.TextColor3 = Color3.fromRGB(200, 205, 215)
+notifLabel.BackgroundTransparency = 1
+notifLabel.Size = UDim2.new(1, -25, 1, 0)
+notifLabel.Position = UDim2.new(0, 22, 0, 0)
+notifLabel.TextXAlignment = Enum.TextXAlignment.Left
+notifLabel.TextTruncate = Enum.TextTruncate.AtEnd
+notifLabel.Parent = notifContainer
+
+table.insert(connections, notifCheckbox.MouseEnter:Connect(function()
+	tween(notifCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	if notificationsEnabled then
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+	end
+end))
+
+table.insert(connections, notifCheckbox.MouseLeave:Connect(function()
+	tween(notifCheckbox, 0.2, {BorderColor3 = Color3.fromRGB(60, 65, 100)}):Play()
+	if notificationsEnabled then
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+	end
+end))
+
+table.insert(connections, notifCheckbox.MouseButton1Click:Connect(function()
+	notificationsEnabled = not notificationsEnabled
+	
+	if notificationsEnabled then
+		tween(notifCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 0.7}):Play()
+		notifCheckmark.Text = "✓"
+		notifCheckbox.Size = UDim2.new(0, 10, 0, 10)
+		tween(notifCheckbox, 0.15, {Size = UDim2.new(0, 12, 0, 12)}):Play()
+	else
+		tween(notifCheckbox, 0.2, {BackgroundColor3 = Color3.fromRGB(20, 22, 30)}):Play()
+		tween(notifCheckGlow, 0.2, {BackgroundTransparency = 1}):Play()
+		notifCheckmark.Text = ""
+	end
+	
+	-- Always show this notification regardless of setting
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "CHAINIX";
+		Text = notificationsEnabled and "Notifications enabled" or "Notifications disabled";
+		Duration = 2;
+	})
+end))
+
+setY = setY + 22
+
+setY = createCheckbox("Auto Save Config", setLeftCol, setY, function(enabled)
 	notify(enabled and "Auto Save ON" or "Auto Save OFF")
 end)
 
