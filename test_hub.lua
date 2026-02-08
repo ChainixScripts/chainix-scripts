@@ -62,14 +62,16 @@ local defaultConfig = {
 
 local currentConfig = {}
 
+-- Check if file functions are available
+local hasFileSystem = pcall(function() return writefile and readfile and isfile end)
+
 -- Config functions
 local function saveConfig()
-	if not autoSaveEnabled then return end
+	if not autoSaveEnabled or not hasFileSystem then return end
 	
 	local success, err = pcall(function()
 		local configData = HttpService:JSONEncode(currentConfig)
 		writefile(configFileName, configData)
-		notify("Config saved!")
 	end)
 	
 	if not success then
@@ -78,8 +80,17 @@ local function saveConfig()
 end
 
 local function loadConfig()
+	if not hasFileSystem then
+		-- Use default config
+		currentConfig = {}
+		for k, v in pairs(defaultConfig) do
+			currentConfig[k] = v
+		end
+		return false
+	end
+	
 	local success, result = pcall(function()
-		if isfile and isfile(configFileName) then
+		if isfile(configFileName) then
 			local configData = readfile(configFileName)
 			return HttpService:JSONDecode(configData)
 		end
@@ -88,7 +99,6 @@ local function loadConfig()
 	
 	if success and result then
 		currentConfig = result
-		notify("Config loaded!")
 		return true
 	else
 		-- Use default config
@@ -105,14 +115,18 @@ local function resetConfig()
 	for k, v in pairs(defaultConfig) do
 		currentConfig[k] = v
 	end
-	saveConfig()
-	notify("Config reset to defaults!")
+	if hasFileSystem then
+		pcall(function()
+			local configData = HttpService:JSONEncode(currentConfig)
+			writefile(configFileName, configData)
+		end)
+	end
 end
 
 local function updateConfig(key, value)
 	currentConfig[key] = value
-	if autoSaveEnabled then
-		saveConfig()
+	if autoSaveEnabled and hasFileSystem then
+		task.spawn(saveConfig)
 	end
 end
 
@@ -1225,11 +1239,22 @@ table.insert(connections, saveConfigBtn.MouseButton1Click:Connect(function()
 	saveConfigBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(saveConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	-- Force save regardless of auto-save setting
-	local tempAutoSave = autoSaveEnabled
-	autoSaveEnabled = true
-	saveConfig()
-	autoSaveEnabled = tempAutoSave
+	if not hasFileSystem then
+		notify("File system not available on this executor!")
+		return
+	end
+	
+	-- Force save
+	local success = pcall(function()
+		local configData = HttpService:JSONEncode(currentConfig)
+		writefile(configFileName, configData)
+	end)
+	
+	if success then
+		notify("Config saved!")
+	else
+		notify("Failed to save config!")
+	end
 end))
 
 setY = setY + 35
@@ -1279,8 +1304,17 @@ table.insert(connections, loadConfigBtn.MouseButton1Click:Connect(function()
 	loadConfigBtn.Size = UDim2.new(1, -10, 0, 28)
 	tween(loadConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
-	loadConfig()
-	notify("Config reloaded! Rejoin to apply.")
+	if not hasFileSystem then
+		notify("File system not available on this executor!")
+		return
+	end
+	
+	local success = loadConfig()
+	if success then
+		notify("Config loaded! Rejoin to apply.")
+	else
+		notify("No config file found!")
+	end
 end))
 
 setY = setY + 35
@@ -1331,7 +1365,7 @@ table.insert(connections, resetConfigBtn.MouseButton1Click:Connect(function()
 	tween(resetConfigBtn, 0.1, {Size = UDim2.new(1, -10, 0, 30)}):Play()
 	
 	resetConfig()
-	notify("Config reset! Rejoin to apply.")
+	notify("Config reset to defaults!")
 end))
 
 setY = setY + 40
