@@ -337,9 +337,10 @@ local function cleanup()
 	pcall(function()
 		local playerGui = player:FindFirstChild("PlayerGui")
 		if playerGui then
-			-- Remove by finding ANY CHAINIX-related GUI
+			-- Remove by finding ANY CHAINIX-related GUI (including loader)
 			for _, gui in pairs(playerGui:GetChildren()) do
 				if gui.Name:find("CHAINIX") or 
+				   gui.Name:find("Chainix") or
 				   gui.Name:find("SpeedIndicator") or
 				   gui.Name:find("FPSCounter") or
 				   gui.Name:find("PingCounter") then
@@ -349,12 +350,12 @@ local function cleanup()
 		end
 	end)
 	
-	-- Remove from CoreGui (if anything got placed there)
+	-- Remove from CoreGui (if anything got placed there, including loader)
 	print("[CHAINIX] Checking CoreGui...")
 	pcall(function()
 		local coreGui = game:GetService("CoreGui")
 		for _, gui in pairs(coreGui:GetChildren()) do
-			if gui.Name:find("CHAINIX") then
+			if gui.Name:find("CHAINIX") or gui.Name:find("Chainix") then
 				gui:Destroy()
 			end
 		end
