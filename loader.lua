@@ -2513,6 +2513,14 @@ local function setupKeybind()
 	keybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
 		
+		-- Check if script has been unloaded
+		if _G.CHAINIX_UNLOADED then
+			-- Destroy loader completely
+			if gui then gui:Destroy() end
+			if keybindConnection then keybindConnection:Disconnect() end
+			return
+		end
+		
 		if input.KeyCode == SavedData.Settings.ToggleKey then
 			loaderVisible = not loaderVisible
 			
@@ -2625,3 +2633,4 @@ print(">>    🎮 12 Game Slots")
 print("=" .. string.rep("=", 60))
 print(">> THIS IS THE MOST FEATURE-RICH LOADER EVER! 🔥")
 print("=" .. string.rep("=", 60))
+
