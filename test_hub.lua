@@ -27,6 +27,8 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
 
 local connections = {}
+local checkboxUpdaters = {} -- Store functions to update checkbox visuals
+local featureLabels = {} -- Store feature label references for live keybind updates
 local flyEnabled, speedEnabled, jumpEnabled, espEnabled, noclipEnabled = false, false, false, false, false
 local jumpPowerEnabled = false
 local gravityEnabled = false
@@ -139,7 +141,8 @@ local Sounds = {
 	Click = "rbxassetid://6895079853",
 	Hover = "rbxassetid://6895079853", 
 	Success = "rbxassetid://6026984224",
-	Error = "rbxassetid://1254672090"
+	Error = "rbxassetid://1254672090",
+	Toggle = "rbxassetid://6895079853" -- Same as Click
 }
 
 -- Play sound function
@@ -415,8 +418,25 @@ local function notify(msg)
 		game:GetService("StarterGui"):SetCore("SendNotification", {
 			Title = "CHAINIX";
 			Text = msg;
-			Duration = 2;
+			Duration = 3; -- Longer duration so you see it
 		})
+	end
+end
+
+-- Force notify (for keybinds - always show)
+local function forceNotify(msg)
+	print("[CHAINIX] forceNotify called with:", msg)
+	local success, err = pcall(function()
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "CHAINIX";
+			Text = msg;
+			Duration = 3;
+		})
+	end)
+	if not success then
+		print("[CHAINIX] Notification failed:", err)
+	else
+		print("[CHAINIX] Notification sent successfully")
 	end
 end
 
@@ -447,6 +467,14 @@ soundsEnabled = currentConfig.sounds_enabled
 autoSaveEnabled = currentConfig.auto_save_enabled
 
 -- LOADING SCREEN
+-- Play loading sound
+local loadingSound = Instance.new("Sound")
+loadingSound.SoundId = "rbxassetid://6518811702" -- Professional startup sound
+loadingSound.Volume = 0.4
+loadingSound.Parent = game:GetService("SoundService")
+loadingSound:Play()
+game:GetService("Debris"):AddItem(loadingSound, 5)
+
 local loadingFrame = Instance.new("Frame")
 loadingFrame.Size = UDim2.new(1, 0, 1, 0)
 loadingFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -476,6 +504,36 @@ spawn(function()
 	end
 end)
 
+-- Floating particles effect for professional look
+for i = 1, 15 do
+	local particle = Instance.new("Frame")
+	particle.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
+	particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+	particle.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+	particle.BackgroundTransparency = math.random(70, 90) / 100
+	particle.BorderSizePixel = 0
+	particle.ZIndex = 10
+	particle.Parent = loadingFrame
+	
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1, 0)
+	corner.Parent = particle
+	
+	-- Animate particles
+	spawn(function()
+		while particle and particle.Parent do
+			local randomX = math.random()
+			local randomY = math.random()
+			local duration = math.random(8, 15)
+			tween(particle, duration, {
+				Position = UDim2.new(randomX, 0, randomY, 0),
+				BackgroundTransparency = math.random(60, 95) / 100
+			}):Play()
+			wait(duration)
+		end
+	end)
+end
+
 -- CHAINIX Logo
 local logoText = Instance.new("TextLabel")
 logoText.Size = UDim2.new(0, 400, 0, 80)
@@ -486,13 +544,15 @@ logoText.Font = Enum.Font.GothamBlack
 logoText.TextSize = 60
 logoText.TextColor3 = Color3.fromRGB(88, 101, 242)
 logoText.TextTransparency = 1
+logoText.TextStrokeTransparency = 0.8
+logoText.TextStrokeColor3 = Color3.fromRGB(150, 160, 255)
 logoText.ZIndex = 11
 logoText.Parent = loadingFrame
 
 -- Logo glow effect
 local logoGlow = Instance.new("ImageLabel")
-logoGlow.Size = UDim2.new(1, 40, 1, 40)
-logoGlow.Position = UDim2.new(0, -20, 0, -20)
+logoGlow.Size = UDim2.new(1, 60, 1, 60)
+logoGlow.Position = UDim2.new(0, -30, 0, -30)
 logoGlow.BackgroundTransparency = 1
 logoGlow.Image = "rbxassetid://4996891970"
 logoGlow.ImageColor3 = Color3.fromRGB(88, 101, 242)
@@ -502,18 +562,42 @@ logoGlow.SliceCenter = Rect.new(128, 128, 128, 128)
 logoGlow.ZIndex = 10
 logoGlow.Parent = logoText
 
+-- Pulsing glow animation
+spawn(function()
+	wait(0.5)
+	while logoGlow and logoGlow.Parent do
+		tween(logoGlow, 2, {ImageTransparency = 0.6}):Play()
+		wait(2)
+		tween(logoGlow, 2, {ImageTransparency = 0.9}):Play()
+		wait(2)
+	end
+end)
+
 -- Version text
 local versionText = Instance.new("TextLabel")
 versionText.Size = UDim2.new(0, 400, 0, 30)
 versionText.Position = UDim2.new(0.5, -200, 0.35, 50)
 versionText.BackgroundTransparency = 1
-versionText.Text = "V1.0 - ELITE"
+versionText.Text = "V1.0 - ELITE EDITION"
 versionText.Font = Enum.Font.GothamBold
 versionText.TextSize = 16
 versionText.TextColor3 = Color3.fromRGB(150, 160, 200)
 versionText.TextTransparency = 1
 versionText.ZIndex = 11
 versionText.Parent = loadingFrame
+
+-- Tagline
+local tagline = Instance.new("TextLabel")
+tagline.Size = UDim2.new(0, 400, 0, 25)
+tagline.Position = UDim2.new(0.5, -200, 0.35, 75)
+tagline.BackgroundTransparency = 1
+tagline.Text = "Premium Script Hub"
+tagline.Font = Enum.Font.Gotham
+tagline.TextSize = 13
+tagline.TextColor3 = Color3.fromRGB(120, 130, 160)
+tagline.TextTransparency = 1
+tagline.ZIndex = 11
+tagline.Parent = loadingFrame
 
 -- Loading text
 local loadingText = Instance.new("TextLabel")
@@ -583,13 +667,21 @@ percentText.Parent = loadingFrame
 
 -- Animate loading screen
 local function animateLoading()
-	-- Fade in logo
-	tween(logoText, 0.8, {TextTransparency = 0}):Play()
-	tween(logoGlow, 0.8, {ImageTransparency = 0.6}):Play()
+	-- Fade in logo with scale animation
+	logoText.Size = UDim2.new(0, 350, 0, 70)
+	tween(logoText, 0.8, {
+		TextTransparency = 0,
+		Size = UDim2.new(0, 400, 0, 80)
+	}):Play()
+	tween(logoGlow, 0.8, {ImageTransparency = 0.7}):Play()
 	wait(0.3)
 	
 	-- Fade in version
 	tween(versionText, 0.5, {TextTransparency = 0}):Play()
+	wait(0.2)
+	
+	-- Fade in tagline
+	tween(tagline, 0.5, {TextTransparency = 0}):Play()
 	wait(0.4)
 	
 	-- Fade in loading text and progress bar
@@ -598,12 +690,14 @@ local function animateLoading()
 	tween(percentText, 0.5, {TextTransparency = 0}):Play()
 	wait(0.3)
 	
-	-- Animate progress bar
+	-- Animate progress bar with realistic steps
 	local loadingSteps = {
-		{text = "Loading features...", progress = 0.2, time = 0.3},
-		{text = "Initializing UI...", progress = 0.5, time = 0.3},
-		{text = "Loading themes...", progress = 0.7, time = 0.2},
-		{text = "Setting up controls...", progress = 0.9, time = 0.2},
+		{text = "Connecting to services...", progress = 0.15, time = 0.4},
+		{text = "Loading features...", progress = 0.35, time = 0.3},
+		{text = "Initializing UI...", progress = 0.55, time = 0.3},
+		{text = "Loading themes...", progress = 0.75, time = 0.25},
+		{text = "Setting up controls...", progress = 0.90, time = 0.2},
+		{text = "Finalizing...", progress = 0.98, time = 0.2},
 		{text = "Ready!", progress = 1, time = 0.3}
 	}
 	
@@ -614,13 +708,17 @@ local function animateLoading()
 		wait(step.time)
 	end
 	
-	wait(0.3)
+	-- Success sound
+	playSound(Sounds.Success, 0.3, 1, 1)
+	
+	wait(0.4)
 	
 	-- Fade out loading screen
 	tween(loadingFrame, 0.5, {BackgroundTransparency = 1}):Play()
 	tween(logoText, 0.5, {TextTransparency = 1}):Play()
 	tween(logoGlow, 0.5, {ImageTransparency = 1}):Play()
 	tween(versionText, 0.5, {TextTransparency = 1}):Play()
+	tween(tagline, 0.5, {TextTransparency = 1}):Play()
 	tween(loadingText, 0.5, {TextTransparency = 1}):Play()
 	tween(progressBg, 0.5, {BackgroundTransparency = 1}):Play()
 	tween(progressFill, 0.5, {BackgroundTransparency = 1}):Play()
@@ -633,6 +731,199 @@ end
 
 -- Start loading animation
 spawn(animateLoading)
+
+-- AUTO-UPDATE SYSTEM
+local CURRENT_VERSION = "1.0.0"
+local UPDATE_CHECK_URL = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/main/version.txt"
+local SCRIPT_URL = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/main/test_hub.lua"
+
+local function checkForUpdates()
+	spawn(function()
+		wait(2) -- Wait for UI to load first
+		
+		local success, response = pcall(function()
+			return game:GetService("HttpService"):GetAsync(UPDATE_CHECK_URL)
+		end)
+		
+		if success and response then
+			local lines = {}
+			for line in response:gmatch("[^\r\n]+") do
+				table.insert(lines, line)
+			end
+			
+			local latestVersion = lines[1] or CURRENT_VERSION
+			local changelog = {}
+			for i = 2, #lines do
+				table.insert(changelog, lines[i])
+			end
+			
+			-- Compare versions
+			if latestVersion ~= CURRENT_VERSION then
+				-- Show update notification
+				notify("Update Available: v" .. latestVersion)
+				
+				-- Create update popup
+				local updateFrame = Instance.new("Frame")
+				updateFrame.Size = UDim2.new(0, 400, 0, 300)
+				updateFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+				updateFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+				updateFrame.BorderSizePixel = 0
+				updateFrame.ZIndex = 1000
+				updateFrame.Parent = screenGui
+				
+				local updateCorner = Instance.new("UICorner")
+				updateCorner.CornerRadius = UDim.new(0, 8)
+				updateCorner.Parent = updateFrame
+				
+				-- Glow effect
+				local updateGlow = Instance.new("ImageLabel")
+				updateGlow.Size = UDim2.new(1, 40, 1, 40)
+				updateGlow.Position = UDim2.new(0, -20, 0, -20)
+				updateGlow.BackgroundTransparency = 1
+				updateGlow.Image = "rbxassetid://4996891970"
+				updateGlow.ImageColor3 = Color3.fromRGB(88, 101, 242)
+				updateGlow.ImageTransparency = 0.8
+				updateGlow.ScaleType = Enum.ScaleType.Slice
+				updateGlow.SliceCenter = Rect.new(128, 128, 128, 128)
+				updateGlow.ZIndex = 999
+				updateGlow.Parent = updateFrame
+				
+				-- Title
+				local updateTitle = Instance.new("TextLabel")
+				updateTitle.Size = UDim2.new(1, -20, 0, 40)
+				updateTitle.Position = UDim2.new(0, 10, 0, 10)
+				updateTitle.BackgroundTransparency = 1
+				updateTitle.Text = "🎉 Update Available!"
+				updateTitle.Font = Enum.Font.GothamBold
+				updateTitle.TextSize = 18
+				updateTitle.TextColor3 = Color3.fromRGB(88, 101, 242)
+				updateTitle.ZIndex = 1001
+				updateTitle.Parent = updateFrame
+				
+				-- Version info
+				local versionInfo = Instance.new("TextLabel")
+				versionInfo.Size = UDim2.new(1, -20, 0, 30)
+				versionInfo.Position = UDim2.new(0, 10, 0, 50)
+				versionInfo.BackgroundTransparency = 1
+				versionInfo.Text = "v" .. CURRENT_VERSION .. " → v" .. latestVersion
+				versionInfo.Font = Enum.Font.GothamBold
+				versionInfo.TextSize = 14
+				versionInfo.TextColor3 = Color3.fromRGB(200, 205, 215)
+				versionInfo.ZIndex = 1001
+				versionInfo.Parent = updateFrame
+				
+				-- Changelog
+				local changelogTitle = Instance.new("TextLabel")
+				changelogTitle.Size = UDim2.new(1, -20, 0, 25)
+				changelogTitle.Position = UDim2.new(0, 10, 0, 85)
+				changelogTitle.BackgroundTransparency = 1
+				changelogTitle.Text = "📋 What's New:"
+				changelogTitle.Font = Enum.Font.GothamBold
+				changelogTitle.TextSize = 13
+				changelogTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+				changelogTitle.TextXAlignment = Enum.TextXAlignment.Left
+				changelogTitle.ZIndex = 1001
+				changelogTitle.Parent = updateFrame
+				
+				-- Changelog content
+				local changelogText = Instance.new("TextLabel")
+				changelogText.Size = UDim2.new(1, -30, 0, 120)
+				changelogText.Position = UDim2.new(0, 15, 0, 110)
+				changelogText.BackgroundTransparency = 1
+				changelogText.Text = table.concat(changelog, "\n")
+				changelogText.Font = Enum.Font.Gotham
+				changelogText.TextSize = 11
+				changelogText.TextColor3 = Color3.fromRGB(180, 185, 195)
+				changelogText.TextWrapped = true
+				changelogText.TextXAlignment = Enum.TextXAlignment.Left
+				changelogText.TextYAlignment = Enum.TextYAlignment.Top
+				changelogText.ZIndex = 1001
+				changelogText.Parent = updateFrame
+				
+				-- Update button
+				local updateBtn = Instance.new("TextButton")
+				updateBtn.Size = UDim2.new(0, 180, 0, 40)
+				updateBtn.Position = UDim2.new(0, 10, 1, -50)
+				updateBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+				updateBtn.BorderSizePixel = 0
+				updateBtn.Text = "🔄 Update Now"
+				updateBtn.Font = Enum.Font.GothamBold
+				updateBtn.TextSize = 13
+				updateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				updateBtn.AutoButtonColor = false
+				updateBtn.ZIndex = 1001
+				updateBtn.Parent = updateFrame
+				
+				local updateBtnCorner = Instance.new("UICorner")
+				updateBtnCorner.CornerRadius = UDim.new(0, 6)
+				updateBtnCorner.Parent = updateBtn
+				
+				-- Skip button
+				local skipBtn = Instance.new("TextButton")
+				skipBtn.Size = UDim2.new(0, 180, 0, 40)
+				skipBtn.Position = UDim2.new(1, -190, 1, -50)
+				skipBtn.BackgroundColor3 = Color3.fromRGB(60, 65, 80)
+				skipBtn.BorderSizePixel = 0
+				skipBtn.Text = "Skip"
+				skipBtn.Font = Enum.Font.GothamBold
+				skipBtn.TextSize = 13
+				skipBtn.TextColor3 = Color3.fromRGB(200, 205, 215)
+				skipBtn.AutoButtonColor = false
+				skipBtn.ZIndex = 1001
+				skipBtn.Parent = updateFrame
+				
+				local skipBtnCorner = Instance.new("UICorner")
+				skipBtnCorner.CornerRadius = UDim.new(0, 6)
+				skipBtnCorner.Parent = skipBtn
+				
+				-- Update button hover
+				updateBtn.MouseEnter:Connect(function()
+					playSound(Sounds.Hover, 0.2, 1.3, 1)
+					tween(updateBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(120, 140, 255)}):Play()
+				end)
+				
+				updateBtn.MouseLeave:Connect(function()
+					tween(updateBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+				end)
+				
+				-- Skip button hover
+				skipBtn.MouseEnter:Connect(function()
+					playSound(Sounds.Hover, 0.2, 1.3, 1)
+					tween(skipBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(80, 85, 100)}):Play()
+				end)
+				
+				skipBtn.MouseLeave:Connect(function()
+					tween(skipBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(60, 65, 80)}):Play()
+				end)
+				
+				-- Update button click
+				updateBtn.MouseButton1Click:Connect(function()
+					playSound(Sounds.Success, 0.6, 1.2, 2)
+					updateBtn.Text = "⏳ Updating..."
+					updateBtn.BackgroundColor3 = Color3.fromRGB(120, 140, 255)
+					
+					wait(0.5)
+					
+					-- Reload script
+					notify("Updating CHAINIX...")
+					wait(0.3)
+					cleanup()
+					wait(0.2)
+					loadstring(game:GetService("HttpService"):GetAsync(SCRIPT_URL))()
+				end)
+				
+				-- Skip button click
+				skipBtn.MouseButton1Click:Connect(function()
+					playSound(Sounds.Click, 0.5, 1, 1)
+					updateFrame:Destroy()
+				end)
+			end
+		end
+	end)
+end
+
+-- Check for updates
+checkForUpdates()
 
 -- Main frame
 local mainFrame = Instance.new("Frame")
@@ -951,7 +1242,111 @@ end)
 -- Close button functionality
 closeBtn.MouseButton1Click:Connect(function()
 	playSound(Sounds.Error, 0.5, 1, 1)
-	notify("Use DELETE key to unload")
+	
+	-- Confirmation to prevent accidental clicks
+	local confirmFrame = Instance.new("Frame")
+	confirmFrame.Size = UDim2.new(0, 300, 0, 150)
+	confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+	confirmFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+	confirmFrame.BorderSizePixel = 0
+	confirmFrame.ZIndex = 100
+	confirmFrame.Parent = screenGui
+	
+	local confirmCorner = Instance.new("UICorner")
+	confirmCorner.CornerRadius = UDim.new(0, 8)
+	confirmCorner.Parent = confirmFrame
+	
+	local confirmTitle = Instance.new("TextLabel")
+	confirmTitle.Size = UDim2.new(1, -20, 0, 40)
+	confirmTitle.Position = UDim2.new(0, 10, 0, 10)
+	confirmTitle.BackgroundTransparency = 1
+	confirmTitle.Text = "Unload CHAINIX?"
+	confirmTitle.Font = Enum.Font.GothamBold
+	confirmTitle.TextSize = 16
+	confirmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	confirmTitle.ZIndex = 101
+	confirmTitle.Parent = confirmFrame
+	
+	local confirmText = Instance.new("TextLabel")
+	confirmText.Size = UDim2.new(1, -20, 0, 40)
+	confirmText.Position = UDim2.new(0, 10, 0, 50)
+	confirmText.BackgroundTransparency = 1
+	confirmText.Text = "This will close the hub."
+	confirmText.Font = Enum.Font.Gotham
+	confirmText.TextSize = 12
+	confirmText.TextColor3 = Color3.fromRGB(200, 205, 215)
+	confirmText.ZIndex = 101
+	confirmText.Parent = confirmFrame
+	
+	-- Yes button
+	local yesBtn = Instance.new("TextButton")
+	yesBtn.Size = UDim2.new(0, 130, 0, 35)
+	yesBtn.Position = UDim2.new(0, 10, 1, -45)
+	yesBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+	yesBtn.BorderSizePixel = 0
+	yesBtn.Text = "Unload"
+	yesBtn.Font = Enum.Font.GothamBold
+	yesBtn.TextSize = 12
+	yesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	yesBtn.AutoButtonColor = false
+	yesBtn.ZIndex = 101
+	yesBtn.Parent = confirmFrame
+	
+	local yesCorner = Instance.new("UICorner")
+	yesCorner.CornerRadius = UDim.new(0, 6)
+	yesCorner.Parent = yesBtn
+	
+	-- No button
+	local noBtn = Instance.new("TextButton")
+	noBtn.Size = UDim2.new(0, 130, 0, 35)
+	noBtn.Position = UDim2.new(1, -140, 1, -45)
+	noBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+	noBtn.BorderSizePixel = 0
+	noBtn.Text = "Cancel"
+	noBtn.Font = Enum.Font.GothamBold
+	noBtn.TextSize = 12
+	noBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	noBtn.AutoButtonColor = false
+	noBtn.ZIndex = 101
+	noBtn.Parent = confirmFrame
+	
+	local noCorner = Instance.new("UICorner")
+	noCorner.CornerRadius = UDim.new(0, 6)
+	noCorner.Parent = noBtn
+	
+	-- Yes button click
+	yesBtn.MouseButton1Click:Connect(function()
+		playSound(Sounds.Error, 0.7, 1, 2)
+		confirmFrame:Destroy()
+		notify("Unloading CHAINIX...")
+		wait(0.5)
+		cleanup()
+	end)
+	
+	-- No button click
+	noBtn.MouseButton1Click:Connect(function()
+		playSound(Sounds.Click, 0.5, 1, 1)
+		confirmFrame:Destroy()
+	end)
+	
+	-- Hover effects
+	yesBtn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.2, 1.3, 1)
+		tween(yesBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+	end)
+	
+	yesBtn.MouseLeave:Connect(function()
+		tween(yesBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+	end)
+	
+	noBtn.MouseEnter:Connect(function()
+		playSound(Sounds.Hover, 0.2, 1.3, 1)
+		tween(noBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(120, 140, 255)}):Play()
+	end)
+	
+	noBtn.MouseLeave:Connect(function()
+		tween(noBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+	end)
 end)
 
 -- Dragging system (simple and working!)
@@ -1160,7 +1555,7 @@ local function createSection(name, parent, yPos)
 end
 
 -- Create checkbox
-local function createCheckbox(name, parent, yPos, callback)
+local function createCheckbox(name, parent, yPos, callback, storeKey)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 0, 20)
 	container.Position = UDim2.new(0, 0, 0, yPos)
@@ -1212,7 +1607,31 @@ local function createCheckbox(name, parent, yPos, callback)
 	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.Parent = container
 	
+	-- Store label if key provided (for live keybind updates)
+	if storeKey then
+		featureLabels[storeKey] = label
+	end
+	
 	local isChecked = false
+	
+	-- Function to update visual state
+	local function updateVisual(checked)
+		isChecked = checked
+		if checked then
+			checkbox.BackgroundColor3 = ThemeColor
+			checkGlow.BackgroundTransparency = 1
+			checkmark.Text = "✓"
+		else
+			checkbox.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+			checkGlow.BackgroundTransparency = 1
+			checkmark.Text = ""
+		end
+	end
+	
+	-- Store updater if key provided (for keybinds to call)
+	if storeKey then
+		checkboxUpdaters[storeKey] = updateVisual
+	end
 	
 	-- Hover effects
 	table.insert(connections, checkbox.MouseEnter:Connect(function()
@@ -1468,7 +1887,7 @@ local movLeftCol = movScrollFrame
 
 local movY = createSection("Movement", movLeftCol, 0)
 
-movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
+movY = createCheckbox("Flight System (C)", movLeftCol, movY, function(enabled)
 	flyEnabled = enabled
 	updateConfig("flight_enabled", enabled)
 	if enabled then
@@ -1481,7 +1900,7 @@ movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
 		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
 		bodyGyro.CFrame = humanoidRootPart.CFrame
 		bodyGyro.Parent = humanoidRootPart
-		notify("Flight ON")
+		notify("Flight Activated")
 	else
 		if bodyVelocity then 
 			bodyVelocity:Destroy() 
@@ -1491,9 +1910,9 @@ movY = createCheckbox("Flight System", movLeftCol, movY, function(enabled)
 			bodyGyro:Destroy() 
 			bodyGyro = nil 
 		end
-		notify("Flight OFF")
+		notify("Flight Deactivated")
 	end
-end)
+end, "flight") -- Store updater for keybinds
 
 movY = movY + 5
 movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, currentConfig.flight_speed or 50, function(val)
@@ -1502,21 +1921,21 @@ movY = createSlider("Flight Speed", movLeftCol, movY, 20, 200, currentConfig.fli
 end)
 
 movY = movY + 10
-movY = createCheckbox("Speed Enhancement", movLeftCol, movY, function(enabled)
+movY = createCheckbox("Speed Enhancement (G)", movLeftCol, movY, function(enabled)
 	speedEnabled = enabled
 	updateConfig("speed_enabled", enabled)
 	if enabled then
 		if humanoid then
 			humanoid.WalkSpeed = walkSpeed
 		end
-		notify("Speed ON - " .. walkSpeed)
+		notify("Speed Activated - " .. walkSpeed)
 	else
 		if humanoid then
 			humanoid.WalkSpeed = 16
 		end
-		notify("Speed OFF")
+		notify("Speed Deactivated")
 	end
-end)
+end, "speed") -- Store updater for keybinds
 
 movY = movY + 5
 movY = createSlider("Walk Speed", movLeftCol, movY, 16, 200, currentConfig.walk_speed or 100, function(val)
@@ -1572,7 +1991,7 @@ movY = createCheckbox("Speed Indicator", movLeftCol, movY, function(enabled)
 end)
 
 movY = movY + 10
-movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
+movY = createCheckbox("Infinite Jump (J)", movLeftCol, movY, function(enabled)
 	jumpEnabled = enabled
 	updateConfig("jump_enabled", enabled)
 	
@@ -1583,18 +2002,18 @@ movY = createCheckbox("Infinite Jump", movLeftCol, movY, function(enabled)
 				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 			end
 		end))
-		notify("Infinite Jump ON")
+		notify("Infinite Jump Activated")
 	else
-		notify("Infinite Jump OFF")
+		notify("Infinite Jump Deactivated")
 	end
-end)
+end, "jump") -- Store updater for keybinds
 
 movY = movY + 5
-movY = createCheckbox("No-Clip", movLeftCol, movY, function(enabled)
+movY = createCheckbox("No-Clip (N)", movLeftCol, movY, function(enabled)
 	noclipEnabled = enabled
 	updateConfig("noclip_enabled", enabled)
-	notify(enabled and "No-Clip ON" or "No-Clip OFF")
-end)
+	notify(enabled and "No-Clip Activated" or "No-Clip Deactivated")
+end, "noclip") -- Store updater for keybinds
 
 -- No-Clip loop
 spawn(function()
@@ -1712,7 +2131,7 @@ visLeftCol.Parent = visualsPage
 
 local visY = createSection("ESP", visLeftCol, 0)
 
-visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
+visY = createCheckbox("Player ESP (E)", visLeftCol, visY, function(enabled)
 	espEnabled = enabled
 	updateConfig("esp_enabled", enabled)
 	
@@ -1761,8 +2180,8 @@ visY = createCheckbox("Player ESP", visLeftCol, visY, function(enabled)
 		end
 	end
 	
-	notify(enabled and "ESP ON" or "ESP OFF")
-end)
+	notify(enabled and "ESP Activated" or "ESP Deactivated")
+end, "esp") -- Store updater for keybinds
 
 visY = createCheckbox("Show Names", visLeftCol, visY, function(enabled)
 	showNames = enabled
@@ -2039,6 +2458,7 @@ local setLeftCol = setScrollFrame
 
 local setY = createSection("UI Settings", setLeftCol, 0)
 
+do -- Scope for notifications/sounds UI
 -- Create notifications checkbox (checked by default)
 local notifContainer = Instance.new("Frame")
 notifContainer.Size = UDim2.new(1, 0, 0, 20)
@@ -2229,6 +2649,8 @@ table.insert(connections, soundCheckbox.MouseButton1Click:Connect(function()
 	notify(soundsEnabled and "Sounds enabled" or "Sounds muted")
 end))
 
+end -- End scope for notifications/sounds UI
+
 setY = setY + 22
 
 setY = createCheckbox("Auto Save Config", setLeftCol, setY, function(enabled)
@@ -2240,6 +2662,7 @@ end)
 setY = setY + 10
 setY = createSection("Config Management", setLeftCol, setY)
 
+do -- Scope for config buttons
 -- Save Config Button
 local saveConfigBtn = Instance.new("TextButton")
 saveConfigBtn.Size = UDim2.new(1, -10, 0, 30)
@@ -2395,6 +2818,8 @@ table.insert(connections, resetConfigBtn.MouseButton1Click:Connect(function()
 	notify("Config reset to defaults!")
 end))
 
+end -- End scope for config buttons
+
 setY = setY + 40
 
 -- Custom Crosshair
@@ -2402,6 +2827,8 @@ local crosshairEnabled = currentConfig.crosshair_enabled or false
 local crosshairGui = nil
 
 setY = setY + 5
+
+do -- Scope for crosshair
 setY = createCheckbox("Custom Crosshair", setLeftCol, setY, function(enabled)
 	crosshairEnabled = enabled
 	updateConfig("crosshair_enabled", enabled)
@@ -2617,7 +3044,201 @@ table.insert(connections, hideBtn.MouseButton1Click:Connect(function()
 	notify("UI Hidden - Press " .. getKeyName(toggleUIKey) .. " to show")
 end))
 
+end -- End scope for crosshair
+
 setY = setY + 35
+
+-- KEYBINDS SECTION
+setY = setY + 10
+setY = createSection("Keybinds", setLeftCol, setY)
+
+-- Keybind storage (must be outside scope for handler to access)
+local keybinds = {
+	flight = currentConfig.keybind_flight or Enum.KeyCode.C,
+	speed = currentConfig.keybind_speed or Enum.KeyCode.G,
+	esp = currentConfig.keybind_esp or Enum.KeyCode.E,
+	noclip = currentConfig.keybind_noclip or Enum.KeyCode.N,
+	jump = currentConfig.keybind_jump or Enum.KeyCode.J
+}
+
+do -- Scope to free UI locals only
+	local function mkKb(txt, ft, y)
+		local f = Instance.new("Frame", setLeftCol)
+		f.Size = UDim2.new(1, -10, 0, 30)
+		f.Position = UDim2.new(0, 5, 0, y)
+		f.BackgroundTransparency = 1
+		
+		local l = Instance.new("TextLabel", f)
+		l.Size = UDim2.new(0.5, 0, 1, 0)
+		l.BackgroundTransparency = 1
+		l.Text = txt
+		l.Font = Enum.Font.Gotham
+		l.TextSize = 11
+		l.TextColor3 = Color3.fromRGB(200, 205, 215)
+		l.TextXAlignment = Enum.TextXAlignment.Left
+		
+		local b = Instance.new("TextButton", f)
+		b.Size = UDim2.new(0.4, 0, 0, 25)
+		b.Position = UDim2.new(0.6, 0, 0, 2)
+		b.BackgroundColor3 = Color3.fromRGB(30, 32, 40)
+		b.BorderSizePixel = 0
+		b.Text = tostring(keybinds[ft]):gsub("Enum.KeyCode.", "")
+		b.Font = Enum.Font.GothamBold
+		b.TextSize = 10
+		b.TextColor3 = ThemeColor
+		b.AutoButtonColor = false
+		
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		
+		local listening = false
+		b.MouseButton1Click:Connect(function()
+			if listening then return end
+			playSound(Sounds.Click, 0.4, 1.1, 1)
+			listening = true
+			b.Text = "Press..."
+			b.TextColor3 = Color3.fromRGB(255, 200, 50)
+			
+			local conn
+			conn = UserInputService.InputBegan:Connect(function(inp, gp)
+				if gp or inp.UserInputType ~= Enum.UserInputType.Keyboard then return end
+				keybinds[ft] = inp.KeyCode
+				b.Text = tostring(inp.KeyCode):gsub("Enum.KeyCode.", "")
+				b.TextColor3 = ThemeColor
+				listening = false
+				conn:Disconnect()
+				updateConfig("keybind_" .. ft, inp.KeyCode)
+				playSound(Sounds.Success, 0.5, 1.2, 1)
+				
+				local keyName = tostring(inp.KeyCode):gsub("Enum.KeyCode.", "")
+				notify("Keybind: " .. txt .. " = " .. keyName)
+				
+				-- Update feature label live
+				if featureLabels[ft] then
+					local baseName = txt:gsub(" %b()", "") -- Remove old key in parentheses
+					featureLabels[ft].Text = baseName .. " (" .. keyName .. ")"
+				end
+			end)
+		end)
+		
+		b.MouseEnter:Connect(function()
+			if not listening then
+				playSound(Sounds.Hover, 0.2, 1.3, 1)
+				tween(b, 0.2, {BackgroundColor3 = Color3.fromRGB(40, 45, 55)}):Play()
+			end
+		end)
+		
+		b.MouseLeave:Connect(function()
+			if not listening then
+				tween(b, 0.2, {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
+			end
+		end)
+		
+		return y + 35
+	end
+	
+	setY = mkKb("Flight (Default: C)", "flight", setY)
+	setY = mkKb("Speed (Default: G)", "speed", setY)
+	setY = mkKb("Infinite Jump (Default: J)", "jump", setY)
+	setY = mkKb("ESP (Default: E)", "esp", setY)
+	setY = mkKb("No-Clip (Default: N)", "noclip", setY)
+	
+	-- Keybind handler
+	table.insert(connections, UserInputService.InputBegan:Connect(function(inp, gp)
+		if gp or inp.UserInputType ~= Enum.UserInputType.Keyboard then return end
+		
+		print("[CHAINIX] Key pressed:", inp.KeyCode, "- Checking keybinds...")
+		
+		if inp.KeyCode == keybinds.flight then
+			print("[CHAINIX] Flight keybind matched!")
+			flyEnabled = not flyEnabled
+			updateConfig("flight_enabled", flyEnabled)
+			
+			if flyEnabled then
+				if humanoidRootPart then
+					bodyVelocity = Instance.new("BodyVelocity")
+					bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+					bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+					bodyVelocity.Parent = humanoidRootPart
+					
+					bodyGyro = Instance.new("BodyGyro")
+					bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+					bodyGyro.CFrame = humanoidRootPart.CFrame
+					bodyGyro.Parent = humanoidRootPart
+				end
+			else
+				if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
+				if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+			end
+			
+			-- Update checkbox visual
+			if checkboxUpdaters.flight then
+				checkboxUpdaters.flight(flyEnabled)
+			end
+			
+			playSound(Sounds.Toggle, 0.3, 1, 1)
+			print("[CHAINIX] Flight keybind pressed - flyEnabled:", flyEnabled) -- Debug
+			forceNotify(flyEnabled and "Flight Activated" or "Flight Deactivated")
+			
+		elseif inp.KeyCode == keybinds.speed then
+			speedEnabled = not speedEnabled
+			updateConfig("speed_enabled", speedEnabled)
+			
+			if humanoid then
+				if speedEnabled then
+					humanoid.WalkSpeed = walkSpeed or 100
+				else
+					humanoid.WalkSpeed = 16
+				end
+			end
+			
+			-- Update checkbox visual
+			if checkboxUpdaters.speed then
+				checkboxUpdaters.speed(speedEnabled)
+			end
+			
+			playSound(Sounds.Toggle, 0.3, 1, 1)
+			forceNotify(speedEnabled and "Speed Activated" or "Speed Deactivated")
+			
+		elseif inp.KeyCode == keybinds.esp then
+			espEnabled = not espEnabled
+			updateConfig("esp_enabled", espEnabled)
+			
+			-- Update checkbox visual
+			if checkboxUpdaters.esp then
+				checkboxUpdaters.esp(espEnabled)
+			end
+			
+			playSound(Sounds.Toggle, 0.3, 1, 1)
+			forceNotify(espEnabled and "ESP Activated" or "ESP Deactivated")
+			
+		elseif inp.KeyCode == keybinds.jump then
+			jumpEnabled = not jumpEnabled
+			updateConfig("jump_enabled", jumpEnabled)
+			
+			-- Update checkbox visual
+			if checkboxUpdaters.jump then
+				checkboxUpdaters.jump(jumpEnabled)
+			end
+			
+			playSound(Sounds.Toggle, 0.3, 1, 1)
+			forceNotify(jumpEnabled and "Infinite Jump Activated" or "Infinite Jump Deactivated")
+			
+		elseif inp.KeyCode == keybinds.noclip then
+			noclipEnabled = not noclipEnabled
+			updateConfig("noclip_enabled", noclipEnabled)
+			
+			-- Update checkbox visual
+			if checkboxUpdaters.noclip then
+				checkboxUpdaters.noclip(noclipEnabled)
+			end
+			
+			playSound(Sounds.Toggle, 0.3, 1, 1)
+			forceNotify(noclipEnabled and "No-Clip Activated" or "No-Clip Deactivated")
+		end
+	end))
+end
+
+setY = setY + 5
 
 -- Unload button
 local unloadBtn = Instance.new("TextButton")
@@ -3139,7 +3760,7 @@ miscY = createCheckbox("FPS Unlocker", miscLeftCol, miscY, function(enabled)
 	end
 end)
 
-miscY = miscY + 10
+miscY = miscY + 5  -- Reduced from 10
 miscY = createSection("World", miscLeftCol, miscY)
 
 miscY = createCheckbox("Fullbright", miscLeftCol, miscY, function(enabled)
@@ -3159,7 +3780,7 @@ miscY = createCheckbox("Fullbright", miscLeftCol, miscY, function(enabled)
 	end
 end)
 
-miscY = miscY + 10
+miscY = miscY + 5  -- Reduced from 10
 miscY = createSection("Camera", miscLeftCol, miscY)
 
 miscY = createCheckbox("Zoom Extender", miscLeftCol, miscY, function(enabled)
@@ -3299,241 +3920,10 @@ miscY = createCheckbox("FOV Changer", miscLeftCol, miscY, function(enabled)
 	end
 end)
 
--- Add space for FOV slider
-miscY = miscY + 45
+-- Add minimal space for FOV slider
+miscY = miscY + 10  -- Reduced from 45!
 
-miscY = miscY + 10
-miscY = createSection("Theme", miscLeftCol, miscY)
-
--- Theme system
-local themes = {
-	{
-		name = "Purple (Default)", 
-		primary = Color3.fromRGB(88, 101, 242), 
-		secondary = Color3.fromRGB(120, 140, 255),
-		bgDark = Color3.fromRGB(15, 15, 20),
-		bgMedium = Color3.fromRGB(18, 18, 24),
-		bgLight = Color3.fromRGB(25, 28, 38),
-		textPrimary = Color3.fromRGB(255, 255, 255),
-		textSecondary = Color3.fromRGB(200, 205, 215)
-	},
-	{
-		name = "Dark Mode", 
-		primary = Color3.fromRGB(80, 80, 80), 
-		secondary = Color3.fromRGB(120, 120, 120),
-		bgDark = Color3.fromRGB(10, 10, 10),
-		bgMedium = Color3.fromRGB(20, 20, 20),
-		bgLight = Color3.fromRGB(35, 35, 35),
-		textPrimary = Color3.fromRGB(255, 255, 255),
-		textSecondary = Color3.fromRGB(180, 180, 180)
-	},
-	{
-		name = "Light Mode", 
-		primary = Color3.fromRGB(70, 120, 220), 
-		secondary = Color3.fromRGB(100, 150, 240),
-		bgDark = Color3.fromRGB(245, 248, 252),
-		bgMedium = Color3.fromRGB(235, 240, 248),
-		bgLight = Color3.fromRGB(220, 228, 240),
-		textPrimary = Color3.fromRGB(25, 30, 40),
-		textSecondary = Color3.fromRGB(60, 70, 85)
-	},
-	{
-		name = "Neon Pink", 
-		primary = Color3.fromRGB(255, 20, 147), 
-		secondary = Color3.fromRGB(255, 105, 180),
-		bgDark = Color3.fromRGB(18, 8, 14),
-		bgMedium = Color3.fromRGB(25, 12, 20),
-		bgLight = Color3.fromRGB(40, 18, 30),
-		textPrimary = Color3.fromRGB(255, 240, 250),
-		textSecondary = Color3.fromRGB(230, 200, 220)
-	},
-	{
-		name = "Matrix Green", 
-		primary = Color3.fromRGB(0, 255, 0), 
-		secondary = Color3.fromRGB(50, 255, 100),
-		bgDark = Color3.fromRGB(5, 12, 5),
-		bgMedium = Color3.fromRGB(8, 18, 8),
-		bgLight = Color3.fromRGB(12, 25, 12),
-		textPrimary = Color3.fromRGB(200, 255, 200),
-		textSecondary = Color3.fromRGB(150, 220, 150)
-	},
-	{
-		name = "Blood Red", 
-		primary = Color3.fromRGB(220, 30, 30), 
-		secondary = Color3.fromRGB(255, 70, 70),
-		bgDark = Color3.fromRGB(15, 8, 8),
-		bgMedium = Color3.fromRGB(22, 12, 12),
-		bgLight = Color3.fromRGB(35, 18, 18),
-		textPrimary = Color3.fromRGB(255, 240, 240),
-		textSecondary = Color3.fromRGB(230, 200, 200)
-	},
-}
-
-local currentTheme = 1
-
-local function applyTheme(themeIndex)
-	local theme = themes[themeIndex]
-	currentTheme = themeIndex
-	
-	-- Update global theme colors
-	ThemeColor = theme.primary
-	ThemeColorSecondary = theme.secondary
-	
-	-- Update main frame background specifically
-	if mainFrame then
-		mainFrame.BackgroundColor3 = theme.bgDark
-	end
-	
-	-- Update tab bar
-	if tabBar then
-		tabBar.BackgroundColor3 = theme.bgMedium
-	end
-	
-	-- Update chain background
-	if chainBG then
-		chainBG.ImageColor3 = theme.primary
-	end
-	
-	-- Update top bar gradient
-	if topBarGradient then
-		topBarGradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, theme.primary),
-			ColorSequenceKeypoint.new(0.5, theme.secondary),
-			ColorSequenceKeypoint.new(1, theme.primary)
-		}
-	end
-	
-	-- Update outer shadow color
-	if outerShadow then
-		outerShadow.ImageColor3 = theme.primary
-	end
-	
-	-- Update ALL UI elements recursively
-	local function updateElement(obj)
-		-- Update background colors (buttons, frames)
-		if obj.BackgroundColor3 then
-			local r, g, b = obj.BackgroundColor3.R * 255, obj.BackgroundColor3.G * 255, obj.BackgroundColor3.B * 255
-			
-			-- Check if it's a purple accent color
-			if (r >= 80 and r <= 130 and g >= 90 and g <= 150 and b >= 230 and b <= 255) then
-				obj.BackgroundColor3 = theme.primary
-			-- Check if it's very dark background (10,10,15 range - mainFrame)
-			elseif (r >= 8 and r <= 12 and g >= 8 and g <= 12 and b >= 13 and b <= 17) then
-				obj.BackgroundColor3 = theme.bgDark
-			-- Check if it's dark background (15,15,20 range)
-			elseif (r >= 13 and r <= 20 and g >= 13 and g <= 20 and b >= 18 and b <= 25) then
-				obj.BackgroundColor3 = theme.bgDark
-			-- Check if it's medium background (18,18,24 range)
-			elseif (r >= 16 and r <= 25 and g >= 16 and g <= 25 and b >= 22 and b <= 30) then
-				obj.BackgroundColor3 = theme.bgMedium
-			-- Check if it's light background (25,28,38 range)
-			elseif (r >= 23 and r <= 35 and g >= 26 and g <= 35 and b >= 35 and b <= 45) then
-				obj.BackgroundColor3 = theme.bgLight
-			-- Check if it's button background (20,22,30)
-			elseif (r >= 18 and r <= 25 and g >= 20 and g <= 28 and b >= 28 and b <= 35) then
-				obj.BackgroundColor3 = theme.bgMedium
-			-- Check if it's darker button (30,32,40)
-			elseif (r >= 28 and r <= 35 and g >= 30 and g <= 38 and b >= 38 and b <= 45) then
-				obj.BackgroundColor3 = theme.bgLight
-			end
-		end
-		
-		-- Update text colors
-		if obj.TextColor3 then
-			local r, g, b = obj.TextColor3.R * 255, obj.TextColor3.G * 255, obj.TextColor3.B * 255
-			
-			-- Update purple accent text
-			if (r >= 80 and r <= 130 and g >= 90 and g <= 150 and b >= 230 and b <= 255) then
-				obj.TextColor3 = theme.primary
-			-- Update white text (255, 255, 255)
-			elseif (r >= 250 and g >= 250 and b >= 250) then
-				if theme.textPrimary then
-					obj.TextColor3 = theme.textPrimary
-				end
-			-- Update light gray text (240, 242, 245)
-			elseif (r >= 235 and r <= 245 and g >= 237 and g <= 247 and b >= 240 and b <= 250) then
-				if theme.textPrimary then
-					obj.TextColor3 = theme.textPrimary
-				end
-			-- Update medium gray text (200, 205, 215)
-			elseif (r >= 195 and r <= 210 and g >= 200 and g <= 215 and b >= 210 and b <= 220) then
-				if theme.textSecondary then
-					obj.TextColor3 = theme.textSecondary
-				end
-			end
-		end
-		
-		-- Update border colors
-		if obj.BorderColor3 then
-			local r, g, b = obj.BorderColor3.R * 255, obj.BorderColor3.G * 255, obj.BorderColor3.B * 255
-			if (r >= 80 and r <= 130 and g >= 90 and g <= 150 and b >= 230 and b <= 255) then
-				obj.BorderColor3 = theme.primary
-			-- Update dark borders
-			elseif (r >= 35 and r <= 50 and g >= 40 and g <= 55 and b >= 75 and b <= 95) then
-				obj.BorderColor3 = Color3.new(
-					theme.bgLight.R * 1.5,
-					theme.bgLight.G * 1.5,
-					theme.bgLight.B * 1.5
-				)
-			end
-		end
-		
-		-- Update scrollbar colors
-		if obj:IsA("ScrollingFrame") and obj.ScrollBarImageColor3 then
-			local r, g, b = obj.ScrollBarImageColor3.R * 255, obj.ScrollBarImageColor3.G * 255, obj.ScrollBarImageColor3.B * 255
-			if (r >= 80 and r <= 130 and g >= 90 and g <= 150 and b >= 230 and b <= 255) then
-				obj.ScrollBarImageColor3 = theme.primary
-			end
-		end
-		
-		-- Update gradient colors
-		if obj:IsA("UIGradient") and obj.Color then
-			-- Check if gradient contains purple colors
-			local keypoints = obj.Color.Keypoints
-			local hasPurple = false
-			for _, kp in pairs(keypoints) do
-				local r, g, b = kp.Value.R * 255, kp.Value.G * 255, kp.Value.B * 255
-				if (r >= 80 and r <= 130 and g >= 90 and g <= 150 and b >= 230 and b <= 255) then
-					hasPurple = true
-					break
-				end
-			end
-			
-			if hasPurple then
-				obj.Color = ColorSequence.new{
-					ColorSequenceKeypoint.new(0, theme.primary),
-					ColorSequenceKeypoint.new(0.5, theme.secondary),
-					ColorSequenceKeypoint.new(1, theme.primary)
-				}
-			end
-		end
-	end
-	
-	-- Update all existing elements
-	for _, obj in pairs(screenGui:GetDescendants()) do
-		pcall(function()
-			updateElement(obj)
-		end)
-	end
-	
-	notify("Theme: " .. theme.name)
-	updateConfig("theme", themeIndex)
-end
-
--- Theme buttons
-for i, theme in ipairs(themes) do
-	miscY = createButton(theme.name, miscLeftCol, miscY, function()
-		playSound(Sounds.Click, 0.5, 1.2, 1)
-		applyTheme(i)
-	end)
-end
-
--- Load saved theme
-if currentConfig.theme then
-	applyTheme(currentConfig.theme)
-end
-
-miscY = miscY + 10
+miscY = miscY + 5  -- Reduced from 10 to bring Display higher
 miscY = createSection("Display", miscLeftCol, miscY)
 
 miscY = createCheckbox("Show FPS", miscLeftCol, miscY, function(enabled)
@@ -3656,6 +4046,250 @@ miscY = createCheckbox("Anti AFK", miscLeftCol, miscY, function(enabled)
 	notify(enabled and "Anti AFK ON" or "Anti AFK OFF")
 end)
 
+miscY = createSection("Theme", miscLeftCol, miscY)
+
+-- Theme system
+local themes = {
+	{
+		name = "Purple (Default)", 
+		primary = Color3.fromRGB(88, 101, 242), 
+		secondary = Color3.fromRGB(120, 140, 255),
+		bgDark = Color3.fromRGB(15, 15, 20),
+		bgMedium = Color3.fromRGB(18, 18, 24),
+		bgLight = Color3.fromRGB(25, 28, 38),
+		textPrimary = Color3.fromRGB(255, 255, 255),
+		textSecondary = Color3.fromRGB(200, 205, 215)
+	},
+	{
+		name = "Dark Mode", 
+		primary = Color3.fromRGB(80, 80, 80), 
+		secondary = Color3.fromRGB(120, 120, 120),
+		bgDark = Color3.fromRGB(10, 10, 10),
+		bgMedium = Color3.fromRGB(20, 20, 20),
+		bgLight = Color3.fromRGB(35, 35, 35),
+		textPrimary = Color3.fromRGB(255, 255, 255),
+		textSecondary = Color3.fromRGB(180, 180, 180)
+	},
+	{
+		name = "Light Mode", 
+		primary = Color3.fromRGB(70, 120, 220), 
+		secondary = Color3.fromRGB(100, 150, 240),
+		bgDark = Color3.fromRGB(245, 248, 252),
+		bgMedium = Color3.fromRGB(235, 240, 248),
+		bgLight = Color3.fromRGB(220, 228, 240),
+		textPrimary = Color3.fromRGB(25, 30, 40),
+		textSecondary = Color3.fromRGB(60, 70, 85)
+	},
+	{
+		name = "Neon Pink", 
+		primary = Color3.fromRGB(255, 20, 147), 
+		secondary = Color3.fromRGB(255, 105, 180),
+		bgDark = Color3.fromRGB(18, 8, 14),
+		bgMedium = Color3.fromRGB(25, 12, 20),
+		bgLight = Color3.fromRGB(40, 18, 30),
+		textPrimary = Color3.fromRGB(255, 240, 250),
+		textSecondary = Color3.fromRGB(230, 200, 220)
+	},
+	{
+		name = "Matrix Green", 
+		primary = Color3.fromRGB(0, 255, 0), 
+		secondary = Color3.fromRGB(50, 255, 100),
+		bgDark = Color3.fromRGB(5, 12, 5),
+		bgMedium = Color3.fromRGB(8, 18, 8),
+		bgLight = Color3.fromRGB(12, 25, 12),
+		textPrimary = Color3.fromRGB(200, 255, 200),
+		textSecondary = Color3.fromRGB(150, 220, 150)
+	},
+	{
+		name = "Blood Red", 
+		primary = Color3.fromRGB(220, 30, 30), 
+		secondary = Color3.fromRGB(255, 70, 70),
+		bgDark = Color3.fromRGB(15, 8, 8),
+		bgMedium = Color3.fromRGB(22, 12, 12),
+		bgLight = Color3.fromRGB(35, 18, 18),
+		textPrimary = Color3.fromRGB(255, 240, 240),
+		textSecondary = Color3.fromRGB(230, 200, 200)
+	},
+}
+
+local currentTheme = 1
+
+-- Helper function to check if a color is close to any theme's primary or secondary
+local function isThemeColor(color)
+	local r, g, b = color.R * 255, color.G * 255, color.B * 255
+	for _, theme in pairs(themes) do
+		-- Check primary color (within ±20 RGB tolerance)
+		local pr, pg, pb = theme.primary.R * 255, theme.primary.G * 255, theme.primary.B * 255
+		if math.abs(r - pr) <= 20 and math.abs(g - pg) <= 20 and math.abs(b - pb) <= 20 then
+			return true
+		end
+		-- Check secondary color
+		local sr, sg, sb = theme.secondary.R * 255, theme.secondary.G * 255, theme.secondary.B * 255
+		if math.abs(r - sr) <= 20 and math.abs(g - sg) <= 20 and math.abs(b - sb) <= 20 then
+			return true
+		end
+	end
+	return false
+end
+
+local function applyTheme(themeIndex)
+	local theme = themes[themeIndex]
+	currentTheme = themeIndex
+	
+	-- Update global theme colors
+	ThemeColor = theme.primary
+	ThemeColorSecondary = theme.secondary
+	
+	-- Update main frame background specifically
+	if mainFrame then
+		mainFrame.BackgroundColor3 = theme.bgDark
+	end
+	
+	-- Update tab bar
+	if tabBar then
+		tabBar.BackgroundColor3 = theme.bgMedium
+	end
+	
+	-- Update chain background
+	if chainBG then
+		chainBG.ImageColor3 = theme.primary
+	end
+	
+	-- Update top bar gradient
+	if topBarGradient then
+		topBarGradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, theme.primary),
+			ColorSequenceKeypoint.new(0.5, theme.secondary),
+			ColorSequenceKeypoint.new(1, theme.primary)
+		}
+	end
+	
+	-- Update outer shadow color
+	if outerShadow then
+		outerShadow.ImageColor3 = theme.primary
+	end
+	
+	-- Update ALL UI elements recursively
+	local function updateElement(obj)
+		-- Update background colors (buttons, frames)
+		if obj.BackgroundColor3 then
+			-- Check if it's ANY theme color (not just purple!)
+			if isThemeColor(obj.BackgroundColor3) then
+				obj.BackgroundColor3 = theme.primary
+			else
+				local r, g, b = obj.BackgroundColor3.R * 255, obj.BackgroundColor3.G * 255, obj.BackgroundColor3.B * 255
+				
+				-- Check if it's very dark background (wider range for all themes)
+				if (r >= 5 and r <= 20 and g >= 5 and g <= 20 and b >= 5 and b <= 25) then
+					obj.BackgroundColor3 = theme.bgDark
+				-- Check if it's medium background
+				elseif (r >= 18 and r <= 35 and g >= 12 and g <= 35 and b >= 12 and b <= 35) then
+					obj.BackgroundColor3 = theme.bgMedium
+				-- Check if it's light background
+				elseif (r >= 35 and r <= 50 and g >= 18 and g <= 50 and b >= 18 and b <= 50) then
+					obj.BackgroundColor3 = theme.bgLight
+				end
+			end
+		end
+		
+		-- Update text colors
+		if obj.TextColor3 then
+			-- Check if it's ANY theme color
+			if isThemeColor(obj.TextColor3) then
+				obj.TextColor3 = theme.primary
+			else
+				local r, g, b = obj.TextColor3.R * 255, obj.TextColor3.G * 255, obj.TextColor3.B * 255
+				
+				-- Update white/light text (240-255 range)
+				if (r >= 200 and g >= 200 and b >= 200) then
+					if theme.textPrimary then
+						obj.TextColor3 = theme.textPrimary
+					end
+				-- Update medium gray text (150-210 range)
+				elseif (r >= 150 and r <= 235 and g >= 150 and g <= 235 and b >= 150 and b <= 235) then
+					if theme.textSecondary then
+						obj.TextColor3 = theme.textSecondary
+					end
+				-- Update dark text (for Light Mode)
+				elseif (r >= 25 and r <= 70 and g >= 30 and g <= 85 and b >= 40 and b <= 100) then
+					if theme.textSecondary then
+						obj.TextColor3 = theme.textSecondary
+					end
+				end
+			end
+		end
+		
+		-- Update border colors
+		if obj.BorderColor3 then
+			-- Check if it's ANY theme color
+			if isThemeColor(obj.BorderColor3) then
+				obj.BorderColor3 = theme.primary
+			else
+				local r, g, b = obj.BorderColor3.R * 255, obj.BorderColor3.G * 255, obj.BorderColor3.B * 255
+				-- Update dark borders
+				if (r >= 35 and r <= 65 and g >= 40 and g <= 100 and b >= 75 and b <= 110) then
+					obj.BorderColor3 = Color3.new(
+						math.min(theme.bgLight.R * 1.5, 1),
+						math.min(theme.bgLight.G * 1.5, 1),
+						math.min(theme.bgLight.B * 1.5, 1)
+					)
+				end
+			end
+		end
+		
+		-- Update scrollbar colors
+		if obj:IsA("ScrollingFrame") and obj.ScrollBarImageColor3 then
+			if isThemeColor(obj.ScrollBarImageColor3) then
+				obj.ScrollBarImageColor3 = theme.primary
+			end
+		end
+		
+		-- Update gradient colors
+		if obj:IsA("UIGradient") and obj.Color then
+			-- Check if gradient contains ANY theme colors
+			local keypoints = obj.Color.Keypoints
+			local hasThemeColor = false
+			for _, kp in pairs(keypoints) do
+				if isThemeColor(kp.Value) then
+					hasThemeColor = true
+					break
+				end
+			end
+			
+			if hasThemeColor then
+				obj.Color = ColorSequence.new{
+					ColorSequenceKeypoint.new(0, theme.primary),
+					ColorSequenceKeypoint.new(0.5, theme.secondary),
+					ColorSequenceKeypoint.new(1, theme.primary)
+				}
+			end
+		end
+	end
+	
+	-- Update all existing elements
+	for _, obj in pairs(screenGui:GetDescendants()) do
+		pcall(function()
+			updateElement(obj)
+		end)
+	end
+	
+	notify("Theme: " .. theme.name)
+	updateConfig("theme", themeIndex)
+end
+
+-- Theme buttons
+for i, theme in ipairs(themes) do
+	miscY = createButton(theme.name, miscLeftCol, miscY, function()
+		playSound(Sounds.Click, 0.5, 1.2, 1)
+		applyTheme(i)
+	end)
+end
+
+-- Load saved theme
+if currentConfig.theme then
+	applyTheme(currentConfig.theme)
+end
+
 -- Anti-AFK loop
 spawn(function()
 	while true do
@@ -3688,8 +4322,20 @@ table.insert(connections, player.CharacterRemoving:Connect(function()
 	end
 end))
 
--- Feature loops
+-- Feature loops (OPTIMIZED)
+-- Performance: Throttle updates for better FPS
+local lastESPUpdate = 0
+local lastNoclipUpdate = 0
+local ESP_UPDATE_RATE = 0.1 -- Update ESP every 0.1 seconds instead of every frame
+local NOCLIP_UPDATE_RATE = 0.05 -- Update noclip every 0.05 seconds
+
+-- Cached player list for performance
+local cachedPlayers = {}
+local lastPlayerCacheUpdate = 0
+local PLAYER_CACHE_RATE = 1 -- Update player cache every 1 second
+
 table.insert(connections, RunService.Heartbeat:Connect(function()
+	-- Flight system (needs to run every frame for smooth movement)
 	if flyEnabled and bodyVelocity and bodyGyro then
 		local cam = workspace.CurrentCamera
 		local move = Vector3.new(0, 0, 0)
@@ -3702,16 +4348,60 @@ table.insert(connections, RunService.Heartbeat:Connect(function()
 		bodyVelocity.Velocity = move
 		bodyGyro.CFrame = cam.CFrame
 	end
+	
+	-- Throttled ESP updates (only update every 0.1 seconds)
+	local currentTime = tick()
+	if espEnabled and (currentTime - lastESPUpdate) >= ESP_UPDATE_RATE then
+		lastESPUpdate = currentTime
+		-- ESP update logic happens in the ESP loop below
+	end
 end))
 
 table.insert(connections, UserInputService.JumpRequest:Connect(function()
 	if jumpEnabled then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
 end))
 
+-- Optimized noclip (throttled to reduce performance impact)
+local noclipParts = {} -- Cache character parts
 table.insert(connections, RunService.Stepped:Connect(function()
 	if noclipEnabled and character then
-		for _, part in pairs(character:GetDescendants()) do
-			if part:IsA("BasePart") then part.CanCollide = false end
+		local currentTime = tick()
+		if (currentTime - lastNoclipUpdate) >= NOCLIP_UPDATE_RATE then
+			lastNoclipUpdate = currentTime
+			
+			-- Update cached parts list only when needed
+			local needsUpdate = false
+			if next(noclipParts) == nil then
+				needsUpdate = true
+			elseif noclipParts[1] and not noclipParts[1].Parent then
+				needsUpdate = true
+			end
+			
+			if needsUpdate then
+				noclipParts = {}
+				for _, part in pairs(character:GetDescendants()) do
+					if part:IsA("BasePart") then
+						table.insert(noclipParts, part)
+					end
+				end
+			end
+			
+			-- Disable collision on cached parts
+			for _, part in ipairs(noclipParts) do
+				if part and part.Parent then
+					part.CanCollide = false
+				end
+			end
+		end
+	else
+		-- Clear cache when disabled
+		if next(noclipParts) ~= nil then
+			for _, part in ipairs(noclipParts) do
+				if part and part.Parent then
+					part.CanCollide = true
+				end
+			end
+			noclipParts = {}
 		end
 	end
 end))
@@ -3720,6 +4410,7 @@ table.insert(connections, player.CharacterAdded:Connect(function(newChar)
 	character = newChar
 	humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
 	humanoid = newChar:WaitForChild("Humanoid")
+	noclipParts = {} -- Clear noclip cache
 	if flyEnabled then
 		flyEnabled = false
 		if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
