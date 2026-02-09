@@ -181,12 +181,12 @@ Config.ButtonSpacingY = 12
 -- ========================================
 local GameList = {
 	{
-		name = "PREMIUM HUB", 
-		url = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/main/test_hub.lua",
+		name = "CHAINIX TEST SCRIPT", 
+		url = "https://raw.githubusercontent.com/ChainixScripts/chainix-scripts/refs/heads/main/scripts/TestScript.lua",
 		icon = "⚡",
 		available = true,
-		description = "Premium hub with 5 features",
-		lastUpdated = "2026-02-08"
+		description = "Premium script with all features",
+		lastUpdated = "2026-02-09"
 	},
 	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
 	{name = "Coming Soon", url = "", icon = "🔒", available = false, description = "Stay tuned!", lastUpdated = "N/A"},
