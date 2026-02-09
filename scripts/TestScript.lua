@@ -332,6 +332,9 @@ local function cleanup()
 		end)
 	end
 	
+	-- Set global flag to tell loader to stop
+	_G.CHAINIX_UNLOADED = true
+	
 	-- Remove ALL UI elements from PlayerGui
 	print("[CHAINIX] Removing ALL UI from PlayerGui...")
 	pcall(function()
